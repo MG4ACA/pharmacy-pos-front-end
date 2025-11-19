@@ -1,15 +1,16 @@
 // This file will import all IPC handlers
 import './authHandlers.js';
+import { registerDashboardHandlers } from './dashboardHandlers.js';
 import './metaHandlers.js';
 import './productHandlers.js';
+import { registerReportHandlers } from './reportHandlers.js';
+import { registerSaleHandlers } from './saleHandlers.js';
 import './stockHandlers.js';
 import './supplierHandlers.js';
-import { registerSaleHandlers } from './saleHandlers.js';
 
-// Register sale handlers
+// Register handlers
 registerSaleHandlers();
-
-// To be implemented in future phases:
-// import './dashboardHandlers.js'
+registerDashboardHandlers();
+registerReportHandlers();
 
 console.log('✓ All IPC handlers loaded');

@@ -1,7 +1,9 @@
 <template>
   <div class="pos-container">
     <!-- Header -->
-    <div class="pos-header flex justify-content-between align-items-center mb-4 p-3 surface-card border-round">
+    <div
+      class="pos-header flex justify-content-between align-items-center mb-4 p-3 surface-card border-round"
+    >
       <div>
         <h2 class="m-0 text-primary">Point of Sale</h2>
         <p class="text-600 m-0 mt-1">{{ currentDate }}</p>
@@ -52,7 +54,10 @@
                     </div>
                     <div class="text-right">
                       <div class="font-bold text-primary">Rs. {{ item.selling_price }}</div>
-                      <div class="text-sm" :class="item.total_stock > 0 ? 'text-green-600' : 'text-red-600'">
+                      <div
+                        class="text-sm"
+                        :class="item.total_stock > 0 ? 'text-green-600' : 'text-red-600'"
+                      >
                         Stock: {{ item.total_stock }}
                       </div>
                     </div>
@@ -83,9 +88,7 @@
             <Column field="category" header="Category" style="min-width: 120px" />
 
             <Column field="unit_price" header="Unit Price" style="min-width: 120px">
-              <template #body="{ data }">
-                Rs. {{ data.unit_price.toFixed(2) }}
-              </template>
+              <template #body="{ data }">Rs. {{ data.unit_price.toFixed(2) }}</template>
             </Column>
 
             <Column field="quantity" header="Quantity" style="min-width: 150px">
@@ -236,7 +239,7 @@
         <i class="pi pi-check-circle text-green-500 text-6xl mb-3"></i>
         <h3 class="text-xl font-bold mb-2">Sale Completed Successfully!</h3>
         <p class="text-600 mb-4">Sale ID: #{{ currentSale?.id }}</p>
-        
+
         <div class="surface-100 border-round p-3 mb-4">
           <div class="flex justify-content-between mb-2">
             <span>Subtotal:</span>
@@ -273,24 +276,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import { useConfirm } from 'primevue/useconfirm';
-import { useSaleStore } from '@/stores/sale';
-import { useProductStore } from '@/stores/product';
 import { useAuthStore } from '@/stores/auth';
+import { useProductStore } from '@/stores/product';
+import { useSaleStore } from '@/stores/sale';
+import { useConfirm } from 'primevue/useconfirm';
+import { useToast } from 'primevue/usetoast';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import Panel from 'primevue/panel';
-import Button from 'primevue/button';
 import AutoComplete from 'primevue/autocomplete';
-import DataTable from 'primevue/datatable';
+import Button from 'primevue/button';
 import Column from 'primevue/column';
-import InputNumber from 'primevue/inputnumber';
-import Dropdown from 'primevue/dropdown';
-import Textarea from 'primevue/textarea';
-import Divider from 'primevue/divider';
+import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
+import Divider from 'primevue/divider';
+import Dropdown from 'primevue/dropdown';
+import InputNumber from 'primevue/inputnumber';
+import Panel from 'primevue/panel';
+import Textarea from 'primevue/textarea';
 
 const router = useRouter();
 const toast = useToast();

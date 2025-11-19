@@ -1,6 +1,6 @@
 import { Op } from 'sequelize';
 import sequelize from '../database/connection.js';
-import { Sale, SaleItem, Product, StockEntry, User } from '../database/models/index.js';
+import { Product, Sale, SaleItem, StockEntry, User } from '../database/models/index.js';
 import StockController from './StockController.js';
 
 class SaleController {
@@ -13,7 +13,14 @@ class SaleController {
     const transaction = await sequelize.transaction();
 
     try {
-      const { user_id, items, discount = 0, tax = 0, payment_method = 'cash', notes = '' } = saleData;
+      const {
+        user_id,
+        items,
+        discount = 0,
+        tax = 0,
+        payment_method = 'cash',
+        notes = '',
+      } = saleData;
 
       // Validate required fields
       if (!user_id) {
@@ -362,14 +369,8 @@ class SaleController {
 
       // Calculate totals
       const totalSales = sales.length;
-      const totalRevenue = sales.reduce(
-        (sum, sale) => sum + parseFloat(sale.total_amount),
-        0
-      );
-      const totalDiscount = sales.reduce(
-        (sum, sale) => sum + parseFloat(sale.discount),
-        0
-      );
+      const totalRevenue = sales.reduce((sum, sale) => sum + parseFloat(sale.total_amount), 0);
+      const totalDiscount = sales.reduce((sum, sale) => sum + parseFloat(sale.discount), 0);
       const totalTax = sales.reduce((sum, sale) => sum + parseFloat(sale.tax), 0);
 
       return {
@@ -389,7 +390,7 @@ class SaleController {
       console.error('SaleController.getTodaySales error:', error);
       return {
         success: false,
-        message: error.message || 'Failed to fetch today\'s sales',
+        message: error.message || "Failed to fetch today's sales",
         data: {
           sales: [],
           summary: {

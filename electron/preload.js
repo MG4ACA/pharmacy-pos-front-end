@@ -43,6 +43,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Dashboard
   getDashboardSummary: () => ipcRenderer.invoke('dashboard:getSummary'),
 
+  // Reports
+  getDailySalesReport: (params) => ipcRenderer.invoke('report:dailySales', params),
+  getStockLevelReport: () => ipcRenderer.invoke('report:stockLevel'),
+  getExpiringProductsReport: (days) => ipcRenderer.invoke('report:expiringProducts', days),
+  getTopSellingProducts: (params) => ipcRenderer.invoke('report:topSelling', params),
+
   // Product Types & Categories
   getProductTypes: () => ipcRenderer.invoke('productType:getAll'),
   getCategories: () => ipcRenderer.invoke('category:getAll'),

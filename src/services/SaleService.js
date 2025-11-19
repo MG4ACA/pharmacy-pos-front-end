@@ -71,7 +71,7 @@ class SaleService {
       console.error('SaleService.getTodaySales error:', error);
       return {
         success: false,
-        message: error.message || 'Failed to fetch today\'s sales',
+        message: error.message || "Failed to fetch today's sales",
         data: {
           sales: [],
           summary: {

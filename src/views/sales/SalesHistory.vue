@@ -6,11 +6,7 @@
         <h2 class="m-0 text-primary">Sales History</h2>
         <p class="text-600 m-0 mt-1">View and manage all sales transactions</p>
       </div>
-      <Button
-        label="New Sale"
-        icon="pi pi-plus"
-        @click="$router.push('/sales/pos')"
-      />
+      <Button label="New Sale" icon="pi pi-plus" @click="$router.push('/sales/pos')" />
     </div>
 
     <!-- Filters Panel -->
@@ -79,12 +75,7 @@
 
         <!-- Action Buttons -->
         <div class="col-12">
-          <Button
-            label="Apply Filters"
-            icon="pi pi-search"
-            @click="applyFilters"
-            class="mr-2"
-          />
+          <Button label="Apply Filters" icon="pi pi-search" @click="applyFilters" class="mr-2" />
           <Button
             label="Clear Filters"
             icon="pi pi-times"
@@ -138,9 +129,7 @@
           </Column>
 
           <Column field="subtotal" header="Subtotal" style="min-width: 120px">
-            <template #body="{ data }">
-              Rs. {{ parseFloat(data.subtotal).toFixed(2) }}
-            </template>
+            <template #body="{ data }">Rs. {{ parseFloat(data.subtotal).toFixed(2) }}</template>
           </Column>
 
           <Column field="discount" header="Discount" style="min-width: 120px">
@@ -228,7 +217,9 @@
           </div>
           <div class="col-6">
             <p class="text-600 mb-1">Cashier:</p>
-            <p class="font-semibold">{{ selectedSale.user?.full_name || selectedSale.user?.username }}</p>
+            <p class="font-semibold">
+              {{ selectedSale.user?.full_name || selectedSale.user?.username }}
+            </p>
           </div>
           <div class="col-6">
             <p class="text-600 mb-1">Payment Method:</p>
@@ -260,14 +251,10 @@
           <Column field="product.name" header="Product" style="min-width: 200px" />
           <Column field="quantity" header="Quantity" style="width: 100px" />
           <Column field="unit_price" header="Unit Price" style="width: 120px">
-            <template #body="{ data }">
-              Rs. {{ parseFloat(data.unit_price).toFixed(2) }}
-            </template>
+            <template #body="{ data }">Rs. {{ parseFloat(data.unit_price).toFixed(2) }}</template>
           </Column>
           <Column field="subtotal" header="Subtotal" style="width: 120px">
-            <template #body="{ data }">
-              Rs. {{ parseFloat(data.subtotal).toFixed(2) }}
-            </template>
+            <template #body="{ data }">Rs. {{ parseFloat(data.subtotal).toFixed(2) }}</template>
           </Column>
           <Column field="stock_entry" header="Batch" style="width: 150px">
             <template #body="{ data }">
@@ -280,20 +267,28 @@
         <div class="surface-100 border-round p-3">
           <div class="flex justify-content-between mb-2">
             <span class="text-600">Subtotal:</span>
-            <span class="font-semibold">Rs. {{ parseFloat(selectedSale.subtotal).toFixed(2) }}</span>
+            <span class="font-semibold">
+              Rs. {{ parseFloat(selectedSale.subtotal).toFixed(2) }}
+            </span>
           </div>
           <div class="flex justify-content-between mb-2" v-if="selectedSale.discount > 0">
             <span class="text-600">Discount:</span>
-            <span class="font-semibold text-red-500">- Rs. {{ parseFloat(selectedSale.discount).toFixed(2) }}</span>
+            <span class="font-semibold text-red-500">
+              - Rs. {{ parseFloat(selectedSale.discount).toFixed(2) }}
+            </span>
           </div>
           <div class="flex justify-content-between mb-2" v-if="selectedSale.tax > 0">
             <span class="text-600">Tax:</span>
-            <span class="font-semibold text-green-600">+ Rs. {{ parseFloat(selectedSale.tax).toFixed(2) }}</span>
+            <span class="font-semibold text-green-600">
+              + Rs. {{ parseFloat(selectedSale.tax).toFixed(2) }}
+            </span>
           </div>
           <Divider />
           <div class="flex justify-content-between">
             <span class="font-bold text-lg">Total:</span>
-            <span class="font-bold text-lg text-primary">Rs. {{ parseFloat(selectedSale.total_amount).toFixed(2) }}</span>
+            <span class="font-bold text-lg text-primary">
+              Rs. {{ parseFloat(selectedSale.total_amount).toFixed(2) }}
+            </span>
           </div>
         </div>
 
@@ -312,21 +307,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
 import { useSaleStore } from '@/stores/sale';
+import { useToast } from 'primevue/usetoast';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import Panel from 'primevue/panel';
-import Card from 'primevue/card';
 import Button from 'primevue/button';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
 import Calendar from 'primevue/calendar';
-import Dropdown from 'primevue/dropdown';
-import Tag from 'primevue/tag';
+import Card from 'primevue/card';
+import Column from 'primevue/column';
+import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
 import Divider from 'primevue/divider';
+import Dropdown from 'primevue/dropdown';
+import Panel from 'primevue/panel';
+import Tag from 'primevue/tag';
 
 const router = useRouter();
 const toast = useToast();

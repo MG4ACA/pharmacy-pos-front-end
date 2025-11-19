@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import SaleService from '../services/SaleService';
 
 export const useSaleStore = defineStore('sale', () => {
@@ -9,13 +9,13 @@ export const useSaleStore = defineStore('sale', () => {
   const tax = ref(0);
   const paymentMethod = ref('cash');
   const notes = ref('');
-  
+
   // Sales history
   const salesHistory = ref([]);
   const currentSale = ref(null);
   const isLoading = ref(false);
   const error = ref(null);
-  
+
   // Pagination
   const pagination = ref({
     page: 1,
@@ -220,7 +220,7 @@ export const useSaleStore = defineStore('sale', () => {
       error.value = err.message;
       return {
         success: false,
-        message: err.message || 'Failed to fetch today\'s sales',
+        message: err.message || "Failed to fetch today's sales",
       };
     } finally {
       isLoading.value = false;
@@ -234,19 +234,19 @@ export const useSaleStore = defineStore('sale', () => {
     tax,
     paymentMethod,
     notes,
-    
+
     // Sales state
     salesHistory,
     currentSale,
     isLoading,
     error,
     pagination,
-    
+
     // Computed
     cartSubtotal,
     cartTotal,
     cartItemCount,
-    
+
     // Cart actions
     addToCart,
     updateCartItemQuantity,
@@ -256,7 +256,7 @@ export const useSaleStore = defineStore('sale', () => {
     setTax,
     setPaymentMethod,
     setNotes,
-    
+
     // Sale actions
     completeSale,
     fetchSalesHistory,
