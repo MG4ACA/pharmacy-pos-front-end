@@ -105,6 +105,12 @@ const salesItems = [
 const reportItems = [
   { path: '/reports/daily-sales', label: 'Daily Sales', icon: 'pi pi-calendar' },
   { path: '/reports/stock', label: 'Stock Report', icon: 'pi pi-box' },
+  {
+    path: '/reports/expiring-products',
+    label: 'Expiring Products',
+    icon: 'pi pi-exclamation-triangle',
+  },
+  { path: '/reports/top-selling', label: 'Top Selling', icon: 'pi pi-chart-line' },
 ];
 </script>
 

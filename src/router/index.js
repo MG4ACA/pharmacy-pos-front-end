@@ -73,6 +73,16 @@ const routes = [
         component: () => import('@/views/reports/StockReport.vue'),
       },
       {
+        path: 'reports/expiring-products',
+        name: 'ExpiringProducts',
+        component: () => import('@/views/reports/ExpiringProducts.vue'),
+      },
+      {
+        path: 'reports/top-selling',
+        name: 'TopSelling',
+        component: () => import('@/views/reports/TopSelling.vue'),
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/Settings.vue'),
