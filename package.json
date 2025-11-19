@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "electron:dev": "concurrently -k \"vite --port 5173\" \"wait-on tcp:5173 && electron .\"",
     "electron": "electron .",
-    "electron:build": "vite build && electron-builder",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:win": "npm run build && electron-builder --win --x64",
+    "electron:build:portable": "npm run build && electron-builder --win portable",
     "db:sync": "node electron/database/sync.js",
     "db:create": "node -e \"import('mysql2/promise').then(m => m.default.createConnection({host:'localhost',port:3306,user:'root',password:'1234'}).then(c => c.query('CREATE DATABASE IF NOT EXISTS pharmacy_pos').then(() => {console.log('Database created');c.end();process.exit(0);})));\""
   },
@@ -44,17 +46,63 @@
   },
   "build": {
     "appId": "com.pharmacy.pos",
-    "productName": "Pharmacy POS",
+    "productName": "Pharmacy POS System",
+    "copyright": "Copyright © 2025",
+    "electronVersion": "28.3.3",
+    "npmRebuild": false,
+    "buildDependenciesFromSource": false,
     "directories": {
-      "output": "dist-electron"
+      "output": "dist-electron",
+      "buildResources": "build"
     },
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "!electron/database/pharmacy_pos.sqlite",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/database",
+        "to": "database",
+        "filter": [
+          "*.js"
+        ]
+      }
     ],
     "win": {
-      "target": "nsis",
-      "icon": "build/icon.ico"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "publisherName": "Pharmacy POS"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Pharmacy POS",
+      "installerIcon": "build/icon.png",
+      "uninstallerIcon": "build/icon.png",
+      "installerHeaderIcon": "build/icon.png",
+      "license": "LICENSE.txt"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-Portable.${ext}"
     }
   }
 }
