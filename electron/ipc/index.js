@@ -2,10 +2,10 @@
 import './authHandlers.js';
 import './metaHandlers.js';
 import './productHandlers.js';
+import './stockHandlers.js';
+import './supplierHandlers.js';
 
 // To be implemented in future phases:
-// import './stockHandlers.js'
-// import './supplierHandlers.js'
 // import './saleHandlers.js'
 // import './dashboardHandlers.js'
 

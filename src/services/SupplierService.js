@@ -1,0 +1,85 @@
+export class SupplierService {
+  /**
+   * Get all suppliers
+   * @param {Object} params - Query parameters (status, search)
+   * @returns {Promise<Object>}
+   */
+  static async getAllSuppliers(params = {}) {
+    try {
+      return await window.electronAPI.getAllSuppliers(params);
+    } catch (error) {
+      console.error('SupplierService.getAllSuppliers error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get supplier by ID
+   * @param {number} id - Supplier ID
+   * @returns {Promise<Object>}
+   */
+  static async getSupplierById(id) {
+    try {
+      return await window.electronAPI.getSupplierById(id);
+    } catch (error) {
+      console.error('SupplierService.getSupplierById error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create new supplier
+   * @param {Object} data - Supplier data
+   * @returns {Promise<Object>}
+   */
+  static async createSupplier(data) {
+    try {
+      return await window.electronAPI.createSupplier(data);
+    } catch (error) {
+      console.error('SupplierService.createSupplier error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update supplier
+   * @param {number} id - Supplier ID
+   * @param {Object} data - Updated supplier data
+   * @returns {Promise<Object>}
+   */
+  static async updateSupplier(id, data) {
+    try {
+      return await window.electronAPI.updateSupplier({ id, data });
+    } catch (error) {
+      console.error('SupplierService.updateSupplier error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete supplier
+   * @param {number} id - Supplier ID
+   * @returns {Promise<Object>}
+   */
+  static async deleteSupplier(id) {
+    try {
+      return await window.electronAPI.deleteSupplier(id);
+    } catch (error) {
+      console.error('SupplierService.deleteSupplier error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get active suppliers only
+   * @returns {Promise<Object>}
+   */
+  static async getActiveSuppliers() {
+    try {
+      return await window.electronAPI.getActiveSuppliers();
+    } catch (error) {
+      console.error('SupplierService.getActiveSuppliers error:', error);
+      throw error;
+    }
+  }
+}

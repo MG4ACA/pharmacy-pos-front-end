@@ -24,11 +24,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getBatchDetails: (batchId) => ipcRenderer.invoke('stock:getBatchDetails', batchId),
 
   // Suppliers
-  getAllSuppliers: () => ipcRenderer.invoke('supplier:getAll'),
+  getAllSuppliers: (params) => ipcRenderer.invoke('supplier:getAll', params),
   getSupplierById: (id) => ipcRenderer.invoke('supplier:getById', id),
   createSupplier: (data) => ipcRenderer.invoke('supplier:create', data),
-  updateSupplier: (id, data) => ipcRenderer.invoke('supplier:update', { id, data }),
+  updateSupplier: (data) => ipcRenderer.invoke('supplier:update', data),
   deleteSupplier: (id) => ipcRenderer.invoke('supplier:delete', id),
+  getActiveSuppliers: () => ipcRenderer.invoke('supplier:getActive'),
 
   // Sales
   createSale: (data) => ipcRenderer.invoke('sale:create', data),

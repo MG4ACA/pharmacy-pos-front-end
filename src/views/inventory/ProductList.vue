@@ -10,7 +10,7 @@
     </div>
 
     <!-- Filters -->
-    <Card class="mb-4">
+    <Card class="filter-card mb-4">
       <template #content>
         <div class="grid">
           <div class="col-12 md:col-4">
@@ -284,6 +284,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.filter-card > div {
+  padding: 0 !important;
+}
 .product-list {
   max-width: 1400px;
   width: 100%;
