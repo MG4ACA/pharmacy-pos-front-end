@@ -1,0 +1,471 @@
+import { Op } from 'sequelize';
+import sequelize from '../database/connection.js';
+import { Sale, SaleItem, Product, StockEntry, User } from '../database/models/index.js';
+import StockController from './StockController.js';
+
+class SaleController {
+  /**
+   * Create new sale with automatic FIFO stock deduction
+   * @param {Object} saleData - Sale data including items array
+   * @returns {Object} Result with success status and sale data
+   */
+  async createSale(saleData) {
+    const transaction = await sequelize.transaction();
+
+    try {
+      const { user_id, items, discount = 0, tax = 0, payment_method = 'cash', notes = '' } = saleData;
+
+      // Validate required fields
+      if (!user_id) {
+        await transaction.rollback();
+        return {
+          success: false,
+          message: 'User ID is required',
+        };
+      }
+
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        await transaction.rollback();
+        return {
+          success: false,
+          message: 'At least one item is required',
+        };
+      }
+
+      // Validate each item
+      for (const item of items) {
+        if (!item.product_id || !item.quantity || item.quantity <= 0) {
+          await transaction.rollback();
+          return {
+            success: false,
+            message: 'Invalid item data: product_id and quantity are required',
+          };
+        }
+      }
+
+      // Calculate subtotal and prepare sale items
+      let subtotal = 0;
+      const saleItems = [];
+
+      for (const item of items) {
+        // Get product details
+        const product = await Product.findByPk(item.product_id, { transaction });
+
+        if (!product) {
+          await transaction.rollback();
+          return {
+            success: false,
+            message: `Product with ID ${item.product_id} not found`,
+          };
+        }
+
+        // Get oldest stock batch with available quantity (FIFO)
+        const stockBatch = await StockEntry.findOne({
+          where: {
+            product_id: item.product_id,
+            quantity_remaining: {
+              [Op.gt]: 0,
+            },
+          },
+          order: [['entry_date', 'ASC']],
+          transaction,
+        });
+
+        if (!stockBatch) {
+          await transaction.rollback();
+          return {
+            success: false,
+            message: `No stock available for product: ${product.name}`,
+          };
+        }
+
+        // Check if we have enough stock
+        if (stockBatch.quantity_remaining < item.quantity) {
+          await transaction.rollback();
+          return {
+            success: false,
+            message: `Insufficient stock for product: ${product.name}. Available: ${stockBatch.quantity_remaining}, Requested: ${item.quantity}`,
+          };
+        }
+
+        // Calculate item subtotal using the stock batch selling price
+        const unit_price = parseFloat(stockBatch.selling_price);
+        const itemSubtotal = unit_price * item.quantity;
+        subtotal += itemSubtotal;
+
+        saleItems.push({
+          product_id: item.product_id,
+          stock_entry_id: stockBatch.id,
+          quantity: item.quantity,
+          unit_price: unit_price,
+          subtotal: itemSubtotal,
+        });
+      }
+
+      // Calculate total amount
+      const discountAmount = parseFloat(discount) || 0;
+      const taxAmount = parseFloat(tax) || 0;
+      const total_amount = subtotal - discountAmount + taxAmount;
+
+      // Create sale record
+      const sale = await Sale.create(
+        {
+          user_id,
+          sale_date: new Date(),
+          subtotal,
+          discount: discountAmount,
+          tax: taxAmount,
+          total_amount,
+          payment_method,
+          payment_status: 'completed',
+          notes,
+        },
+        { transaction }
+      );
+
+      // Create sale items and deduct stock
+      for (const saleItem of saleItems) {
+        // Create sale item
+        await SaleItem.create(
+          {
+            sale_id: sale.id,
+            ...saleItem,
+          },
+          { transaction }
+        );
+
+        // Deduct stock using FIFO logic
+        const deductResult = await StockController.deductStock(
+          saleItem.product_id,
+          saleItem.quantity,
+          transaction
+        );
+
+        if (!deductResult.success) {
+          await transaction.rollback();
+          return deductResult;
+        }
+      }
+
+      // Commit transaction
+      await transaction.commit();
+
+      // Fetch complete sale with items for response
+      const completeSale = await this.getSaleById(sale.id);
+
+      return {
+        success: true,
+        data: completeSale.data,
+        message: 'Sale completed successfully',
+      };
+    } catch (error) {
+      await transaction.rollback();
+      console.error('SaleController.createSale error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to create sale',
+      };
+    }
+  }
+
+  /**
+   * Get sale by ID with all details
+   * @param {number} id - Sale ID
+   * @returns {Object} Result with success status and sale data
+   */
+  async getSaleById(id) {
+    try {
+      if (!id) {
+        return {
+          success: false,
+          message: 'Sale ID is required',
+        };
+      }
+
+      const sale = await Sale.findByPk(id, {
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'username', 'full_name'],
+          },
+          {
+            model: SaleItem,
+            as: 'items',
+            include: [
+              {
+                model: Product,
+                as: 'product',
+                attributes: ['id', 'name', 'generic_name', 'category', 'type'],
+              },
+              {
+                model: StockEntry,
+                as: 'stock_entry',
+                attributes: ['id', 'batch_number', 'expiry_date'],
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!sale) {
+        return {
+          success: false,
+          message: 'Sale not found',
+        };
+      }
+
+      return {
+        success: true,
+        data: sale,
+      };
+    } catch (error) {
+      console.error('SaleController.getSaleById error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch sale',
+      };
+    }
+  }
+
+  /**
+   * Get sales history with filters and pagination
+   * @param {Object} params - Query parameters
+   * @returns {Object} Result with success status and sales data
+   */
+  async getSalesHistory(params = {}) {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        start_date,
+        end_date,
+        payment_method,
+        payment_status,
+        user_id,
+      } = params;
+
+      const offset = (page - 1) * limit;
+
+      const whereClause = {};
+
+      // Filter by date range
+      if (start_date || end_date) {
+        whereClause.sale_date = {};
+        if (start_date) {
+          whereClause.sale_date[Op.gte] = new Date(start_date);
+        }
+        if (end_date) {
+          // Add one day to include the end date
+          const endDateObj = new Date(end_date);
+          endDateObj.setDate(endDateObj.getDate() + 1);
+          whereClause.sale_date[Op.lt] = endDateObj;
+        }
+      }
+
+      // Filter by payment method
+      if (payment_method) {
+        whereClause.payment_method = payment_method;
+      }
+
+      // Filter by payment status
+      if (payment_status) {
+        whereClause.payment_status = payment_status;
+      }
+
+      // Filter by user
+      if (user_id) {
+        whereClause.user_id = user_id;
+      }
+
+      const { count, rows: sales } = await Sale.findAndCountAll({
+        where: whereClause,
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'username', 'full_name'],
+          },
+          {
+            model: SaleItem,
+            as: 'items',
+            include: [
+              {
+                model: Product,
+                as: 'product',
+                attributes: ['id', 'name'],
+              },
+            ],
+          },
+        ],
+        order: [['sale_date', 'DESC']],
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+      });
+
+      return {
+        success: true,
+        data: sales,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count,
+          totalPages: Math.ceil(count / limit),
+        },
+      };
+    } catch (error) {
+      console.error('SaleController.getSalesHistory error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch sales history',
+        data: [],
+        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+      };
+    }
+  }
+
+  /**
+   * Get today's sales summary
+   * @returns {Object} Result with success status and today's sales data
+   */
+  async getTodaySales() {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const sales = await Sale.findAll({
+        where: {
+          sale_date: {
+            [Op.gte]: today,
+            [Op.lt]: tomorrow,
+          },
+          payment_status: 'completed',
+        },
+        include: [
+          {
+            model: SaleItem,
+            as: 'items',
+            include: [
+              {
+                model: Product,
+                as: 'product',
+                attributes: ['id', 'name'],
+              },
+            ],
+          },
+        ],
+        order: [['sale_date', 'DESC']],
+      });
+
+      // Calculate totals
+      const totalSales = sales.length;
+      const totalRevenue = sales.reduce(
+        (sum, sale) => sum + parseFloat(sale.total_amount),
+        0
+      );
+      const totalDiscount = sales.reduce(
+        (sum, sale) => sum + parseFloat(sale.discount),
+        0
+      );
+      const totalTax = sales.reduce((sum, sale) => sum + parseFloat(sale.tax), 0);
+
+      return {
+        success: true,
+        data: {
+          sales,
+          summary: {
+            totalSales,
+            totalRevenue,
+            totalDiscount,
+            totalTax,
+            date: today.toISOString().split('T')[0],
+          },
+        },
+      };
+    } catch (error) {
+      console.error('SaleController.getTodaySales error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch today\'s sales',
+        data: {
+          sales: [],
+          summary: {
+            totalSales: 0,
+            totalRevenue: 0,
+            totalDiscount: 0,
+            totalTax: 0,
+            date: new Date().toISOString().split('T')[0],
+          },
+        },
+      };
+    }
+  }
+
+  /**
+   * Get sales statistics for dashboard
+   * @returns {Object} Result with sales statistics
+   */
+  async getSalesStatistics() {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Today's sales
+      const todaySales = await Sale.sum('total_amount', {
+        where: {
+          sale_date: {
+            [Op.gte]: today,
+            [Op.lt]: tomorrow,
+          },
+          payment_status: 'completed',
+        },
+      });
+
+      // This month's sales
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const monthSales = await Sale.sum('total_amount', {
+        where: {
+          sale_date: {
+            [Op.gte]: firstDayOfMonth,
+          },
+          payment_status: 'completed',
+        },
+      });
+
+      // Total sales count
+      const totalSalesCount = await Sale.count({
+        where: {
+          payment_status: 'completed',
+        },
+      });
+
+      return {
+        success: true,
+        data: {
+          todaySales: parseFloat(todaySales) || 0,
+          monthSales: parseFloat(monthSales) || 0,
+          totalSalesCount,
+        },
+      };
+    } catch (error) {
+      console.error('SaleController.getSalesStatistics error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch sales statistics',
+        data: {
+          todaySales: 0,
+          monthSales: 0,
+          totalSalesCount: 0,
+        },
+      };
+    }
+  }
+}
+
+export default new SaleController();
