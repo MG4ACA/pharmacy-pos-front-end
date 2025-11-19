@@ -490,13 +490,13 @@ Before moving to Phase 2, ensure:
 
 **Tasks**:
 
-- [ ] Create StockController (`electron/controllers/StockController.js`)
-- [ ] Create StockService (`src/services/StockService.js`)
-- [ ] Create stock store (`src/stores/stock.js`)
-- [ ] Create StockEntry view (form)
-- [ ] Create StockHistory view (list)
-- [ ] Implement FIFO logic for stock deduction
-- [ ] Add batch number validation
+- [x] Create StockController (`electron/controllers/StockController.js`)
+- [x] Create StockService (`src/services/StockService.js`)
+- [x] Create stock store (`src/stores/stock.js`)
+- [x] Create StockEntry view (form)
+- [x] Create StockHistory view (list)
+- [x] Implement FIFO logic for stock deduction
+- [x] Add batch number validation
 
 **Features**:
 
@@ -521,10 +521,12 @@ Before moving to Phase 2, ensure:
 
 **IPC Channels**:
 
-- `stock:addEntry`
-- `stock:getByProduct`
-- `stock:getHistory`
-- `stock:getBatchDetails`
+- `stock:addEntry` ✅
+- `stock:getByProduct` ✅
+- `stock:getHistory` ✅
+- `stock:getBatchDetails` ✅
+- `stock:deduct` ✅ (Extra)
+- `stock:getExpiring` ✅ (Extra)
 
 ---
 
@@ -532,12 +534,12 @@ Before moving to Phase 2, ensure:
 
 **Tasks**:
 
-- [ ] Create SupplierController
-- [ ] Create SupplierService
-- [ ] Create supplier store
-- [ ] Create SupplierList view
-- [ ] Create AddEditSupplier dialog
-- [ ] Link suppliers to products
+- [x] Create SupplierController
+- [x] Create SupplierService
+- [x] Create supplier store
+- [x] Create SupplierList view
+- [x] Create AddEditSupplier dialog
+- [x] Link suppliers to products
 
 **Features**:
 
@@ -549,24 +551,26 @@ Before moving to Phase 2, ensure:
 
 **IPC Channels**:
 
-- `supplier:getAll`
-- `supplier:getById`
-- `supplier:create`
-- `supplier:update`
-- `supplier:delete`
+- `supplier:getAll` ✅
+- `supplier:getById` ✅
+- `supplier:create` ✅
+- `supplier:update` ✅
+- `supplier:delete` ✅
+- `supplier:getActive` ✅ (Extra)
+- `supplier:getProducts` ✅
 
 ---
 
 ### Phase 2 Completion Checklist
 
-- [ ] DEVELOPMENT_STANDARDS.md reviewed
-- [ ] Product CRUD fully functional
-- [ ] Stock entry system works
-- [ ] FIFO logic implemented
-- [ ] Supplier management complete
-- [ ] Search and filters work
-- [ ] Validations in place
-- [ ] Error handling implemented
+- [x] DEVELOPMENT_STANDARDS.md reviewed
+- [x] Product CRUD fully functional
+- [x] Stock entry system works
+- [x] FIFO logic implemented
+- [x] Supplier management complete
+- [x] Search and filters work
+- [x] Validations in place
+- [x] Error handling implemented
 - [ ] Toast notifications for all actions
 - [ ] Code follows standards
 

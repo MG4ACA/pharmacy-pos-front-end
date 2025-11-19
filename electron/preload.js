@@ -22,6 +22,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getStockByProduct: (productId) => ipcRenderer.invoke('stock:getByProduct', productId),
   getStockHistory: (params) => ipcRenderer.invoke('stock:getHistory', params),
   getBatchDetails: (batchId) => ipcRenderer.invoke('stock:getBatchDetails', batchId),
+  deductStock: (data) => ipcRenderer.invoke('stock:deduct', data),
+  getExpiringStock: (days) => ipcRenderer.invoke('stock:getExpiring', days),
 
   // Suppliers
   getAllSuppliers: (params) => ipcRenderer.invoke('supplier:getAll', params),
@@ -30,6 +32,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateSupplier: (data) => ipcRenderer.invoke('supplier:update', data),
   deleteSupplier: (id) => ipcRenderer.invoke('supplier:delete', id),
   getActiveSuppliers: () => ipcRenderer.invoke('supplier:getActive'),
+  getProductsFromSupplier: (supplierId) => ipcRenderer.invoke('supplier:getProducts', supplierId),
 
   // Sales
   createSale: (data) => ipcRenderer.invoke('sale:create', data),

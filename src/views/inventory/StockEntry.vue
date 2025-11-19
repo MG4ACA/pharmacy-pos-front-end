@@ -57,7 +57,8 @@
             <div class="col-12 md:col-6">
               <div class="field">
                 <label for="supplier" class="block mb-2">
-                  Supplier <span class="text-red-500">*</span>
+                  Supplier
+                  <span class="text-red-500">*</span>
                 </label>
                 <Dropdown
                   id="supplier"

@@ -82,4 +82,18 @@ export class SupplierService {
       throw error;
     }
   }
+
+  /**
+   * Get products from supplier
+   * @param {number} supplierId - Supplier ID
+   * @returns {Promise<Object>}
+   */
+  static async getProductsFromSupplier(supplierId) {
+    try {
+      return await window.electronAPI.getProductsFromSupplier(supplierId);
+    } catch (error) {
+      console.error('SupplierService.getProductsFromSupplier error:', error);
+      throw error;
+    }
+  }
 }

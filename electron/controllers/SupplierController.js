@@ -264,6 +264,59 @@ class SupplierController {
       };
     }
   }
+
+  /**
+   * Get products from supplier
+   * @param {number} supplierId - Supplier ID
+   * @returns {Object} Result with success status and products data
+   */
+  async getProductsFromSupplier(supplierId) {
+    try {
+      if (!supplierId) {
+        return {
+          success: false,
+          message: 'Supplier ID is required',
+        };
+      }
+
+      const { StockEntry, Product } = await import('../database/models/index.js');
+
+      const stockEntries = await StockEntry.findAll({
+        where: { supplier_id: supplierId },
+        include: [
+          {
+            model: Product,
+            as: 'product',
+            attributes: ['id', 'name', 'generic_name', 'category', 'type'],
+          },
+        ],
+        attributes: ['product_id'],
+        group: ['product_id'],
+        raw: true,
+      });
+
+      // Get unique products
+      const productIds = [...new Set(stockEntries.map((entry) => entry.product_id))];
+
+      const products = await Product.findAll({
+        where: { id: productIds },
+        order: [['name', 'ASC']],
+        raw: true,
+      });
+
+      return {
+        success: true,
+        data: products,
+      };
+    } catch (error) {
+      console.error('SupplierController.getProductsFromSupplier error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch products from supplier',
+        data: [],
+      };
+    }
+  }
 }
 
 export default new SupplierController();

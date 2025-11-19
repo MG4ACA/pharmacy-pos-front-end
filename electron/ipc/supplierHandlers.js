@@ -61,4 +61,14 @@ ipcMain.handle('supplier:getActive', async () => {
   }
 });
 
+// Get products from supplier
+ipcMain.handle('supplier:getProducts', async (event, supplierId) => {
+  try {
+    return await SupplierController.getProductsFromSupplier(supplierId);
+  } catch (error) {
+    console.error('IPC supplier:getProducts error:', error);
+    return { success: false, message: error.message, data: [] };
+  }
+});
+
 console.log('✓ Supplier IPC handlers registered');
