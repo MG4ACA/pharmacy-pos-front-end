@@ -36,7 +36,7 @@ import Sidebar from './Sidebar.vue';
 .layout-content {
   flex: 1;
   margin-left: var(--sidebar-width);
-  padding: 1.5rem;
+  padding: 2rem;
   overflow-y: auto;
   background-color: var(--surface-ground);
 }

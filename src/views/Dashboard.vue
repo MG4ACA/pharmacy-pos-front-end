@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard">
-    <h1 class="page-title mb-4">Dashboard</h1>
+    <h1 class="page-title">Dashboard</h1>
 
     <div class="grid">
       <!-- Summary Cards -->
@@ -134,15 +134,26 @@ onMounted(() => {
 <style scoped>
 .dashboard {
   max-width: 1400px;
+  width: 100%;
 }
 
 .page-title {
   font-size: 1.875rem;
   font-weight: 600;
   color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
 }
 
 .summary-card {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 100%;
+}
+
+.summary-card :deep(.p-card-body) {
+  padding: 1.5rem;
+}
+
+.summary-card :deep(.p-card-content) {
+  padding: 0;
 }
 </style>
