@@ -9,6 +9,7 @@ class MetaController {
       const productTypes = await ProductType.findAll({
         where: { status: 'active' },
         order: [['name', 'ASC']],
+        raw: true, // Returns plain objects instead of Sequelize instances
       });
 
       return {
@@ -33,6 +34,7 @@ class MetaController {
       const categories = await Category.findAll({
         where: { status: 'active' },
         order: [['name', 'ASC']],
+        raw: true, // Returns plain objects instead of Sequelize instances
       });
 
       return {

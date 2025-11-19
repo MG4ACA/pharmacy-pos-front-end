@@ -1,6 +1,8 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+// Import IPC handlers before app.whenReady()
+import './ipc/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +50,3 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
-// IPC Handlers will be imported here
-import './ipc/index.js';
