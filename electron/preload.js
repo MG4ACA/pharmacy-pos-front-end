@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+const { contextBridge, ipcRenderer } = require('electron');
 
 // Expose IPC API to renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -43,3 +43,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getProductTypes: () => ipcRenderer.invoke('productType:getAll'),
   getCategories: () => ipcRenderer.invoke('category:getAll'),
 });
+
+console.log('✓ Preload script loaded - electronAPI exposed');

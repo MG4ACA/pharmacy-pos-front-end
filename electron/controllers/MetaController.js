@@ -1,0 +1,53 @@
+import { Category, ProductType } from '../database/models/index.js';
+
+class MetaController {
+  /**
+   * Get all product types
+   */
+  async getAllProductTypes() {
+    try {
+      const productTypes = await ProductType.findAll({
+        where: { status: 'active' },
+        order: [['name', 'ASC']],
+      });
+
+      return {
+        success: true,
+        productTypes: productTypes,
+      };
+    } catch (error) {
+      console.error('Get product types error:', error);
+      return {
+        success: false,
+        message: 'Failed to fetch product types',
+        productTypes: [],
+      };
+    }
+  }
+
+  /**
+   * Get all categories
+   */
+  async getAllCategories() {
+    try {
+      const categories = await Category.findAll({
+        where: { status: 'active' },
+        order: [['name', 'ASC']],
+      });
+
+      return {
+        success: true,
+        categories: categories,
+      };
+    } catch (error) {
+      console.error('Get categories error:', error);
+      return {
+        success: false,
+        message: 'Failed to fetch categories',
+        categories: [],
+      };
+    }
+  }
+}
+
+export default new MetaController();

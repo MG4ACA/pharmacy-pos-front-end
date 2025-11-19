@@ -1,51 +1,40 @@
 <template>
-  <div
-    class="flex align-items-center justify-content-center"
-    style="height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-  >
-    <Card style="width: 450px" class="shadow-8">
+  <div class="login-container">
+    <Card class="login-card">
       <template #title>
-        <div class="text-center">
-          <i class="pi pi-shield text-6xl text-primary mb-3"></i>
-          <h2 class="text-900 mb-2">Pharmacy POS</h2>
-          <p class="text-600 text-sm">Sign in to continue</p>
+        <div class="login-header">
+          <i class="pi pi-shield"></i>
+          <h2>Pharmacy POS</h2>
+          <p>Sign in to continue</p>
         </div>
       </template>
       <template #content>
-        <form @submit.prevent="handleLogin">
-          <div class="field mb-4">
-            <label for="username" class="block text-900 font-medium mb-2">Username</label>
+        <form @submit.prevent="handleLogin" class="login-form">
+          <div class="field">
+            <label for="username">Username</label>
             <InputText
               id="username"
               v-model="credentials.username"
-              class="w-full"
               placeholder="Enter username"
               :class="{ 'p-invalid': errors.username }"
             />
             <small v-if="errors.username" class="p-error">{{ errors.username }}</small>
           </div>
 
-          <div class="field mb-4">
-            <label for="password" class="block text-900 font-medium mb-2">Password</label>
+          <div class="field">
+            <label for="password">Password</label>
             <Password
               id="password"
               v-model="credentials.password"
-              class="w-full"
               placeholder="Enter password"
               :feedback="false"
               toggleMask
-              :class="{ 'p-invalid': errors.password }"
+              :input-class="{ 'p-invalid': errors.password }"
             />
             <small v-if="errors.password" class="p-error">{{ errors.password }}</small>
           </div>
 
-          <Button
-            type="submit"
-            label="Sign In"
-            icon="pi pi-sign-in"
-            class="w-full"
-            :loading="loading"
-          />
+          <Button type="submit" label="Sign In" icon="pi pi-sign-in" :loading="loading" />
         </form>
       </template>
     </Card>
@@ -121,3 +110,99 @@ const handleLogin = async () => {
   }
 };
 </script>
+
+<style scoped>
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-card :deep(.p-card-body) {
+  padding: 2rem 2.5rem;
+}
+
+.login-card :deep(.p-card-title) {
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.login-card :deep(.p-card-content) {
+  padding: 0;
+}
+
+.login-header {
+  text-align: center;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.login-header i {
+  font-size: 3.5rem;
+  color: #3b82f6;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.login-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.login-header p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.login-form {
+  padding-top: 0.5rem;
+}
+
+.login-form .field {
+  margin-bottom: 1.5rem;
+}
+
+.login-form .field:last-of-type {
+  margin-bottom: 2rem;
+}
+
+.login-form label {
+  display: block;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.login-form .p-inputtext,
+.login-form :deep(.p-password input) {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.login-form .p-button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.login-form .p-error {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+</style>

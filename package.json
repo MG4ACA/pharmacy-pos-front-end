@@ -5,12 +5,14 @@
   "main": "electron/main.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5173",
     "build": "vite build",
     "preview": "vite preview",
-    "electron:dev": "concurrently \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "electron:dev": "concurrently -k \"vite --port 5173\" \"wait-on tcp:5173 && electron .\"",
+    "electron": "electron .",
     "electron:build": "vite build && electron-builder",
-    "db:sync": "node electron/database/sync.js"
+    "db:sync": "node electron/database/sync.js",
+    "db:create": "node -e \"import('mysql2/promise').then(m => m.default.createConnection({host:'localhost',port:3306,user:'root',password:'1234'}).then(c => c.query('CREATE DATABASE IF NOT EXISTS pharmacy_pos').then(() => {console.log('Database created');c.end();process.exit(0);})));\""
   },
   "keywords": [
     "pharmacy",
@@ -29,7 +31,8 @@
     "primeflex": "^3.3.1",
     "sequelize": "^6.35.0",
     "mysql2": "^3.6.5",
-    "bcrypt": "^5.1.1"
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",

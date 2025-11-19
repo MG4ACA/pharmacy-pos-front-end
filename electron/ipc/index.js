@@ -1,12 +1,12 @@
 // This file will import all IPC handlers
-// Import handlers as they are created
+import './authHandlers.js';
+import './metaHandlers.js';
 
-// Example:
-// import './authHandlers.js'
+// To be implemented in future phases:
 // import './productHandlers.js'
 // import './stockHandlers.js'
 // import './supplierHandlers.js'
 // import './saleHandlers.js'
 // import './dashboardHandlers.js'
 
-console.log('IPC handlers loaded');
+console.log('✓ All IPC handlers loaded');

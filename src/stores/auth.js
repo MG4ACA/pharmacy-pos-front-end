@@ -1,3 +1,4 @@
+import { requireElectron } from '@/utils/environment';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -9,7 +10,15 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (credentials) => {
     try {
-      const result = await window.electronAPI.login(credentials);
+      requireElectron();
+
+      // Convert reactive object to plain object for IPC
+      const plainCredentials = {
+        username: credentials.username,
+        password: credentials.password,
+      };
+
+      const result = await window.electronAPI.login(plainCredentials);
 
       if (result.success) {
         user.value = result.user;
@@ -19,6 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error(result.message || 'Login failed');
       }
     } catch (error) {
+      console.error('Login error:', error);
       throw error;
     }
   };
