@@ -14,6 +14,7 @@
     "electron:build:win": "npm run build && electron-builder --win --x64",
     "electron:build:portable": "npm run build && electron-builder --win portable",
     "db:sync": "node electron/database/sync.js",
+    "db:seed": "node electron/database/seedDatabase.js",
     "db:create": "node -e \"import('mysql2/promise').then(m => m.default.createConnection({host:'localhost',port:3306,user:'root',password:'1234'}).then(c => c.query('CREATE DATABASE IF NOT EXISTS pharmacy_pos').then(() => {console.log('Database created');c.end();process.exit(0);})));\""
   },
   "keywords": [

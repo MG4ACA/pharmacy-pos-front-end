@@ -51,36 +51,69 @@ This is an MVP (Minimum Viable Product) for a pharmacy and general store POS sys
 - Description
 - Status (Active/Inactive)
 
-**Stock Entry Fields** (Separate table for each stock batch):
+**Stock Receipt System:**
 
-- Product ID (FK)
+Stock management is handled through Stock Receipts, which automatically create stock entries for each product batch:
+
+**Receipt Header:**
+
+- Receipt Number (auto-generated)
+- Supplier
+- Receipt Date
+- Invoice Number
+- Total Amount
+- Status (Draft/Completed/Cancelled)
+- Notes
+
+**Receipt Entries (per product):**
+
+- Product
 - Batch Number
-- Stock Entry Date
 - Quantity Received
-- Remaining Quantity
 - Cost Price (per unit)
 - Selling Price (per unit)
 - Expiry Date (if applicable)
-- Supplier ID (FK)
 - Notes
+
+**Stock Entry (Internal):**
+
+- Product ID (FK)
+- Receipt ID (FK)
+- Batch Number
+- Quantity Received
+- Remaining Quantity
+- Cost Price
+- Selling Price
+- Expiry Date
+- Supplier ID (FK)
+- Entry Date
 
 ### 3. Stock Management System
 
-- Record new stock entries (weekly/monthly)
-- Each stock batch tracked separately with unique prices and expiry dates
+> **Note**: Stock management is exclusively handled through Stock Receipts. Manual stock entry has been removed for simplicity.
+
+- Create stock receipts for supplier deliveries
+- Multiple products per receipt with individual batch details
+- Each product batch tracked separately with unique prices and expiry dates
 - Automatic quantity deduction on sales (FIFO - First In First Out)
-- Stock history and audit trail
+- Receipt status tracking (Draft/Completed/Cancelled)
 - Price variance tracking across different stock batches
 - Expiry date management per batch
 - Low stock alerts based on reorder levels
 
-**Stock Entry Workflow:**
+**Stock Receipt Workflow:**
 
-1. Receive new stock from supplier
-2. Create stock entry with batch details
-3. Set cost price and selling price for this batch
-4. System maintains separate records for each batch
-5. During sales, system uses FIFO to deduct from oldest batch first
+1. Create new stock receipt (generates unique receipt number)
+2. Select supplier
+3. Add multiple products to receipt:
+   - Select product
+   - Enter batch number
+   - Enter quantity received
+   - Set cost price and selling price
+   - Enter expiry date (if applicable)
+4. Save as draft or complete receipt
+5. System automatically creates stock entries for each product batch
+6. During sales, system uses FIFO to deduct from oldest batch first
 
 ### 4. Supplier Management
 
@@ -115,12 +148,12 @@ This is an MVP (Minimum Viable Product) for a pharmacy and general store POS sys
 
 - Daily Sales Report
 - Current Stock Level Report (across all batches)
-- Stock Entry History Report
+- Stock Receipt History
 - Low Stock Alert (based on reorder level)
 - Expiry Alert (products expiring soon)
 - Sales by Date Range
 - Top Selling Products
-- Supplier-wise Purchase Report
+- Supplier-wise Purchase Report (via Stock Receipts)
 - Product Category-wise Sales
 - Batch-wise Stock Report
 - Profit Analysis (based on cost vs selling price)
@@ -154,7 +187,7 @@ pharmacy-standalone-pos/
 │   ├── stores/                   # Pinia stores
 │   │   ├── auth.js               # Authentication store
 │   │   ├── product.js            # Product inventory store
-│   │   ├── stock.js              # Stock management store
+│   │   ├── stockReceipt.js       # Stock receipt management store
 │   │   ├── supplier.js           # Supplier store
 │   │   └── sale.js               # Sales store
 │   ├── views/                    # Page components
@@ -164,7 +197,8 @@ pharmacy-standalone-pos/
 │   │   │   ├── ProductList.vue
 │   │   │   ├── AddProduct.vue
 │   │   │   ├── EditProduct.vue
-│   │   │   └── StockEntry.vue
+│   │   │   ├── StockReceiptList.vue
+│   │   │   └── CreateStockReceipt.vue
 │   │   ├── Suppliers/
 │   │   │   ├── SupplierList.vue
 │   │   │   └── AddEditSupplier.vue
@@ -174,7 +208,6 @@ pharmacy-standalone-pos/
 │   │   └── Reports/
 │   │       ├── DailySales.vue
 │   │       ├── StockReport.vue
-│   │       ├── StockHistory.vue
 │   │       ├── ExpiryAlert.vue
 │   │       └── ProfitAnalysis.vue
 │   ├── components/               # Reusable components
@@ -274,16 +307,33 @@ pharmacy-standalone-pos/
 - updated_at
 ```
 
+### Stock_Receipts Table
+
+```sql
+- id (PK)
+- receipt_number (unique, auto-generated)
+- supplier_id (FK)
+- receipt_date
+- supplier_invoice_number
+- total_amount
+- status (draft/completed/cancelled)
+- notes
+- created_by (FK - User)
+- created_at
+- updated_at
+```
+
 ### Stock_Entries Table
 
 ```sql
 - id (PK)
 - product_id (FK)
 - supplier_id (FK)
+- receipt_id (FK - nullable, links to Stock_Receipts)
 - batch_number
-- stock_entry_date
+- entry_date
 - quantity_received
-- remaining_quantity
+- quantity_remaining
 - cost_price
 - selling_price
 - expiry_date (nullable)
@@ -292,7 +342,7 @@ pharmacy-standalone-pos/
 - updated_at
 ```
 
-**Note**: This table maintains separate records for each stock batch. When products are sold, the `remaining_quantity` is decremented using FIFO method.
+**Note**: This table maintains separate records for each stock batch. Stock entries are created automatically when a stock receipt is completed. When products are sold, the `quantity_remaining` is decremented using FIFO method.
 
 ### Sales Table
 
@@ -338,13 +388,13 @@ pharmacy-standalone-pos/
 
 ### Phase 2: Product & Stock Management (Week 2)
 
-- [ ] Product CRUD operations
-- [ ] Product type and category management
-- [ ] Stock entry system (add new stock batches)
-- [ ] Supplier CRUD operations
-- [ ] Search functionality (name + barcode)
-- [ ] Stock level indicators (aggregated across batches)
-- [ ] FIFO implementation for stock deduction
+- [x] Product CRUD operations
+- [x] Product type and category management
+- [x] Stock receipt system (bulk stock receiving from suppliers)
+- [x] Supplier CRUD operations
+- [x] Search functionality (name + barcode)
+- [x] Stock level indicators (aggregated across batches)
+- [x] FIFO implementation for stock deduction
 
 ### Phase 3: POS & Sales (Week 3)
 
@@ -458,16 +508,18 @@ JWT_SECRET=your_jwt_secret_key
 
 **Stock Management (Weekly/Monthly):**
 
-1. Navigate to Stock Entry
-2. Select supplier
-3. Add new stock batch with:
-   - Product selection
-   - Batch number
-   - Quantity received
-   - Cost price
-   - Selling price
-   - Expiry date (if applicable)
-4. Save entry (system maintains separate record)
+1. Navigate to Stock Receipts
+2. Create new receipt (auto-generates receipt number)
+3. Select supplier
+4. Add multiple products to receipt:
+   - Select product
+   - Enter batch number
+   - Enter quantity received
+   - Set cost price
+   - Set selling price
+   - Enter expiry date (if applicable)
+5. Save as draft or complete receipt
+6. System automatically creates stock entries for each product
 
 **Product Management:**
 
@@ -511,5 +563,5 @@ This is an MVP project. Future contributions for enhancements are welcome.
 ---
 
 **Version**: 1.0.0-MVP  
-**Last Updated**: November 18, 2025  
-**Status**: Planning Phase
+**Last Updated**: November 20, 2025  
+**Status**: Phase 2 Complete - In Development

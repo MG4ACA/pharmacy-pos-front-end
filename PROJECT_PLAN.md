@@ -41,9 +41,10 @@
 
 **Goal**: Product CRUD, stock entry system, supplier management
 
-### Phase 3: POS & Sales (Week 3) - **CURRENT PHASE**
+### Phase 3: POS & Sales (Week 3) - ✅ **COMPLETED** (Phase 3.1 & 3.2)
 
-**Goal**: Point of Sale interface, cart functionality, sales processing
+**Goal**: Point of Sale interface, cart functionality, sales processing  
+**Note**: Invoice generation and export features moved to Phase 4
 
 ### Phase 4: Reports & Polish (Week 4)
 
@@ -253,8 +254,10 @@ src/
 📊 Dashboard
 📦 Inventory
    ├── Products
-   ├── Stock Entry
-   └── Stock History
+   ├── Stock Receipts
+   │   ├── Create Receipt
+   │   └── Receipt History
+   └── Stock History (optional - shows all stock entries)
 🏪 Suppliers
 💰 Sales
    ├── POS
@@ -281,7 +284,9 @@ const routes = [
       { path: 'inventory/products', component: ProductList },
       { path: 'inventory/products/add', component: AddProduct },
       { path: 'inventory/products/:id/edit', component: EditProduct },
-      { path: 'inventory/stock-entry', component: StockEntry },
+      { path: 'inventory/stock-receipts', component: StockReceiptList },
+      { path: 'inventory/stock-receipts/create', component: CreateStockReceipt },
+      { path: 'inventory/stock-receipts/:id', component: ViewStockReceipt },
       { path: 'suppliers', component: SupplierList },
       { path: 'sales/pos', component: POS },
       { path: 'sales/history', component: SalesHistory },
@@ -486,47 +491,317 @@ Before moving to Phase 2, ensure:
 
 ---
 
-### 2.2 Stock Entry System
+### 2.2 Stock Receipt System (Primary) ✅
+
+**Status**: ✅ **COMPLETED** - Replaced individual stock entry with bulk receipt management
 
 **Tasks**:
 
-- [x] Create StockController (`electron/controllers/StockController.js`)
-- [x] Create StockService (`src/services/StockService.js`)
-- [x] Create stock store (`src/stores/stock.js`)
-- [x] Create StockEntry view (form)
-- [x] Create StockHistory view (list)
+- [x] Create StockReceipt model with receipt_number, supplier, date, invoice details
+- [x] Update StockEntry model (add receipt_id foreign key)
+- [x] Create StockReceiptController (`electron/controllers/StockReceiptController.js`)
+- [x] Create StockReceiptService (`src/services/StockReceiptService.js`)
+- [x] Create stockReceipt store (`src/stores/stockReceipt.js`)
+- [x] Create StockReceiptList view (list all receipts)
+- [x] Create CreateStockReceipt view (form with multiple products)
 - [x] Implement FIFO logic for stock deduction
 - [x] Add batch number validation
+- [x] Implement receipt number auto-generation
+- [x] Add transaction-safe bulk save
 
 **Features**:
 
-- Add new stock entry (with batch details)
-- View stock entry history
-- See remaining quantity per batch
-- Link to supplier
-- Set cost price and selling price per batch
-- Expiry date tracking
+- Create stock receipts for supplier deliveries
+- Add multiple products per receipt with individual batch details
+- View stock receipt history with filters
+- Edit draft receipts
+- Complete receipts (auto-creates stock entries)
+- Cancel receipts
+- Receipt number auto-generation (format: SR-YYYY-MM-XXXX)
+- Link all products to supplier invoice
 
-**Stock Entry Form Fields**:
+**Receipt Header Fields**:
+
+- Receipt Number (auto-generated)
+- Supplier (dropdown)
+- Receipt Date (default: today)
+- Supplier Invoice Number (optional)
+- Total Amount (calculated)
+- Status (Draft/Completed/Cancelled)
+- Notes
+
+**Receipt Entry Fields (per product)**:
 
 - Product (dropdown/search)
-- Supplier (dropdown)
 - Batch Number
 - Quantity Received
 - Cost Price (per unit)
 - Selling Price (per unit)
 - Expiry Date (optional)
-- Stock Entry Date (auto)
 - Notes
 
 **IPC Channels**:
 
-- `stock:addEntry` ✅
-- `stock:getByProduct` ✅
-- `stock:getHistory` ✅
-- `stock:getBatchDetails` ✅
-- `stock:deduct` ✅ (Extra)
-- `stock:getExpiring` ✅ (Extra)
+- `stockReceipt:create` ✅
+- `stockReceipt:getAll` ✅
+- `stockReceipt:getById` ✅
+- `stockReceipt:update` ✅
+- `stockReceipt:cancel` ✅
+- `stockReceipt:generateNumber` ✅
+- `stock:deduct` ✅ (for sales)
+- `stock:getExpiring` ✅
+
+---
+
+### 2.4 Stock Receipt Management System (ENHANCEMENT)
+
+**Status**: ✅ **COMPLETED**  
+**Priority**: High (Improves daily workflow efficiency)
+
+**Purpose**: Replace individual stock entry workflow with supplier invoice-based bulk stock receipt management. This allows entering 50-100+ products per supplier delivery efficiently.
+
+**Tasks**:
+
+- [x] Create StockReceipt model (`electron/database/models/StockReceipt.js`)
+- [x] Update StockEntry model (add receipt_id foreign key)
+- [x] Create database migration for new table and foreign key
+- [x] Create StockReceiptController (`electron/controllers/StockReceiptController.js`)
+- [x] Create StockReceiptService (`src/services/StockReceiptService.js`)
+- [x] Create stockReceipt store (`src/stores/stockReceipt.js`)
+- [x] Create StockReceiptList view (list all receipts)
+- [x] Create CreateStockReceipt view (form with line items)
+- [x] Create ViewStockReceipt view (read-only details)
+- [x] Update navigation to include Stock Receipts
+- [x] Add receipt number auto-generation
+- [x] Implement bulk save (transaction-safe)
+- [ ] Add print/export receipt functionality (Future Enhancement)
+
+**Database Changes**:
+
+```sql
+-- New table: stock_receipts
+CREATE TABLE stock_receipts (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  receipt_number VARCHAR(50) UNIQUE NOT NULL,
+  supplier_id INT NOT NULL,
+  receipt_date DATE NOT NULL,
+  supplier_invoice_number VARCHAR(100),
+  supplier_invoice_date DATE,
+  total_items INT DEFAULT 0,
+  total_amount DECIMAL(10,2) DEFAULT 0,
+  notes TEXT,
+  status ENUM('draft', 'completed', 'cancelled') DEFAULT 'draft',
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  INDEX idx_receipt_number (receipt_number),
+  INDEX idx_supplier_id (supplier_id),
+  INDEX idx_receipt_date (receipt_date)
+);
+
+-- Update stock_entries table
+ALTER TABLE stock_entries ADD COLUMN receipt_id INT NULL;
+ALTER TABLE stock_entries ADD FOREIGN KEY (receipt_id) REFERENCES stock_receipts(id);
+ALTER TABLE stock_entries ADD INDEX idx_receipt_id (receipt_id);
+```
+
+**Features**:
+
+**1. Create Stock Receipt Flow:**
+
+- Step 1: Receipt Header
+
+  - Auto-generated receipt number (format: SR-YYYY-MM-0001)
+  - Select supplier (dropdown)
+  - Receipt date (default: today)
+  - Supplier invoice number (optional)
+  - Supplier invoice date (optional)
+  - Notes field
+
+- Step 2: Add Product Lines (DataTable)
+
+  - Search/select product
+  - Enter batch number
+  - Enter quantity
+  - Enter cost price per unit
+  - Enter selling price per unit
+  - Enter expiry date (optional)
+  - Auto-calculate line total
+  - Actions: Edit, Remove line
+
+- Step 3: Review & Submit
+  - Show receipt summary
+  - Display all product lines in table
+  - Show total items count
+  - Show total receipt amount
+  - Validate all entries
+  - Save as draft or complete
+  - Generate stock entries for all lines atomically
+
+**2. Stock Receipt List:**
+
+- Display all receipts in DataTable
+- Columns: Receipt #, Date, Supplier, Items Count, Total Amount, Status
+- Filters: Date range, Supplier, Status
+- Search by receipt number or invoice number
+- Actions: View, Edit (draft only), Cancel
+- Status badges (Draft/Completed/Cancelled)
+- Pagination support
+
+**3. View Stock Receipt:**
+
+- Read-only view of receipt details
+- Receipt header information
+- Table of all product lines with batch details
+- Summary: Total items, Total amount
+- Action buttons: Print, Export to PDF, Edit (if draft), Back to list
+
+**4. Edit Stock Receipt (Draft only):**
+
+- Same as Create flow
+- Pre-filled with existing data
+- Can add/remove/modify product lines
+- Can change status to completed
+
+**IPC Channels**:
+
+```javascript
+// Stock Receipt Management
+'stockReceipt:create'; // Create new receipt with all lines
+'stockReceipt:getAll'; // Get all receipts with filters
+'stockReceipt:getById'; // Get receipt details with lines
+'stockReceipt:update'; // Update receipt (draft only)
+'stockReceipt:cancel'; // Cancel receipt (soft delete)
+'stockReceipt:generateNumber'; // Generate next receipt number
+'stockReceipt:getBySupplier'; // Get receipts by supplier
+```
+
+**StockReceipt Model** (Sequelize):
+
+```javascript
+const StockReceipt = sequelize.define(
+  'StockReceipt',
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    receipt_number: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      unique: true,
+      validate: { notEmpty: true },
+    },
+    supplier_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: 'suppliers', key: 'id' },
+    },
+    receipt_date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    supplier_invoice_number: { type: DataTypes.STRING(100), allowNull: true },
+    supplier_invoice_date: { type: DataTypes.DATEONLY, allowNull: true },
+    total_items: { type: DataTypes.INTEGER, defaultValue: 0 },
+    total_amount: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0 },
+    notes: { type: DataTypes.TEXT, allowNull: true },
+    status: {
+      type: DataTypes.ENUM('draft', 'completed', 'cancelled'),
+      defaultValue: 'draft',
+    },
+    created_by: {
+      type: DataTypes.INTEGER,
+      references: { model: 'users', key: 'id' },
+    },
+  },
+  {
+    tableName: 'stock_receipts',
+    timestamps: true,
+    underscored: true,
+  }
+);
+
+// Associations
+StockReceipt.belongsTo(Supplier, { foreignKey: 'supplier_id', as: 'supplier' });
+StockReceipt.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+StockReceipt.hasMany(StockEntry, { foreignKey: 'receipt_id', as: 'entries' });
+```
+
+**UI Components** (PrimeVue):
+
+1. **StockReceiptList.vue**
+
+   - DataTable with filters
+   - Search functionality
+   - Status badges (Tag component)
+   - Action buttons
+   - Date range filter (Calendar)
+
+2. **CreateStockReceipt.vue**
+
+   - Multi-step form (Steps/Stepper component)
+   - Supplier dropdown (Dropdown)
+   - Date picker (Calendar)
+   - Product line items (DataTable with inline editing)
+   - AutoComplete for product search
+   - Summary cards showing totals
+   - Save as Draft / Complete buttons
+
+3. **ViewStockReceipt.vue**
+   - Card layout for header info
+   - DataTable for product lines (read-only)
+   - Print button (triggers print dialog)
+   - Export PDF button
+   - Status badge
+
+**Benefits**:
+
+✅ **Efficiency**: Enter 50-100+ products at once instead of one-by-one  
+✅ **Traceability**: Link all products to specific supplier invoice  
+✅ **Audit Trail**: Know exactly when and how stock was received  
+✅ **Verification**: Easy to verify against supplier documentation  
+✅ **Accounting**: Simplifies invoice reconciliation  
+✅ **Returns**: Can handle returns by referencing receipt  
+✅ **Reporting**: Better insights into supplier performance  
+✅ **Transaction Safety**: All entries saved atomically (all or nothing)
+
+**Validation Rules**:
+
+- Receipt number must be unique
+- Supplier is required
+- Receipt date is required
+- At least one product line required
+- Each line must have: product, batch, quantity > 0, cost price > 0
+- Selling price should be >= cost price (warning if not)
+- Expiry date must be future date (warning if past)
+- Duplicate batch numbers in same receipt (warning)
+
+**Navigation Updates**:
+
+```
+📦 Inventory
+   ├── Products
+   ├── Stock Receipts  ← NEW
+   │   ├── Create Receipt
+   │   └── Receipt History
+   ├── Stock Entry (Legacy - keep for single entries)
+   └── Stock History
+```
+
+**Phase Implementation**:
+
+This enhancement should be implemented as **Phase 2.4** after completing Phase 2.3 (Supplier Management) since it depends on suppliers being available.
+
+**Future Enhancements** (Post-MVP):
+
+- CSV import from supplier electronic invoices
+- Barcode scanning for faster product entry
+- Photo attachment of supplier invoice
+- Email receipt to supplier as confirmation
+- Receipt templates for frequent suppliers
+- Batch receipt approval workflow
+- Integration with accounting system
 
 ---
 
@@ -578,10 +853,13 @@ Before moving to Phase 2, ensure:
 
 ## 📋 Phase 3: POS & Sales (Week 3)
 
-**Status**: CURRENT PHASE  
+**Status**: ✅ COMPLETED (Phase 3.1 & 3.2)  
+**Note**: Core POS and Sales History features completed. Invoice generation, barcode scanner support, and export features moved to Phase 4.  
 **Prerequisite**: Phase 2 Complete + Review `DEVELOPMENT_STANDARDS.md`
 
-### 3.1 Point of Sale (POS) ✅ **COMPLETED**
+### 3.1 Point of Sale (POS) ✅ **PHASE 3.1 COMPLETED**
+
+**Status**: Core POS functionality complete. Invoice generation moved to Phase 4.
 
 **Tasks**:
 
@@ -594,19 +872,21 @@ Before moving to Phase 2, ensure:
 - [x] Auto-select stock batch (FIFO)
 - [x] Calculate totals with tax/discount
 - [x] Process payment
-- [ ] Generate invoice (Moved to Phase 4)
 - [x] Reduce stock automatically
 
 **Features**:
 
 - ✅ Product search with autocomplete
-- 🔄 Barcode input (USB scanner support) - Planned for Phase 4
 - ✅ Shopping cart with quantity adjustment
 - ✅ Real-time total calculation
 - ✅ Payment methods (Cash/Card/Other)
-- 🔄 Print invoice - Planned for Phase 4
 - ✅ Clear cart
 - ✅ Sales history
+
+**Moved to Phase 4**:
+
+- 🔄 Generate invoice (PDF/Print)
+- 🔄 Barcode scanner (USB device support)
 
 **IPC Channels**:
 
@@ -618,7 +898,9 @@ Before moving to Phase 2, ensure:
 
 ---
 
-### 3.2 Sales History ✅ **COMPLETED**
+### 3.2 Sales History ✅ **PHASE 3.2 COMPLETED**
+
+**Status**: Sales history functionality complete. Export features moved to Phase 4.
 
 **Tasks**:
 
@@ -626,7 +908,6 @@ Before moving to Phase 2, ensure:
 - [x] Display all sales with filters
 - [x] View sale details
 - [x] Search by date range
-- [ ] Export to CSV/PDF (Moved to Phase 4)
 
 **Features**:
 
@@ -639,16 +920,21 @@ Before moving to Phase 2, ensure:
 - ✅ User (cashier) information
 - ✅ Color-coded payment methods and statuses
 
+**Moved to Phase 4**:
+
+- 🔄 Export to CSV/PDF
+
 ---
 
 ### Phase 3 Completion Checklist
 
+**Phase 3.1 & 3.2 - COMPLETED ✅**
+
 - [x] DEVELOPMENT_STANDARDS.md reviewed
-- [x] POS fully functional
+- [x] POS fully functional (core features)
 - [x] Cart operations work
 - [x] Stock deduction works (FIFO)
 - [x] Payment processing complete
-- [ ] Invoice generation works (Moved to Phase 4)
 - [x] Sales history displays correctly
 - [x] All validations in place
 - [x] Error handling implemented
@@ -656,6 +942,12 @@ Before moving to Phase 2, ensure:
 - [x] Toast notifications for all actions
 - [x] Transaction safety implemented
 - [x] Batch tracking in SaleItems
+
+**Items Moved to Phase 4:**
+
+- [ ] Invoice generation (PDF/Print)
+- [ ] Barcode scanner support (USB device)
+- [ ] Export to CSV/PDF (sales history)
 
 ---
 
@@ -763,8 +1055,9 @@ Before moving to Phase 2, ensure:
 
 ---
 
-**Last Updated**: November 19, 2025  
-**Current Phase**: Phase 3 - POS & Sales (Phase 3.1 & 3.2 Completed)  
+**Last Updated**: November 20, 2025  
+**Current Phase**: Phase 3 Complete - Ready for Phase 4  
+**Status**: Phase 1, 2, and 3 (3.1 & 3.2) completed successfully  
 **Next Review Date**: After Phase 4 Completion
 
 **Remember**: Quality over speed. Build it right the first time! ✨
