@@ -4,15 +4,18 @@
  * Usage: node electron/seed-database.js
  */
 
-import bcrypt from 'bcrypt';
-import sequelize from './database/connection.js';
-import Category from './database/models/Category.js';
-import Product from './database/models/Product.js';
-import ProductType from './database/models/ProductType.js';
-import StockEntry from './database/models/StockEntry.js';
-import StockReceipt from './database/models/StockReceipt.js';
-import Supplier from './database/models/Supplier.js';
-import User from './database/models/User.js';
+import {
+ sequelize,
+  Category,
+  Product,
+  ProductType,
+  StockEntry,
+  StockReceipt,
+  Supplier,
+  User,
+  Sale,
+  SaleItem,
+} from './database/models/index.js';
 import { categories } from './database/seeders/categories.js';
 import { productTypes } from './database/seeders/productTypes.js';
 
@@ -37,10 +40,9 @@ async function seedDatabase() {
 
     // 3. Create Admin User
     console.log('👤 Creating admin user...');
-    const hashedPassword = await bcrypt.hash('admin123', 10);
     await User.create({
       username: 'admin',
-      password: hashedPassword,
+      password: 'admin123',
       full_name: 'System Administrator',
       status: 'active',
     });

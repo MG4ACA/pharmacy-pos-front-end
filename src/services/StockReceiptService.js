@@ -37,7 +37,9 @@ export class StockReceiptService {
    */
   static async getAllReceipts(filters = {}) {
     try {
-      const result = await window.electronAPI.getAllStockReceipts(filters);
+      // Serialize filters to ensure they're IPC-safe (no Date objects, functions, etc.)
+      const serializedFilters = JSON.parse(JSON.stringify(filters));
+      const result = await window.electronAPI.getAllStockReceipts(serializedFilters);
 
       return result;
     } catch (error) {

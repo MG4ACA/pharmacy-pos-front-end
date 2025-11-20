@@ -565,3 +565,13 @@ This is an MVP project. Future contributions for enhancements are welcome.
 **Version**: 1.0.0-MVP  
 **Last Updated**: November 20, 2025  
 **Status**: Phase 2 Complete - In Development
+
+
+
+# db creation commands
+
+node electron/seed-database.js
+
+# db drop commands
+
+mysql -u root -p -e "DROP DATABASE IF EXISTS pharmacy_pos; CREATE DATABASE pharmacy_pos;" ; node electron/seed-database.js
