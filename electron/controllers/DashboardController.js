@@ -29,13 +29,23 @@ class DashboardController {
       const totalProducts = await Product.count();
 
       // Low stock items (products with total_stock <= reorder_level)
-      const lowStockItems = await Product.count({
-        where: {
-          total_stock: {
-            [Op.lte]: Product.sequelize.col('reorder_level'),
+      // Get all products with their stock entries to calculate total stock
+      const allProducts = await Product.findAll({
+        include: [
+          {
+            model: StockEntry,
+            as: 'stockEntries',
+            attributes: ['quantity_remaining'],
+            required: false,
           },
-        },
+        ],
       });
+
+      const lowStockItems = allProducts.filter((product) => {
+        const totalStock =
+          product.stockEntries?.reduce((sum, entry) => sum + entry.quantity_remaining, 0) || 0;
+        return totalStock <= product.reorder_level;
+      }).length;
 
       // Expiring soon (within 30 days)
       const thirtyDaysFromNow = new Date();
@@ -117,19 +127,40 @@ class DashboardController {
    */
   async getLowStockProducts() {
     try {
+      // Get all products with their stock entries
       const products = await Product.findAll({
-        where: {
-          total_stock: {
-            [Op.lte]: Product.sequelize.col('reorder_level'),
+        include: [
+          {
+            model: StockEntry,
+            as: 'stockEntries',
+            attributes: ['quantity_remaining'],
+            required: false,
           },
-        },
-        order: [['total_stock', 'ASC']],
-        limit: 20,
+        ],
       });
+
+      // Calculate total stock and filter low stock items
+      const productsWithStock = products.map((product) => {
+        const plainProduct = product.toJSON();
+        const totalStock =
+          plainProduct.stockEntries?.reduce((sum, entry) => sum + entry.quantity_remaining, 0) || 0;
+        delete plainProduct.stockEntries;
+        return {
+          ...plainProduct,
+          total_stock: totalStock,
+          is_low_stock: totalStock <= plainProduct.reorder_level,
+        };
+      });
+
+      // Filter and sort low stock items
+      const lowStockProducts = productsWithStock
+        .filter((p) => p.total_stock <= p.reorder_level)
+        .sort((a, b) => a.total_stock - b.total_stock)
+        .slice(0, 20);
 
       return {
         success: true,
-        data: products,
+        data: lowStockProducts,
       };
     } catch (error) {
       console.error('DashboardController.getLowStockProducts error:', error);

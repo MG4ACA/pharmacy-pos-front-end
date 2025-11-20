@@ -12,7 +12,7 @@
         />
         <Button
           label="View History"
-          icon="pi pi-history"
+          icon="pi pi-history mr-2"
           class="p-button-secondary"
           @click="$router.push('/inventory/stock-history')"
         />

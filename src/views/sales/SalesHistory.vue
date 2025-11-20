@@ -82,6 +82,13 @@
             severity="secondary"
             outlined
             @click="clearFilters"
+            class="mr-2"
+          />
+          <Button
+            icon="pi pi-refresh"
+            severity="help"
+            v-tooltip.top="'Refresh'"
+            @click="loadSales"
           />
         </div>
       </div>

@@ -2,14 +2,14 @@
   <div class="supplier-list">
     <div class="flex justify-content-between align-items-center mb-4">
       <h1 class="page-title">Suppliers</h1>
-      <Button label="Add Supplier" icon="pi pi-plus" @click="openAddDialog" />
+      <Button label="Add Supplier" icon="pi pi-plus mr-2" @click="openAddDialog" />
     </div>
 
     <!-- Filters -->
     <Card class="mb-4">
       <template #content>
         <div class="grid">
-          <div class="col-12 md:col-6">
+          <div class="col-12 md:col-7">
             <div class="field">
               <label for="search" class="block mb-2">Search</label>
               <InputText
@@ -17,6 +17,7 @@
                 v-model="searchQuery"
                 placeholder="Search by name, contact, email, or phone"
                 class="w-full"
+                @input="handleSearch"
               />
             </div>
           </div>
@@ -31,19 +32,25 @@
                 option-value="value"
                 placeholder="All statuses"
                 class="w-full"
+                @change="handleFilter"
               />
             </div>
           </div>
-          <div class="col-12 md:col-3">
+          <div class="col-12 md:col-2">
             <div class="field">
               <label class="block mb-2">&nbsp;</label>
               <div class="flex gap-2">
-                <Button label="Search" icon="pi pi-search" @click="loadSuppliers" />
                 <Button
                   label="Clear"
-                  icon="pi pi-filter-slash"
+                  icon="pi pi-filter-slash mr-2"
                   class="p-button-secondary"
                   @click="clearFilters"
+                />
+                <Button
+                  icon="pi pi-refresh mr-0"
+                  class="p-button-help"
+                  v-tooltip.top="'Refresh'"
+                  @click="loadSuppliers"
                 />
               </div>
             </div>
@@ -75,7 +82,7 @@
             </template>
           </Column>
 
-          <Column header="Contact Details">
+          <Column header="Contact Details" style="width: 220px">
             <template #body="{ data }">
               <div>
                 <div v-if="data.email" class="text-sm">
@@ -102,7 +109,7 @@
             </template>
           </Column>
 
-          <Column header="Actions" style="width: 200px">
+          <Column header="Actions" style="width: 150px">
             <template #body="{ data }">
               <div class="flex gap-1">
                 <Button
@@ -368,8 +375,21 @@ const formData = reactive({
 
 const errors = reactive({});
 
+let searchTimeout = null;
+
 const getStatusSeverity = (status) => {
   return status === 'active' ? 'success' : 'danger';
+};
+
+const handleSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    loadSuppliers();
+  }, 500);
+};
+
+const handleFilter = () => {
+  loadSuppliers();
 };
 
 const loadSuppliers = async () => {

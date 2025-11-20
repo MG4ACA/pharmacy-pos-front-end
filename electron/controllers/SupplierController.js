@@ -30,7 +30,7 @@ class SupplierController {
 
       const suppliers = await Supplier.findAll({
         where: whereClause,
-        order: [['name', 'ASC']],
+        order: [['created_at', 'DESC']],
         raw: true,
       });
 
@@ -109,6 +109,30 @@ class SupplierController {
             message: 'Invalid email format',
           };
         }
+
+        // Check if email already exists
+        const existingEmail = await Supplier.findOne({
+          where: { email },
+        });
+        if (existingEmail) {
+          return {
+            success: false,
+            message: 'Email address already exists',
+          };
+        }
+      }
+
+      // Check if phone already exists
+      if (phone) {
+        const existingPhone = await Supplier.findOne({
+          where: { phone },
+        });
+        if (existingPhone) {
+          return {
+            success: false,
+            message: 'Phone number already exists',
+          };
+        }
       }
 
       const supplier = await Supplier.create({
@@ -127,6 +151,23 @@ class SupplierController {
       };
     } catch (error) {
       console.error('SupplierController.createSupplier error:', error);
+
+      // Handle unique constraint errors
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const field = error.errors[0]?.path;
+        if (field === 'email') {
+          return {
+            success: false,
+            message: 'Email address already exists',
+          };
+        } else if (field === 'phone') {
+          return {
+            success: false,
+            message: 'Phone number already exists',
+          };
+        }
+      }
+
       return {
         success: false,
         message: error.message || 'Failed to create supplier',
@@ -177,6 +218,36 @@ class SupplierController {
             message: 'Invalid email format',
           };
         }
+
+        // Check if email already exists (excluding current supplier)
+        const existingEmail = await Supplier.findOne({
+          where: {
+            email,
+            id: { [Op.ne]: id },
+          },
+        });
+        if (existingEmail) {
+          return {
+            success: false,
+            message: 'Email address already exists',
+          };
+        }
+      }
+
+      // Check if phone already exists (excluding current supplier)
+      if (phone) {
+        const existingPhone = await Supplier.findOne({
+          where: {
+            phone,
+            id: { [Op.ne]: id },
+          },
+        });
+        if (existingPhone) {
+          return {
+            success: false,
+            message: 'Phone number already exists',
+          };
+        }
       }
 
       await supplier.update({
@@ -195,6 +266,23 @@ class SupplierController {
       };
     } catch (error) {
       console.error('SupplierController.updateSupplier error:', error);
+
+      // Handle unique constraint errors
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const field = error.errors[0]?.path;
+        if (field === 'email') {
+          return {
+            success: false,
+            message: 'Email address already exists',
+          };
+        } else if (field === 'phone') {
+          return {
+            success: false,
+            message: 'Phone number already exists',
+          };
+        }
+      }
+
       return {
         success: false,
         message: error.message || 'Failed to update supplier',
@@ -248,7 +336,7 @@ class SupplierController {
     try {
       const suppliers = await Supplier.findAll({
         where: { status: 'active' },
-        order: [['name', 'ASC']],
+        order: [['created_at', 'DESC']],
         raw: true,
       });
 

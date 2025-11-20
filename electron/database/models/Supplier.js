@@ -23,6 +23,9 @@ const Supplier = sequelize.define(
     email: {
       type: DataTypes.STRING(100),
       allowNull: true,
+      unique: {
+        msg: 'Email address already exists',
+      },
       validate: {
         isEmail: true,
       },
@@ -30,6 +33,9 @@ const Supplier = sequelize.define(
     phone: {
       type: DataTypes.STRING(20),
       allowNull: true,
+      unique: {
+        msg: 'Phone number already exists',
+      },
     },
     address: {
       type: DataTypes.TEXT,

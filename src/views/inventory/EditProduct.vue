@@ -3,7 +3,7 @@
     <div class="flex justify-content-between align-items-center mb-4">
       <h1 class="page-title">Edit Product</h1>
       <Button
-        label="Back to List"
+        label="Back to List mr-2"
         icon="pi pi-arrow-left"
         class="p-button-secondary"
         @click="$router.push('/inventory/products')"

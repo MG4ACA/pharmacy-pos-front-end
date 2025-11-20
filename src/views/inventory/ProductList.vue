@@ -4,7 +4,7 @@
       <h1 class="page-title">Products</h1>
       <Button
         label="Add Product"
-        icon="pi pi-plus"
+        icon="pi pi-plus mr-2"
         @click="$router.push('/inventory/products/add')"
       />
     </div>
@@ -24,7 +24,7 @@
               />
             </span>
           </div>
-          <div class="col-12 md:col-3">
+          <div class="col-12 md:col-8 flex gap-3">
             <Dropdown
               v-model="filters.category_id"
               :options="categories"
@@ -35,8 +35,6 @@
               show-clear
               @change="handleFilter"
             />
-          </div>
-          <div class="col-12 md:col-3">
             <Dropdown
               v-model="filters.product_type_id"
               :options="productTypes"
@@ -47,8 +45,6 @@
               show-clear
               @change="handleFilter"
             />
-          </div>
-          <div class="col-12 md:col-2">
             <Dropdown
               v-model="filters.status"
               :options="statusOptions"
@@ -58,6 +54,7 @@
               class="w-full"
               @change="handleFilter"
             />
+            <Button icon="pi pi-refresh" class="p-button-help" @click="loadProducts" />
           </div>
         </div>
       </template>
@@ -297,5 +294,9 @@ onMounted(() => {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+}
+
+.p-button-help {
+  padding: 0.7rem 1.5rem;
 }
 </style>

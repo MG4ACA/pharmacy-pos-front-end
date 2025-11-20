@@ -11,7 +11,7 @@
       />
       <Button
         label="Back to List"
-        icon="pi pi-arrow-left"
+        icon="pi pi-arrow-left mr-2"
         class="p-button-secondary"
         @click="$router.push('/inventory/products')"
       />

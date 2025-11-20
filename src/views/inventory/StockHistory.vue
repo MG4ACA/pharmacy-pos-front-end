@@ -94,6 +94,12 @@
                 class="p-button-warning"
                 @click="showExpiringSoon"
               />
+              <Button
+                icon="pi pi-refresh mr-0"
+                class="p-button-help"
+                v-tooltip.top="'Refresh'"
+                @click="loadStockHistory"
+              />
             </div>
           </div>
         </div>
@@ -119,9 +125,9 @@
           <Column header="Product">
             <template #body="{ data }">
               <div>
-                <div class="font-semibold">{{ data.Product?.name || 'N/A' }}</div>
-                <div class="text-sm text-500" v-if="data.Product?.barcode">
-                  {{ data.Product.barcode }}
+                <div class="font-semibold">{{ data.product?.name || 'N/A' }}</div>
+                <div class="text-sm text-500" v-if="data.product?.barcode">
+                  {{ data.product.barcode }}
                 </div>
               </div>
             </template>
@@ -129,7 +135,7 @@
 
           <Column header="Supplier">
             <template #body="{ data }">
-              {{ data.Supplier?.name || '-' }}
+              {{ data.supplier?.name || '-' }}
             </template>
           </Column>
 
@@ -209,15 +215,15 @@
       <div v-if="selectedEntry" class="grid">
         <div class="col-6">
           <strong>Product:</strong>
-          <p>{{ selectedEntry.Product?.name || 'N/A' }}</p>
+          <p>{{ selectedEntry.product?.name || 'N/A' }}</p>
         </div>
         <div class="col-6">
           <strong>Barcode:</strong>
-          <p>{{ selectedEntry.Product?.barcode || '-' }}</p>
+          <p>{{ selectedEntry.product?.barcode || '-' }}</p>
         </div>
         <div class="col-6">
           <strong>Supplier:</strong>
-          <p>{{ selectedEntry.Supplier?.name || '-' }}</p>
+          <p>{{ selectedEntry.supplier?.name || '-' }}</p>
         </div>
         <div class="col-6">
           <strong>Batch Number:</strong>

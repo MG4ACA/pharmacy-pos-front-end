@@ -114,12 +114,13 @@ class StockController {
           ['entry_date', 'ASC'], // FIFO: First In First Out
           ['id', 'ASC'],
         ],
-        raw: true,
       });
+
+      const plainEntries = stockEntries.map((entry) => entry.toJSON());
 
       return {
         success: true,
-        data: stockEntries,
+        data: plainEntries,
       };
     } catch (error) {
       console.error('Get stock by product error:', error);
@@ -204,12 +205,19 @@ class StockController {
         ],
         limit: parseInt(limit),
         offset: parseInt(offset),
-        raw: true,
       });
+
+      // Convert to plain objects
+      const plainEntries = entries.map((entry) => entry.toJSON());
+
+      console.log('StockController.getStockHistory - Total entries:', plainEntries.length);
+      if (plainEntries.length > 0) {
+        console.log('First entry sample:', JSON.stringify(plainEntries[0], null, 2));
+      }
 
       return {
         success: true,
-        data: entries,
+        data: plainEntries,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -248,7 +256,6 @@ class StockController {
             attributes: ['id', 'name', 'contact_person', 'email', 'phone'],
           },
         ],
-        raw: true,
       });
 
       if (!stockEntry) {
@@ -260,7 +267,7 @@ class StockController {
 
       return {
         success: true,
-        data: stockEntry,
+        data: stockEntry.toJSON(),
       };
     } catch (error) {
       console.error('Get batch details error:', error);
@@ -384,12 +391,13 @@ class StockController {
           },
         ],
         order: [['expiry_date', 'ASC']],
-        raw: true,
       });
+
+      const plainStock = expiringStock.map((entry) => entry.toJSON());
 
       return {
         success: true,
-        data: expiringStock,
+        data: plainStock,
       };
     } catch (error) {
       console.error('Get expiring stock error:', error);

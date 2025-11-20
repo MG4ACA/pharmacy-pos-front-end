@@ -26,6 +26,7 @@
             <Password
               id="password"
               v-model="credentials.password"
+              class="w-full"
               placeholder="Enter password"
               :feedback="false"
               toggleMask
