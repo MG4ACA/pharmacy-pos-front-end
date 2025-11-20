@@ -17,10 +17,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteProduct: (id) => ipcRenderer.invoke('product:delete', id),
   searchProducts: (query) => ipcRenderer.invoke('product:search', query),
 
-  // Stock
-  addStockEntry: (data) => ipcRenderer.invoke('stock:addEntry', data),
+  // Stock - Internal operations only (used by POS and reports)
   getStockByProduct: (productId) => ipcRenderer.invoke('stock:getByProduct', productId),
-  getStockHistory: (params) => ipcRenderer.invoke('stock:getHistory', params),
   getBatchDetails: (batchId) => ipcRenderer.invoke('stock:getBatchDetails', batchId),
   deductStock: (data) => ipcRenderer.invoke('stock:deduct', data),
   getExpiringStock: (days) => ipcRenderer.invoke('stock:getExpiring', days),

@@ -30,7 +30,7 @@ ipcMain.handle('stockReceipt:create', async (event, data) => {
 });
 
 // Stock Receipt: Get All
-ipcMain.handle('stockReceipts:getAll', async (event, filters) => {
+ipcMain.handle('stockReceipt:getAll', async (event, filters) => {
   try {
     const result = await StockReceiptController.getAllStockReceipts(filters);
     return result;

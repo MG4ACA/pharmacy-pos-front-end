@@ -94,8 +94,6 @@ const menuItems = [{ path: '/dashboard', label: 'Dashboard', icon: 'pi pi-home' 
 const inventoryItems = [
   { path: '/inventory/products', label: 'Products', icon: 'pi pi-list' },
   { path: '/inventory/stock-receipts', label: 'Stock Receipts', icon: 'pi pi-file-import' },
-  { path: '/inventory/stock-entry', label: 'Stock Entry', icon: 'pi pi-plus-circle' },
-  { path: '/inventory/stock-history', label: 'Stock History', icon: 'pi pi-history' },
 ];
 
 const salesItems = [

@@ -38,16 +38,6 @@ const routes = [
         component: () => import('@/views/inventory/EditProduct.vue'),
       },
       {
-        path: 'inventory/stock-entry',
-        name: 'StockEntry',
-        component: () => import('@/views/inventory/StockEntry.vue'),
-      },
-      {
-        path: 'inventory/stock-history',
-        name: 'StockHistory',
-        component: () => import('@/views/inventory/StockHistory.vue'),
-      },
-      {
         path: 'inventory/stock-receipts',
         name: 'StockReceiptList',
         component: () => import('@/views/stockReceipts/StockReceiptList.vue'),
