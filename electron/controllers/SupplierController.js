@@ -367,17 +367,12 @@ class SupplierController {
         };
       }
 
-      const { StockEntry, Product } = await import('../database/models/index.js');
+      const { StockEntry, Product, Category, ProductType } = await import(
+        '../database/models/index.js'
+      );
 
       const stockEntries = await StockEntry.findAll({
         where: { supplier_id: supplierId },
-        include: [
-          {
-            model: Product,
-            as: 'product',
-            attributes: ['id', 'name', 'generic_name', 'category', 'type'],
-          },
-        ],
         attributes: ['product_id'],
         group: ['product_id'],
         raw: true,
@@ -388,13 +383,36 @@ class SupplierController {
 
       const products = await Product.findAll({
         where: { id: productIds },
+        include: [
+          {
+            model: Category,
+            as: 'category',
+            attributes: ['id', 'name'],
+          },
+          {
+            model: ProductType,
+            as: 'type',
+            attributes: ['id', 'name'],
+          },
+        ],
         order: [['name', 'ASC']],
-        raw: true,
+      });
+
+      // Convert to plain objects and flatten category/type names
+      const plainProducts = products.map((product) => {
+        const plain = product.toJSON();
+        return {
+          id: plain.id,
+          name: plain.name,
+          barcode: plain.barcode || '-',
+          category: plain.category?.name || '-',
+          type: plain.type?.name || '-',
+        };
       });
 
       return {
         success: true,
-        data: products,
+        data: plainProducts,
       };
     } catch (error) {
       console.error('SupplierController.getProductsFromSupplier error:', error);

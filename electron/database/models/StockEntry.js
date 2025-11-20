@@ -25,6 +25,14 @@ const StockEntry = sequelize.define(
         key: 'id',
       },
     },
+    receipt_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'stock_receipts',
+        key: 'id',
+      },
+    },
     batch_number: {
       type: DataTypes.STRING(50),
       allowNull: false,

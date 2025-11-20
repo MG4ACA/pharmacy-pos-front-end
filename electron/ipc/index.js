@@ -6,6 +6,7 @@ import './productHandlers.js';
 import { registerReportHandlers } from './reportHandlers.js';
 import { registerSaleHandlers } from './saleHandlers.js';
 import './stockHandlers.js';
+import './stockReceiptHandlers.js';
 import './supplierHandlers.js';
 
 // Register handlers

@@ -25,6 +25,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deductStock: (data) => ipcRenderer.invoke('stock:deduct', data),
   getExpiringStock: (days) => ipcRenderer.invoke('stock:getExpiring', days),
 
+  // Stock Receipts
+  generateReceiptNumber: () => ipcRenderer.invoke('stockReceipt:generateNumber'),
+  createStockReceipt: (data) => ipcRenderer.invoke('stockReceipt:create', data),
+  getAllStockReceipts: (filters) => ipcRenderer.invoke('stockReceipt:getAll', filters),
+  getStockReceiptById: (id) => ipcRenderer.invoke('stockReceipt:getById', id),
+  updateStockReceipt: (data) => ipcRenderer.invoke('stockReceipt:update', data.id, data.data),
+  cancelStockReceipt: (id) => ipcRenderer.invoke('stockReceipt:cancel', id),
+  getStockReceiptsBySupplier: (supplierId) =>
+    ipcRenderer.invoke('stockReceipt:getBySupplier', supplierId),
+
   // Suppliers
   getAllSuppliers: (params) => ipcRenderer.invoke('supplier:getAll', params),
   getSupplierById: (id) => ipcRenderer.invoke('supplier:getById', id),

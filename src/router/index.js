@@ -48,6 +48,26 @@ const routes = [
         component: () => import('@/views/inventory/StockHistory.vue'),
       },
       {
+        path: 'inventory/stock-receipts',
+        name: 'StockReceiptList',
+        component: () => import('@/views/stockReceipts/StockReceiptList.vue'),
+      },
+      {
+        path: 'inventory/stock-receipts/create',
+        name: 'CreateStockReceipt',
+        component: () => import('@/views/stockReceipts/CreateStockReceipt.vue'),
+      },
+      {
+        path: 'inventory/stock-receipts/:id',
+        name: 'ViewStockReceipt',
+        component: () => import('@/views/stockReceipts/ViewStockReceipt.vue'),
+      },
+      {
+        path: 'inventory/stock-receipts/:id/edit',
+        name: 'EditStockReceipt',
+        component: () => import('@/views/stockReceipts/CreateStockReceipt.vue'),
+      },
+      {
         path: 'suppliers',
         name: 'SupplierList',
         component: () => import('@/views/suppliers/SupplierList.vue'),
