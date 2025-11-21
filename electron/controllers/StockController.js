@@ -1,6 +1,13 @@
 import { Op } from 'sequelize';
 import sequelize from '../database/connection.js';
-import { Category, Product, ProductType, StockEntry, Supplier } from '../database/models/index.js';
+import {
+  Category,
+  Product,
+  ProductType,
+  StockEntry,
+  StockReceipt,
+  Supplier,
+} from '../database/models/index.js';
 
 class StockController {
   /**
@@ -37,6 +44,11 @@ class StockController {
             model: Supplier,
             as: 'supplier',
             attributes: ['id', 'name', 'contact_person', 'email', 'phone'],
+          },
+          {
+            model: StockReceipt,
+            as: 'receipt',
+            attributes: ['id', 'receipt_number', 'receipt_date', 'supplier_invoice_number'],
           },
         ],
         order: [
@@ -91,6 +103,17 @@ class StockController {
             model: Supplier,
             as: 'supplier',
             attributes: ['id', 'name', 'contact_person', 'email', 'phone'],
+          },
+          {
+            model: StockReceipt,
+            as: 'receipt',
+            attributes: [
+              'id',
+              'receipt_number',
+              'receipt_date',
+              'supplier_invoice_number',
+              'total_amount',
+            ],
           },
         ],
       });
@@ -249,6 +272,11 @@ class StockController {
             model: Supplier,
             as: 'supplier',
             attributes: ['id', 'name', 'contact_person', 'email', 'phone'],
+          },
+          {
+            model: StockReceipt,
+            as: 'receipt',
+            attributes: ['id', 'receipt_number', 'receipt_date', 'supplier_invoice_number'],
           },
         ],
         order: [['expiry_date', 'ASC']],

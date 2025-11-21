@@ -1,5 +1,5 @@
 <template>
-  <div class="stock-batches-container p-4">
+  <div class="stock-batches-container">
     <!-- Header -->
     <div class="flex justify-content-between align-items-center mb-4">
       <div>
@@ -13,9 +13,19 @@
           label="Expiring Soon"
           icon="pi pi-exclamation-triangle"
           severity="warning"
+          class="header-button-section"
           outlined
           @click="showExpiringOnly"
           :badge="expiringCount > 0 ? expiringCount.toString() : null"
+          badgeSeverity="danger"
+        />
+        <Button
+          label="Expired"
+          icon="pi pi-times-circle"
+          severity="danger"
+          outlined
+          @click="showExpiredOnly"
+          :badge="expiredCount > 0 ? expiredCount.toString() : null"
           badgeSeverity="danger"
         />
         <Button
@@ -31,8 +41,8 @@
 
     <!-- Filters -->
     <Panel header="Filters" :toggleable="true" class="mb-3">
-      <div class="grid">
-        <div class="col-12 md:col-4">
+      <div class="flex justify-content-between">
+        <div class="">
           <label for="productSearch" class="block mb-2" style="font-size: 0.85em">Product</label>
           <AutoComplete
             id="productSearch"
@@ -53,7 +63,7 @@
           </AutoComplete>
         </div>
 
-        <div class="col-12 md:col-3">
+        <div>
           <label for="supplierFilter" class="block mb-2" style="font-size: 0.85em">Supplier</label>
           <Dropdown
             id="supplierFilter"
@@ -67,7 +77,42 @@
           />
         </div>
 
-        <div class="col-12 md:col-3">
+        <div>
+          <label for="receiptFilter" class="block mb-2" style="font-size: 0.85em">Receipt</label>
+          <Dropdown
+            id="receiptFilter"
+            v-model="filters.receiptId"
+            :options="receipts"
+            optionLabel="receipt_number"
+            optionValue="id"
+            placeholder="All Receipts"
+            showClear
+            class="w-full"
+            @change="onReceiptChange"
+          >
+            <template #value="slotProps">
+              <div v-if="slotProps.value">
+                <span>{{ getReceiptLabel(slotProps.value) }}</span>
+              </div>
+              <span v-else>{{ slotProps.placeholder }}</span>
+            </template>
+            <template #option="slotProps">
+              <div>
+                <div style="font-size: 0.9em" class="font-semibold">
+                  {{ slotProps.option.receipt_number }}
+                </div>
+                <div style="font-size: 0.75em" class="text-500">
+                  {{ formatDate(slotProps.option.receipt_date) }}
+                  <span v-if="slotProps.option.supplier?.name">
+                    - {{ slotProps.option.supplier.name }}
+                  </span>
+                </div>
+              </div>
+            </template>
+          </Dropdown>
+        </div>
+
+        <div>
           <label for="expiryFilter" class="block mb-2" style="font-size: 0.85em">
             Expiry Status
           </label>
@@ -82,8 +127,8 @@
           />
         </div>
 
-        <div class="col-12 md:col-2 flex align-items-end">
-          <Button label="Clear Filters" icon="pi pi-filter-slash" outlined @click="clearFilters" />
+        <div class="flex align-items-end justify-content-end">
+          <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
         </div>
       </div>
     </Panel>
@@ -122,19 +167,36 @@
                   {{ data.product?.name }}
                 </div>
                 <div style="font-size: 0.75em" class="text-500">
-                  {{ data.product?.category?.name }}
+                  {{ data.product?.category?.name }} • Batch: {{ data.batch_number }}
                 </div>
               </div>
             </template>
           </Column>
 
-          <Column field="batch_number" header="Batch #" sortable style="min-width: 120px">
+          <Column
+            field="receipt.receipt_number"
+            header="Receipt #"
+            sortable
+            style="min-width: 145px"
+          >
             <template #body="{ data }">
-              <span style="font-size: 0.85em" class="font-semibold">{{ data.batch_number }}</span>
+              <div v-if="data.receipt">
+                <div style="font-size: 0.85em" class="font-semibold text-primary">
+                  {{ data.receipt.receipt_number }}
+                </div>
+                <div
+                  v-if="data.receipt.supplier_invoice_number"
+                  style="font-size: 0.7em"
+                  class="text-500"
+                >
+                  Inv: {{ data.receipt.supplier_invoice_number }}
+                </div>
+              </div>
+              <span v-else style="font-size: 0.85em" class="text-500">N/A</span>
             </template>
           </Column>
 
-          <Column field="supplier.name" header="Supplier" sortable style="min-width: 150px">
+          <Column field="supplier.name" header="Supplier" sortable style="min-width: 165px">
             <template #body="{ data }">
               <span style="font-size: 0.85em">{{ data.supplier?.name || 'N/A' }}</span>
             </template>
@@ -196,7 +258,7 @@
             </template>
           </Column>
 
-          <Column header="Actions" :exportable="false" style="width: 100px">
+          <Column header="Actions" :exportable="false" style="width: 60px">
             <template #body="{ data }">
               <Button
                 icon="pi pi-eye"
@@ -307,6 +369,37 @@
           </div>
         </div>
 
+        <!-- Receipt Info -->
+        <div class="surface-100 border-round p-3 mb-3" v-if="currentBatch.receipt">
+          <h3 class="mt-0 mb-2" style="font-size: 1.1em">Receipt Information</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Receipt Number</label>
+              <p style="font-size: 0.9em" class="mt-1 font-semibold text-primary">
+                {{ currentBatch.receipt.receipt_number }}
+              </p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Receipt Date</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                {{ formatDate(currentBatch.receipt.receipt_date) }}
+              </p>
+            </div>
+            <div class="col-6" v-if="currentBatch.receipt.supplier_invoice_number">
+              <label style="font-size: 0.75em" class="text-600">Supplier Invoice #</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                {{ currentBatch.receipt.supplier_invoice_number }}
+              </p>
+            </div>
+            <div class="col-6" v-if="currentBatch.receipt.total_amount">
+              <label style="font-size: 0.75em" class="text-600">Receipt Total</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                Rs. {{ parseFloat(currentBatch.receipt.total_amount).toFixed(2) }}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Supplier Info -->
         <div class="surface-100 border-round p-3">
           <h3 class="mt-0 mb-2" style="font-size: 1.1em">Supplier Information</h3>
@@ -345,6 +438,7 @@
 <script setup>
 import { useProductStore } from '@/stores/product';
 import { useStockStore } from '@/stores/stock';
+import { useStockReceiptStore } from '@/stores/stockReceipt';
 import { useSupplierStore } from '@/stores/supplier';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -363,15 +457,18 @@ const toast = useToast();
 const stockStore = useStockStore();
 const productStore = useProductStore();
 const supplierStore = useSupplierStore();
+const stockReceiptStore = useStockReceiptStore();
 
 // Refs
 const allBatches = ref([]);
 const selectedProduct = ref(null);
 const filteredProducts = ref([]);
 const suppliers = ref([]);
+const receipts = ref([]);
 const showDetailsDialog = ref(false);
 const filters = ref({
   supplierId: null,
+  receiptId: null,
   expiryStatus: null,
 });
 
@@ -416,6 +513,10 @@ const filteredBatches = computed(() => {
     result = result.filter((batch) => batch.supplier?.id === filters.value.supplierId);
   }
 
+  if (filters.value.receiptId) {
+    result = result.filter((batch) => batch.receipt?.id === filters.value.receiptId);
+  }
+
   if (filters.value.expiryStatus) {
     result = result.filter((batch) => {
       if (!batch.expiry_date && filters.value.expiryStatus === 'valid') return true;
@@ -433,6 +534,13 @@ const expiringCount = computed(() => {
   return allBatches.value.filter((batch) => {
     if (!batch.expiry_date) return false;
     return getExpiryStatus(batch.expiry_date) === 'expiring';
+  }).length;
+});
+
+const expiredCount = computed(() => {
+  return allBatches.value.filter((batch) => {
+    if (!batch.expiry_date) return false;
+    return getExpiryStatus(batch.expiry_date) === 'expired';
   }).length;
 });
 
@@ -517,13 +625,38 @@ const showExpiringOnly = () => {
   });
 };
 
+const showExpiredOnly = () => {
+  filters.value.expiryStatus = 'expired';
+  toast.add({
+    severity: 'error',
+    summary: 'Filter Applied',
+    detail: `Showing ${expiredCount.value} expired batches`,
+    life: 3000,
+  });
+};
+
 const clearFilters = () => {
   filters.value = {
     supplierId: null,
+    receiptId: null,
     expiryStatus: null,
   };
   selectedProduct.value = null;
   loadAllBatches();
+};
+
+const getReceiptLabel = (receiptId) => {
+  const receipt = receipts.value.find((r) => r.id === receiptId);
+  return receipt ? receipt.receipt_number : '';
+};
+
+const onReceiptChange = () => {
+  if (filters.value.receiptId) {
+    const selectedReceipt = receipts.value.find((r) => r.id === filters.value.receiptId);
+    if (selectedReceipt && selectedReceipt.supplier_id) {
+      filters.value.supplierId = selectedReceipt.supplier_id;
+    }
+  }
 };
 
 const viewBatchDetails = async (batchId) => {
@@ -556,6 +689,14 @@ const initializeData = async () => {
   } catch (error) {
     console.error('Failed to load suppliers:', error);
   }
+
+  // Load receipts for filter
+  try {
+    await stockReceiptStore.loadReceipts();
+    receipts.value = stockReceiptStore.receipts;
+  } catch (error) {
+    console.error('Failed to load receipts:', error);
+  }
 };
 </script>
 
@@ -563,6 +704,11 @@ const initializeData = async () => {
 .stock-batches-container {
   max-width: 1800px;
   margin: 0 auto;
+  padding: 0.5rem;
+}
+.p-badge,
+.p-button-label {
+  margin-left: 0.5rem;
 }
 
 .batch-details h3 {

@@ -61,6 +61,14 @@
   height: 2.4rem;
 }
 
+.p-card .p-card-content {
+  padding: 0;
+}
+
+.p-button-label {
+  margin: 0 0.5rem;
+}
+
 .p-inputtextarea {
   height: auto !important;
 }

@@ -363,10 +363,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.stock-receipt-list {
-  padding: 1rem;
-}
-
 .page-title {
   font-size: 2rem;
   font-weight: 600;
