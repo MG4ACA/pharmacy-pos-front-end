@@ -8,14 +8,6 @@
           <template #header>
             <div class="flex items-center gap-2 w-full justify-content-between align-items-center">
               <span class="font-bold">Product Search</span>
-              <Button
-                label="Clear Cart"
-                icon="pi pi-trash mr-2"
-                severity="danger"
-                class="p-button-outlined"
-                :disabled="cart.length === 0"
-                @click="confirmClearCart"
-              />
             </div>
           </template>
           <div class="grid">
@@ -63,7 +55,20 @@
         </Panel>
 
         <!-- Shopping Cart -->
-        <Panel header="Shopping Cart" class="cart-panel">
+        <Panel class="cart-panel">
+          <template #header>
+            <div class="flex items-center gap-2 w-full justify-content-between align-items-center">
+              <span class="font-bold">Shopping Cart</span>
+              <Button
+                label="Clear Cart"
+                icon="pi pi-trash mr-2"
+                severity="danger"
+                class="p-button-outlined"
+                :disabled="cart.length === 0"
+                @click="confirmClearCart"
+              />
+            </div>
+          </template>
           <div v-if="cart.length === 0" class="text-center py-6 text-600">
             <i class="pi pi-shopping-cart text-6xl mb-3 text-400"></i>
             <p class="text-xl">Cart is empty</p>

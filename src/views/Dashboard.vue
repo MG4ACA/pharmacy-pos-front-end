@@ -49,7 +49,7 @@
       </div>
 
       <div class="col-12 md:col-6 lg:col-3">
-        <Card class="summary-card bg-orange-50">
+        <Card class="summary-card bg-orange-50" style="cursor: pointer" @click="$router.push('/inventory/products')">
           <template #content>
             <div class="flex align-items-center justify-content-between">
               <div>
@@ -71,7 +71,7 @@
       </div>
 
       <div class="col-12 md:col-6 lg:col-3">
-        <Card class="summary-card bg-red-50">
+        <Card class="summary-card bg-red-50" style="cursor: pointer" @click="$router.push('/inventory/stock-batches')">
           <template #content>
             <div class="flex align-items-center justify-content-between">
               <div>

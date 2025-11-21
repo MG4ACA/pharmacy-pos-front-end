@@ -2,15 +2,25 @@
   <div class="stock-receipt-list">
     <div class="flex justify-content-between align-items-center mb-4">
       <h1 class="page-title">Stock Receipts</h1>
-      <Button label="Create Receipt" icon="pi pi-plus mr-2" @click="goToCreateReceipt" />
+      <div class="flex gap-2">
+        <Button label="Create Receipt" outlined icon="pi pi-plus mr-2" @click="goToCreateReceipt" />
+        <Button
+          icon="pi pi-refresh"
+          label="Refresh"
+          severity="secondary"
+          outlined
+          v-tooltip.top="'Refresh'"
+          @click="loadReceipts"
+        />
+      </div>
     </div>
 
     <!-- Filters -->
     <Card class="mb-4">
       <template #content>
-        <div class="grid">
-          <div class="col-12 md:col-3">
-            <div class="field">
+        <div class="flex justify-content-between">
+          <div>
+            <div>
               <label for="search" class="block mb-2">Search</label>
               <InputText
                 id="search"
@@ -21,8 +31,8 @@
               />
             </div>
           </div>
-          <div class="col-12 md:col-3">
-            <div class="field">
+          <div>
+            <div>
               <label for="supplier" class="block mb-2">Supplier</label>
               <Dropdown
                 id="supplier"
@@ -37,8 +47,8 @@
               />
             </div>
           </div>
-          <div class="col-12 md:col-2">
-            <div class="field">
+          <div>
+            <div>
               <label for="status" class="block mb-2">Status</label>
               <Dropdown
                 id="status"
@@ -53,48 +63,24 @@
               />
             </div>
           </div>
-          <div class="col-12 md:col-2">
-            <div class="field">
-              <label for="startDate" class="block mb-2">Start Date</label>
+          <div>
+            <div>
+              <label for="dateRange" class="block mb-2">Date Range</label>
               <Calendar
-                id="startDate"
-                v-model="filters.startDate"
+                id="dateRange"
+                v-model="filters.dateRange"
+                selection-mode="range"
                 date-format="yy-mm-dd"
-                placeholder="Start Date"
-                class="w-full"
+                placeholder="Select date range"
                 @date-select="loadReceipts"
                 show-button-bar
+                :manual-input="false"
               />
             </div>
           </div>
-          <div class="col-12 md:col-2">
-            <div class="field">
-              <label for="endDate" class="block mb-2">End Date</label>
-              <Calendar
-                id="endDate"
-                v-model="filters.endDate"
-                date-format="yy-mm-dd"
-                placeholder="End Date"
-                class="w-full"
-                @date-select="loadReceipts"
-                show-button-bar
-              />
-            </div>
+          <div class="flex align-items-end justify-content-end">
+            <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
           </div>
-        </div>
-        <div class="flex gap-2">
-          <Button
-            label="Clear Filters"
-            icon="pi pi-filter-slash mr-2"
-            class="p-button-secondary"
-            @click="clearFilters"
-          />
-          <Button
-            icon="pi pi-refresh mr-0"
-            class="p-button-help"
-            v-tooltip.top="'Refresh'"
-            @click="loadReceipts"
-          />
         </div>
       </template>
     </Card>
@@ -110,6 +96,9 @@
           striped-rows
           paginator
           :rows="20"
+          :rowsPerPageOptions="[10, 20, 50]"
+          sort-field="receipt_date"
+          :sort-order="-1"
         >
           <Column field="receipt_number" header="Receipt #" style="width: 150px">
             <template #body="{ data }">
@@ -117,13 +106,13 @@
             </template>
           </Column>
 
-          <Column field="receipt_date" header="Date" style="width: 120px">
+          <Column field="receipt_date" header="Date" sortable style="width: 120px">
             <template #body="{ data }">
               {{ formatDate(data.receipt_date) }}
             </template>
           </Column>
 
-          <Column header="Supplier">
+          <Column field="supplier.name" header="Supplier" sortable>
             <template #body="{ data }">
               <div>
                 <div class="font-semibold">{{ data.supplier?.name || 'N/A' }}</div>
@@ -134,13 +123,13 @@
             </template>
           </Column>
 
-          <Column field="total_items" header="Items" style="width: 100px">
+          <Column field="total_items" header="Items" sortable style="width: 100px">
             <template #body="{ data }">
               <span class="font-semibold">{{ data.total_items }}</span>
             </template>
           </Column>
 
-          <Column field="total_amount" header="Total Amount" style="width: 150px">
+          <Column field="total_amount" header="Total Amount" sortable style="width: 150px">
             <template #body="{ data }">
               {{ formatCurrency(data.total_amount) }}
             </template>
@@ -222,8 +211,7 @@ const filters = ref({
   searchQuery: '',
   supplierId: null,
   status: null,
-  startDate: null,
-  endDate: null,
+  dateRange: null,
 });
 
 const searchTimeout = ref(null);
@@ -242,11 +230,21 @@ const suppliers = computed(() => supplierStore.suppliers);
 // Methods
 const loadReceipts = async () => {
   try {
-    // Format dates for API
+    // Format dates for API - extract from dateRange
+    let startDate = null;
+    let endDate = null;
+
+    if (filters.value.dateRange && filters.value.dateRange.length > 0) {
+      startDate = filters.value.dateRange[0] ? formatDateForAPI(filters.value.dateRange[0]) : null;
+      endDate = filters.value.dateRange[1] ? formatDateForAPI(filters.value.dateRange[1]) : null;
+    }
+
     const filterData = {
-      ...filters.value,
-      startDate: filters.value.startDate ? formatDateForAPI(filters.value.startDate) : null,
-      endDate: filters.value.endDate ? formatDateForAPI(filters.value.endDate) : null,
+      searchQuery: filters.value.searchQuery,
+      supplierId: filters.value.supplierId,
+      status: filters.value.status,
+      startDate,
+      endDate,
     };
     stockReceiptStore.setFilters(filterData);
     await stockReceiptStore.loadReceipts();
@@ -274,8 +272,7 @@ const clearFilters = () => {
     searchQuery: '',
     supplierId: null,
     status: null,
-    startDate: null,
-    endDate: null,
+    dateRange: null,
   };
   stockReceiptStore.clearFilters();
   loadReceipts();

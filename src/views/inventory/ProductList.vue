@@ -66,14 +66,14 @@
         <DataTable
           :value="productStore.products"
           :loading="productStore.loading"
-          :rows="pagination.limit"
-          :total-records="pagination.total"
+          :rows="10"
+          :rowsPerPageOptions="[10, 20, 50]"
           paginator
-          lazy
           striped-rows
           show-gridlines
           responsive-layout="scroll"
-          @page="onPage"
+          sort-field="name"
+          :sort-order="1"
         >
           <template #empty>
             <div class="text-center p-4">
@@ -97,9 +97,9 @@
             </template>
           </Column>
 
-          <Column field="productType.name" header="Type" :sortable="true"></Column>
+          <Column field="productType.name" header="Type"></Column>
 
-          <Column field="category.name" header="Category" :sortable="true"></Column>
+          <Column field="category.name" header="Category"></Column>
 
           <Column field="total_stock" header="Stock" :sortable="true">
             <template #body="{ data }">
@@ -120,7 +120,7 @@
 
           <Column field="reorder_level" header="Reorder Level" :sortable="true"></Column>
 
-          <Column field="status" header="Status" :sortable="true">
+          <Column field="status" header="Status">
             <template #body="{ data }">
               <Tag :severity="data.status === 'active' ? 'success' : 'danger'">
                 {{ data.status }}

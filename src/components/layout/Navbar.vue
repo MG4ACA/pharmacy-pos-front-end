@@ -17,7 +17,7 @@
         <Button
           type="button"
           icon="pi pi-user"
-          :label="authStore.user?.full_name || 'User'"
+          :label="authStore.user?.username || 'User'"
           text
           @click="toggleUserMenu"
         />
