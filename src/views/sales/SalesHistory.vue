@@ -124,12 +124,12 @@
 
           <Column header="Items" style="min-width: 200px">
             <template #body="{ data }">
-              <div v-if="data.items && data.items.length > 0" class="text-sm">
-                <div v-for="(item, index) in data.items.slice(0, 2)" :key="index" class="mb-1">
+              <div v-if="data.saleItems && data.saleItems.length > 0" class="text-sm">
+                <div v-for="(item, index) in data.saleItems.slice(0, 2)" :key="index" class="mb-1">
                   {{ item.product?.name }} ({{ item.quantity }})
                 </div>
-                <div v-if="data.items.length > 2" class="text-600">
-                  +{{ data.items.length - 2 }} more items
+                <div v-if="data.saleItems.length > 2" class="text-600">
+                  +{{ data.saleItems.length - 2 }} more items
                 </div>
               </div>
             </template>
@@ -187,7 +187,7 @@
 
           <Column field="user" header="User" style="min-width: 150px">
             <template #body="{ data }">
-              {{ data.user?.full_name || data.user?.username || '-' }}
+              {{ data.user?.username || 'N/A' }}
             </template>
           </Column>
 
@@ -251,7 +251,7 @@
         <!-- Items Table -->
         <h4 class="mb-3">Sale Items</h4>
         <DataTable
-          :value="selectedSale.items"
+          :value="selectedSale.saleItems"
           class="p-datatable-sm mb-4"
           responsiveLayout="scroll"
         >
@@ -263,9 +263,9 @@
           <Column field="subtotal" header="Subtotal" style="width: 120px">
             <template #body="{ data }">Rs. {{ parseFloat(data.subtotal).toFixed(2) }}</template>
           </Column>
-          <Column field="stock_entry" header="Batch" style="width: 150px">
+          <Column field="stockEntry" header="Batch" style="width: 150px">
             <template #body="{ data }">
-              {{ data.stock_entry?.batch_number || '-' }}
+              {{ data.stockEntry?.batch_number || '-' }}
             </template>
           </Column>
         </DataTable>

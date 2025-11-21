@@ -143,16 +143,19 @@ class StockController {
    * This method is used when making a sale
    * @param {Number} productId - Product ID
    * @param {Number} quantity - Quantity to deduct
+   * @param {Object} transaction - Optional transaction object
    * @returns {Object} Result with success status and deduction details
    */
-  async deductStock(productId, quantity) {
-    const transaction = await sequelize.transaction();
+  async deductStock(productId, quantity, transaction = null) {
+    const t = transaction || (await sequelize.transaction());
+    const shouldCommit = !transaction; // Only commit if we created the transaction
 
     try {
       let remainingToDeduct = quantity;
       const deductions = [];
 
       // Get available stock entries ordered by FIFO (oldest first)
+      // Use lock to prevent concurrent updates
       const stockEntries = await StockEntry.findAll({
         where: {
           product_id: productId,
@@ -162,11 +165,12 @@ class StockController {
           ['entry_date', 'ASC'],
           ['id', 'ASC'],
         ],
-        transaction,
+        lock: t.LOCK.UPDATE,
+        transaction: t,
       });
 
       if (stockEntries.length === 0) {
-        await transaction.rollback();
+        if (shouldCommit) await t.rollback();
         return {
           success: false,
           message: 'No stock available for this product',
@@ -177,7 +181,7 @@ class StockController {
       const totalAvailable = stockEntries.reduce((sum, entry) => sum + entry.quantity_remaining, 0);
 
       if (totalAvailable < quantity) {
-        await transaction.rollback();
+        if (shouldCommit) await t.rollback();
         return {
           success: false,
           message: `Insufficient stock. Available: ${totalAvailable}, Requested: ${quantity}`,
@@ -194,9 +198,8 @@ class StockController {
         await entry.update(
           {
             quantity_remaining: entry.quantity_remaining - deductFromThisBatch,
-            updated_at: new Date(),
           },
-          { transaction }
+          { transaction: t }
         );
 
         deductions.push({
@@ -210,7 +213,7 @@ class StockController {
         remainingToDeduct -= deductFromThisBatch;
       }
 
-      await transaction.commit();
+      if (shouldCommit) await t.commit();
 
       return {
         success: true,
@@ -221,7 +224,7 @@ class StockController {
         },
       };
     } catch (error) {
-      await transaction.rollback();
+      if (shouldCommit) await t.rollback();
       console.error('Deduct stock error:', error);
       return {
         success: false,

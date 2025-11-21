@@ -198,16 +198,16 @@ class SaleController {
           },
           {
             model: SaleItem,
-            as: 'items',
+            as: 'saleItems',
             include: [
               {
                 model: Product,
                 as: 'product',
-                attributes: ['id', 'name', 'generic_name', 'category', 'type'],
+                attributes: ['id', 'name', 'barcode', 'description'],
               },
               {
                 model: StockEntry,
-                as: 'stock_entry',
+                as: 'stockEntry',
                 attributes: ['id', 'batch_number', 'expiry_date'],
               },
             ],
@@ -222,9 +222,12 @@ class SaleController {
         };
       }
 
+      // Convert Sequelize instance to plain JSON for IPC serialization
+      const plainSale = sale.toJSON();
+
       return {
         success: true,
-        data: sale,
+        data: plainSale,
       };
     } catch (error) {
       console.error('SaleController.getSaleById error:', error);
@@ -295,7 +298,7 @@ class SaleController {
           },
           {
             model: SaleItem,
-            as: 'items',
+            as: 'saleItems',
             include: [
               {
                 model: Product,
@@ -310,9 +313,12 @@ class SaleController {
         offset: parseInt(offset),
       });
 
+      // Convert Sequelize instances to plain JSON
+      const plainSales = sales.map((sale) => sale.toJSON());
+
       return {
         success: true,
-        data: sales,
+        data: plainSales,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
