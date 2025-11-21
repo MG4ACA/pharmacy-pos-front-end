@@ -391,7 +391,7 @@ class SupplierController {
           },
           {
             model: ProductType,
-            as: 'type',
+            as: 'productType',
             attributes: ['id', 'name'],
           },
         ],
@@ -406,7 +406,7 @@ class SupplierController {
           name: plain.name,
           barcode: plain.barcode || '-',
           category: plain.category?.name || '-',
-          type: plain.type?.name || '-',
+          type: plain.productType?.name || '-',
         };
       });
 

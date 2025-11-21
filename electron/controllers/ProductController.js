@@ -371,8 +371,10 @@ class ProductController {
 
         const avgPrice =
           plainProduct.stockEntries?.length > 0
-            ? plainProduct.stockEntries.reduce((sum, entry) => sum + entry.selling_price, 0) /
-              plainProduct.stockEntries.length
+            ? plainProduct.stockEntries.reduce(
+                (sum, entry) => sum + parseFloat(entry.selling_price),
+                0
+              ) / plainProduct.stockEntries.length
             : 0;
 
         delete plainProduct.stockEntries;

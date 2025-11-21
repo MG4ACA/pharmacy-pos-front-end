@@ -1,36 +1,23 @@
 <template>
   <div class="pos-container">
-    <!-- Header -->
-    <div
-      class="pos-header flex justify-content-between align-items-center mb-4 p-3 surface-card border-round"
-    >
-      <div>
-        <h2 class="m-0 text-primary">Point of Sale</h2>
-        <p class="text-600 m-0 mt-1">{{ currentDate }}</p>
-      </div>
-      <div>
-        <Button
-          label="Sales History"
-          icon="pi pi-history"
-          class="p-button-outlined mr-2"
-          @click="$router.push('/sales/history')"
-        />
-        <Button
-          label="Clear Cart"
-          icon="pi pi-trash"
-          severity="danger"
-          class="p-button-outlined"
-          :disabled="cart.length === 0"
-          @click="confirmClearCart"
-        />
-      </div>
-    </div>
-
     <div class="pos-content grid">
       <!-- Left Panel: Product Search & Cart -->
       <div class="col-12 lg:col-8">
         <!-- Product Search -->
-        <Panel header="Product Search" class="mb-3">
+        <Panel class="mb-3">
+          <template #header>
+            <div class="flex items-center gap-2 w-full justify-content-between align-items-center">
+              <span class="font-bold">Product Search</span>
+              <Button
+                label="Clear Cart"
+                icon="pi pi-trash mr-2"
+                severity="danger"
+                class="p-button-outlined"
+                :disabled="cart.length === 0"
+                @click="confirmClearCart"
+              />
+            </div>
+          </template>
           <div class="grid">
             <div class="col-12">
               <AutoComplete
@@ -50,10 +37,17 @@
                     <div>
                       <div class="font-semibold">{{ item.name }}</div>
                       <div class="text-sm text-600">{{ item.generic_name }}</div>
-                      <div class="text-xs text-500">{{ item.category }}</div>
+                      <div class="text-xs text-500">{{ item.category.name }}</div>
                     </div>
                     <div class="text-right">
-                      <div class="font-bold text-primary">Rs. {{ item.selling_price }}</div>
+                      <div class="font-bold text-primary">
+                        Rs.
+                        {{
+                          item.average_selling_price
+                            ? item.average_selling_price.toFixed(2)
+                            : item.selling_price.toFixed(2)
+                        }}
+                      </div>
                       <div
                         class="text-sm"
                         :class="item.total_stock > 0 ? 'text-green-600' : 'text-red-600'"
@@ -70,64 +64,107 @@
 
         <!-- Shopping Cart -->
         <Panel header="Shopping Cart" class="cart-panel">
-          <DataTable
-            :value="cart"
-            :empty-message="'Cart is empty. Search and add products.'"
-            class="p-datatable-sm"
-            responsiveLayout="scroll"
-          >
-            <Column field="product_name" header="Product" style="min-width: 200px">
-              <template #body="{ data }">
-                <div>
-                  <div class="font-semibold">{{ data.product_name }}</div>
-                  <div class="text-sm text-600">{{ data.generic_name }}</div>
+          <div v-if="cart.length === 0" class="text-center py-6 text-600">
+            <i class="pi pi-shopping-cart text-6xl mb-3 text-400"></i>
+            <p class="text-xl">Cart is empty</p>
+            <p class="text-sm">Search and add products to get started</p>
+          </div>
+
+          <div v-else class="cart-items">
+            <div
+              v-for="item in cart"
+              :key="item.product_id"
+              class="cart-item surface-card border-round mb-3 p-1"
+            >
+              <div class="grid align-items-center justify-content-between">
+                <!-- Product Info -->
+                <div class="col-3 pr-0">
+                  <div class="font-semibold mb-1" style="font-size: 0.9em">
+                    {{ item.product_name }}
+                  </div>
+                  <div class="text-500 mb-2" style="font-size: 0.75em">
+                    {{ item.category.name }}
+                  </div>
+                  <div class="text-600" style="font-size: 0.7em">
+                    <span class="font-semibold">Available:</span>
+                    {{ item.available_quantity }}
+                    units
+                  </div>
                 </div>
-              </template>
-            </Column>
 
-            <Column field="category" header="Category" style="min-width: 120px" />
+                <!-- Unit Price (Editable) -->
+                <div class="col-3 pr-0">
+                  <label class="block text-600 mb-1" style="font-size: 0.7em">
+                    Unit Price (Rs.)
+                  </label>
+                  <InputNumber
+                    v-model="item.unit_price"
+                    mode="currency"
+                    currency="LKR"
+                    locale="en-LK"
+                    :min="0"
+                    @update:modelValue="updateUnitPrice(item.product_id, $event)"
+                    class="input-compact unit-price-input"
+                    :pt="{
+                      input: {
+                        class: 'p-inputtext-sm',
+                        style: 'font-size: 0.8em; height: 2rem; padding: 0.3rem 0.5rem',
+                      },
+                    }"
+                  />
+                </div>
 
-            <Column field="unit_price" header="Unit Price" style="min-width: 120px">
-              <template #body="{ data }">Rs. {{ data.unit_price.toFixed(2) }}</template>
-            </Column>
+                <!-- Quantity -->
+                <div class="col-2 pr-0">
+                  <label class="block text-600 mb-1" style="font-size: 0.7em">Quantity</label>
+                  <InputNumber
+                    v-model="item.quantity"
+                    :min="1"
+                    :max="item.available_quantity"
+                    showButtons
+                    mode="decimal"
+                    decrementButtonClass="p-button-danger p-button-sm"
+                    incrementButtonClass="p-button-success p-button-sm"
+                    @update:modelValue="updateQuantity(item.product_id, $event)"
+                    class="input-compact quantity-input"
+                  />
+                </div>
+                <!-- Subtotal -->
+                <div class="col-2 text-right pr-0">
+                  <label class="block text-600 mb-1" style="font-size: 0.7em">Subtotal</label>
+                  <div class="font-bold text-primary" style="font-size: 1.1em">
+                    Rs. {{ (item.quantity * item.unit_price).toFixed(2) }}
+                  </div>
+                </div>
 
-            <Column field="quantity" header="Quantity" style="min-width: 150px">
-              <template #body="{ data }">
-                <InputNumber
-                  v-model="data.quantity"
-                  :min="1"
-                  :max="data.available_quantity"
-                  showButtons
-                  buttonLayout="horizontal"
-                  decrementButtonClass="p-button-danger"
-                  incrementButtonClass="p-button-success"
-                  @update:modelValue="(value) => updateQuantity(data.product_id, value)"
-                  class="w-full"
-                  :pt="{
-                    input: { class: 'text-center w-4rem' },
-                  }"
-                />
-              </template>
-            </Column>
+                <!-- Remove Button -->
+                <div class="col-1 text-right">
+                  <Button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    text
+                    rounded
+                    @click="removeItem(item.product_id)"
+                    v-tooltip.left="'Remove item'"
+                  />
+                </div>
+              </div>
+            </div>
 
-            <Column field="subtotal" header="Subtotal" style="min-width: 120px">
-              <template #body="{ data }">
-                Rs. {{ (data.quantity * data.unit_price).toFixed(2) }}
-              </template>
-            </Column>
-
-            <Column header="Action" style="width: 100px">
-              <template #body="{ data }">
-                <Button
-                  icon="pi pi-trash"
-                  severity="danger"
-                  text
-                  rounded
-                  @click="removeItem(data.product_id)"
-                />
-              </template>
-            </Column>
-          </DataTable>
+            <!-- Cart Summary -->
+            <div class="cart-summary surface-100 border-round p-3 mt-3">
+              <div class="flex justify-content-between align-items-center">
+                <span class="text-600" style="font-size: 0.85em">Total Items:</span>
+                <span class="font-semibold" style="font-size: 0.85em">{{ cart.length }}</span>
+              </div>
+              <div class="flex justify-content-between align-items-center mt-2">
+                <span class="text-600" style="font-size: 0.85em">Total Quantity:</span>
+                <span class="font-semibold" style="font-size: 0.85em">
+                  {{ cart.reduce((sum, item) => sum + item.quantity, 0) }} units
+                </span>
+              </div>
+            </div>
+          </div>
         </Panel>
       </div>
 
@@ -286,8 +323,6 @@ import { useRouter } from 'vue-router';
 
 import AutoComplete from 'primevue/autocomplete';
 import Button from 'primevue/button';
-import Column from 'primevue/column';
-import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
 import Divider from 'primevue/divider';
 import Dropdown from 'primevue/dropdown';
@@ -330,15 +365,6 @@ const notes = computed({
 const isLoading = computed(() => saleStore.isLoading);
 const currentSale = computed(() => saleStore.currentSale);
 
-const currentDate = computed(() => {
-  return new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-});
-
 const paymentMethods = [
   { label: 'Cash', value: 'cash' },
   { label: 'Card', value: 'card' },
@@ -354,17 +380,16 @@ async function searchProducts(event) {
     return;
   }
 
-  // Search products
-  const result = await productStore.searchProducts(query);
-
-  if (result.success) {
-    filteredProducts.value = result.data;
-  } else {
+  try {
+    // Search products - store returns data array directly
+    const products = await productStore.searchProducts(query);
+    filteredProducts.value = products || [];
+  } catch (error) {
     filteredProducts.value = [];
     toast.add({
       severity: 'error',
       summary: 'Search Error',
-      detail: result.message,
+      detail: error.message || 'Failed to search products',
       life: 3000,
     });
   }
@@ -396,6 +421,10 @@ function onProductSelect(event) {
 
 function updateQuantity(productId, quantity) {
   saleStore.updateCartItemQuantity(productId, quantity);
+}
+
+function updateUnitPrice(productId, price) {
+  saleStore.updateCartItemPrice(productId, price);
 }
 
 function removeItem(productId) {
@@ -475,7 +504,6 @@ onMounted(() => {
 
 <style scoped>
 .pos-container {
-  padding: 1rem;
   max-width: 1800px;
   margin: 0 auto;
 }
@@ -488,6 +516,22 @@ onMounted(() => {
   min-height: 400px;
 }
 
+.input-compact > .p-inputtext {
+  width: auto;
+}
+
+.unit-price-input {
+  input {
+    width: 10rem !important;
+  }
+}
+.quantity-input {
+  height: 2.4rem !important;
+}
+
+.p-button-icon-only {
+  padding: 0;
+}
 .billing-summary {
   position: sticky;
   top: 1rem;
@@ -496,6 +540,10 @@ onMounted(() => {
 @media (max-width: 991px) {
   .billing-summary {
     position: static;
+  }
+
+  .cart-items {
+    max-height: 400px;
   }
 }
 </style>

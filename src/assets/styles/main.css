@@ -56,6 +56,15 @@
   margin-right: 15px;
 }
 
+.p-button,
+.p-inputtext {
+  height: 2.4rem;
+}
+
+.p-inputtextarea {
+  height: auto !important;
+}
+
 .p-toast .pi {
   margin-right: 1rem;
 }
@@ -63,6 +72,15 @@
 .p-dropdown-clear-icon {
   top: 1rem;
 }
+
+.quantity-input .p-inputtext {
+  width: 4rem !important;
+}
+
+.unit-price-input .p-inputtext {
+  width: 10rem !important;
+}
+
 /* Animation */
 @keyframes fadeIn {
   from {

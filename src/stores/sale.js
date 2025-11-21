@@ -55,7 +55,7 @@ export const useSaleStore = defineStore('sale', () => {
         product_name: product.name,
         generic_name: product.generic_name,
         category: product.category,
-        unit_price: parseFloat(product.selling_price || 0),
+        unit_price: parseFloat(product.average_selling_price || product.selling_price || 0),
         quantity: 1,
         available_quantity: product.total_stock || 0,
       });
@@ -70,6 +70,13 @@ export const useSaleStore = defineStore('sale', () => {
       } else {
         item.quantity = quantity;
       }
+    }
+  }
+
+  function updateCartItemPrice(productId, price) {
+    const item = cart.value.find((i) => i.product_id === productId);
+    if (item) {
+      item.unit_price = parseFloat(price) || 0;
     }
   }
 
@@ -250,6 +257,7 @@ export const useSaleStore = defineStore('sale', () => {
     // Cart actions
     addToCart,
     updateCartItemQuantity,
+    updateCartItemPrice,
     removeFromCart,
     clearCart,
     setDiscount,
