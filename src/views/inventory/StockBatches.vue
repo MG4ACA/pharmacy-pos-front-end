@@ -1,0 +1,581 @@
+<template>
+  <div class="stock-batches-container p-4">
+    <!-- Header -->
+    <div class="flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="m-0 text-primary" style="font-size: 1.5em">Stock Batches</h2>
+        <p class="text-600 m-0 mt-1" style="font-size: 0.85em">
+          View all stock batches with expiry dates and quantities
+        </p>
+      </div>
+      <div class="flex gap-2">
+        <Button
+          label="Expiring Soon"
+          icon="pi pi-exclamation-triangle"
+          severity="warning"
+          outlined
+          @click="showExpiringOnly"
+          :badge="expiringCount > 0 ? expiringCount.toString() : null"
+          badgeSeverity="danger"
+        />
+        <Button
+          label="Refresh"
+          icon="pi pi-refresh"
+          severity="secondary"
+          outlined
+          @click="loadAllBatches"
+          :loading="isLoading"
+        />
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <Panel header="Filters" :toggleable="true" class="mb-3">
+      <div class="grid">
+        <div class="col-12 md:col-4">
+          <label for="productSearch" class="block mb-2" style="font-size: 0.85em">Product</label>
+          <AutoComplete
+            id="productSearch"
+            v-model="selectedProduct"
+            :suggestions="filteredProducts"
+            @complete="searchProducts"
+            @item-select="onProductSelect"
+            field="name"
+            placeholder="Search product..."
+            class="w-full"
+          >
+            <template #item="{ item }">
+              <div>
+                <div style="font-size: 0.9em">{{ item.name }}</div>
+                <div style="font-size: 0.75em" class="text-500">{{ item.category?.name }}</div>
+              </div>
+            </template>
+          </AutoComplete>
+        </div>
+
+        <div class="col-12 md:col-3">
+          <label for="supplierFilter" class="block mb-2" style="font-size: 0.85em">Supplier</label>
+          <Dropdown
+            id="supplierFilter"
+            v-model="filters.supplierId"
+            :options="suppliers"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="All Suppliers"
+            showClear
+            class="w-full"
+          />
+        </div>
+
+        <div class="col-12 md:col-3">
+          <label for="expiryFilter" class="block mb-2" style="font-size: 0.85em">
+            Expiry Status
+          </label>
+          <Dropdown
+            id="expiryFilter"
+            v-model="filters.expiryStatus"
+            :options="expiryStatusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Batches"
+            class="w-full"
+          />
+        </div>
+
+        <div class="col-12 md:col-2 flex align-items-end">
+          <Button label="Clear Filters" icon="pi pi-filter-slash" outlined @click="clearFilters" />
+        </div>
+      </div>
+    </Panel>
+
+    <!-- Stock Batches Table -->
+    <Card>
+      <template #content>
+        <DataTable
+          :value="filteredBatches"
+          :loading="isLoading"
+          stripedRows
+          responsiveLayout="scroll"
+          :paginator="true"
+          :rows="20"
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          :rowsPerPageOptions="[10, 20, 50]"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} batches"
+          class="p-datatable-sm"
+          sortField="expiry_date"
+          :sortOrder="1"
+        >
+          <template #empty>
+            <div class="text-center py-6">
+              <i class="pi pi-inbox text-6xl text-400 mb-3"></i>
+              <p class="text-xl" style="font-size: 1em">No stock batches found</p>
+              <p class="text-sm text-500" style="font-size: 0.8em">
+                Try adjusting your filters or add stock receipts
+              </p>
+            </div>
+          </template>
+
+          <Column field="product.name" header="Product" sortable style="min-width: 200px">
+            <template #body="{ data }">
+              <div>
+                <div style="font-size: 0.9em" class="font-semibold">
+                  {{ data.product?.name }}
+                </div>
+                <div style="font-size: 0.75em" class="text-500">
+                  {{ data.product?.category?.name }}
+                </div>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="batch_number" header="Batch #" sortable style="min-width: 120px">
+            <template #body="{ data }">
+              <span style="font-size: 0.85em" class="font-semibold">{{ data.batch_number }}</span>
+            </template>
+          </Column>
+
+          <Column field="supplier.name" header="Supplier" sortable style="min-width: 150px">
+            <template #body="{ data }">
+              <span style="font-size: 0.85em">{{ data.supplier?.name || 'N/A' }}</span>
+            </template>
+          </Column>
+
+          <Column field="quantity_remaining" header="Quantity" sortable style="min-width: 100px">
+            <template #body="{ data }">
+              <Tag
+                :value="data.quantity_remaining + ' units'"
+                :severity="data.quantity_remaining > 10 ? 'success' : 'warning'"
+              />
+            </template>
+          </Column>
+
+          <Column field="cost_price" header="Cost Price" sortable style="min-width: 120px">
+            <template #body="{ data }">
+              <span style="font-size: 0.85em">
+                Rs. {{ parseFloat(data.cost_price).toFixed(2) }}
+              </span>
+            </template>
+          </Column>
+
+          <Column field="selling_price" header="Selling Price" sortable style="min-width: 120px">
+            <template #body="{ data }">
+              <span style="font-size: 0.85em" class="font-semibold text-primary">
+                Rs. {{ parseFloat(data.selling_price).toFixed(2) }}
+              </span>
+            </template>
+          </Column>
+
+          <Column field="expiry_date" header="Expiry Date" sortable style="min-width: 130px">
+            <template #body="{ data }">
+              <div v-if="data.expiry_date">
+                <div style="font-size: 0.85em">{{ formatDate(data.expiry_date) }}</div>
+                <Tag
+                  v-if="getExpiryStatus(data.expiry_date) === 'expired'"
+                  value="Expired"
+                  severity="danger"
+                  class="mt-1"
+                  style="font-size: 0.7em"
+                />
+                <Tag
+                  v-else-if="getExpiryStatus(data.expiry_date) === 'expiring'"
+                  value="Expiring Soon"
+                  severity="warning"
+                  class="mt-1"
+                  style="font-size: 0.7em"
+                />
+              </div>
+              <span v-else style="font-size: 0.85em" class="text-500">No expiry</span>
+            </template>
+          </Column>
+
+          <Column field="entry_date" header="Entry Date" sortable style="min-width: 110px">
+            <template #body="{ data }">
+              <span style="font-size: 0.75em" class="text-600">
+                {{ formatDate(data.entry_date) }}
+              </span>
+            </template>
+          </Column>
+
+          <Column header="Actions" :exportable="false" style="width: 100px">
+            <template #body="{ data }">
+              <Button
+                icon="pi pi-eye"
+                severity="info"
+                text
+                rounded
+                @click="viewBatchDetails(data.id)"
+                v-tooltip.left="'View Details'"
+              />
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+    </Card>
+
+    <!-- Batch Details Dialog -->
+    <Dialog
+      v-model:visible="showDetailsDialog"
+      header="Batch Details"
+      :modal="true"
+      :style="{ width: '600px' }"
+    >
+      <div v-if="currentBatch" class="batch-details">
+        <!-- Product Info -->
+        <div class="surface-100 border-round p-3 mb-3">
+          <h3 class="mt-0 mb-2" style="font-size: 1.1em">Product Information</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Product Name</label>
+              <p style="font-size: 0.9em" class="mt-1 font-semibold">
+                {{ currentBatch.product?.name }}
+              </p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Category</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                {{ currentBatch.product?.category?.name }}
+              </p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Barcode</label>
+              <p style="font-size: 0.9em" class="mt-1">{{ currentBatch.product?.barcode }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Batch Info -->
+        <div class="surface-100 border-round p-3 mb-3">
+          <h3 class="mt-0 mb-2" style="font-size: 1.1em">Batch Information</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Batch Number</label>
+              <p style="font-size: 0.9em" class="mt-1 font-semibold">
+                {{ currentBatch.batch_number }}
+              </p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Quantity Remaining</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                <Tag
+                  :value="currentBatch.quantity_remaining + ' units'"
+                  :severity="currentBatch.quantity_remaining > 10 ? 'success' : 'warning'"
+                />
+              </p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Cost Price</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                Rs. {{ parseFloat(currentBatch.cost_price).toFixed(2) }}
+              </p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Selling Price</label>
+              <p style="font-size: 0.9em" class="mt-1 text-primary font-semibold">
+                Rs. {{ parseFloat(currentBatch.selling_price).toFixed(2) }}
+              </p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Entry Date</label>
+              <p style="font-size: 0.9em" class="mt-1">{{ formatDate(currentBatch.entry_date) }}</p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Expiry Date</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                {{ currentBatch.expiry_date ? formatDate(currentBatch.expiry_date) : 'No expiry' }}
+                <Tag
+                  v-if="
+                    currentBatch.expiry_date &&
+                    getExpiryStatus(currentBatch.expiry_date) === 'expired'
+                  "
+                  value="Expired"
+                  severity="danger"
+                  class="ml-2"
+                  style="font-size: 0.7em"
+                />
+                <Tag
+                  v-else-if="
+                    currentBatch.expiry_date &&
+                    getExpiryStatus(currentBatch.expiry_date) === 'expiring'
+                  "
+                  value="Expiring Soon"
+                  severity="warning"
+                  class="ml-2"
+                  style="font-size: 0.7em"
+                />
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supplier Info -->
+        <div class="surface-100 border-round p-3">
+          <h3 class="mt-0 mb-2" style="font-size: 1.1em">Supplier Information</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Supplier Name</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                {{ currentBatch.supplier?.name || 'N/A' }}
+              </p>
+            </div>
+            <div class="col-6" v-if="currentBatch.supplier?.contact_person">
+              <label style="font-size: 0.75em" class="text-600">Contact Person</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                {{ currentBatch.supplier.contact_person }}
+              </p>
+            </div>
+            <div class="col-6" v-if="currentBatch.supplier?.phone">
+              <label style="font-size: 0.75em" class="text-600">Phone</label>
+              <p style="font-size: 0.9em" class="mt-1">{{ currentBatch.supplier.phone }}</p>
+            </div>
+            <div class="col-6" v-if="currentBatch.supplier?.email">
+              <label style="font-size: 0.75em" class="text-600">Email</label>
+              <p style="font-size: 0.9em" class="mt-1">{{ currentBatch.supplier.email }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <Button label="Close" icon="pi pi-times" @click="showDetailsDialog = false" autofocus />
+      </template>
+    </Dialog>
+  </div>
+</template>
+
+<script setup>
+import { useProductStore } from '@/stores/product';
+import { useStockStore } from '@/stores/stock';
+import { useSupplierStore } from '@/stores/supplier';
+import { useToast } from 'primevue/usetoast';
+import { computed, onMounted, ref } from 'vue';
+
+import AutoComplete from 'primevue/autocomplete';
+import Button from 'primevue/button';
+import Card from 'primevue/card';
+import Column from 'primevue/column';
+import DataTable from 'primevue/datatable';
+import Dialog from 'primevue/dialog';
+import Dropdown from 'primevue/dropdown';
+import Panel from 'primevue/panel';
+import Tag from 'primevue/tag';
+
+const toast = useToast();
+const stockStore = useStockStore();
+const productStore = useProductStore();
+const supplierStore = useSupplierStore();
+
+// Refs
+const allBatches = ref([]);
+const selectedProduct = ref(null);
+const filteredProducts = ref([]);
+const suppliers = ref([]);
+const showDetailsDialog = ref(false);
+const filters = ref({
+  supplierId: null,
+  expiryStatus: null,
+});
+
+const expiryStatusOptions = [
+  { label: 'All Batches', value: null },
+  { label: 'Expiring Soon (30 days)', value: 'expiring' },
+  { label: 'Expired', value: 'expired' },
+  { label: 'Valid', value: 'valid' },
+];
+
+// Lifecycle
+onMounted(() => {
+  initializeData();
+});
+
+// Helper function - must be defined before computed properties
+const getExpiryStatus = (expiryDate) => {
+  if (!expiryDate) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const expiry = new Date(expiryDate);
+  expiry.setHours(0, 0, 0, 0);
+
+  const diffTime = expiry.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return 'expired';
+  if (diffDays <= 30) return 'expiring';
+  return 'valid';
+};
+
+// Computed
+const isLoading = computed(() => stockStore.isLoading);
+const currentBatch = computed(() => stockStore.currentBatch);
+
+const filteredBatches = computed(() => {
+  let result = allBatches.value;
+
+  if (filters.value.supplierId) {
+    result = result.filter((batch) => batch.supplier?.id === filters.value.supplierId);
+  }
+
+  if (filters.value.expiryStatus) {
+    result = result.filter((batch) => {
+      if (!batch.expiry_date && filters.value.expiryStatus === 'valid') return true;
+      if (!batch.expiry_date) return false;
+
+      const status = getExpiryStatus(batch.expiry_date);
+      return status === filters.value.expiryStatus;
+    });
+  }
+
+  return result;
+});
+
+const expiringCount = computed(() => {
+  return allBatches.value.filter((batch) => {
+    if (!batch.expiry_date) return false;
+    return getExpiryStatus(batch.expiry_date) === 'expiring';
+  }).length;
+});
+
+// Methods
+const loadAllBatches = async () => {
+  try {
+    // Fetch all products first
+    await productStore.fetchProducts();
+
+    // Get stock for each product
+    const products = productStore.products;
+    const allEntries = [];
+
+    for (const product of products) {
+      try {
+        const entries = await stockStore.fetchStockByProduct(product.id);
+        // Entries already include product data from backend
+        allEntries.push(...entries);
+      } catch (error) {
+        console.error(`Failed to load stock for product ${product.id}:`, error);
+      }
+    }
+
+    allBatches.value = allEntries;
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load stock batches',
+      life: 5000,
+    });
+  }
+};
+
+const searchProducts = async (event) => {
+  const query = event.query.trim().toLowerCase();
+
+  if (query.length < 2) {
+    filteredProducts.value = [];
+    return;
+  }
+
+  try {
+    const products = await productStore.searchProducts(query);
+    filteredProducts.value = products || [];
+  } catch (error) {
+    filteredProducts.value = [];
+  }
+};
+
+const onProductSelect = async (event) => {
+  const product = event.value;
+
+  try {
+    const entries = await stockStore.fetchStockByProduct(product.id);
+    // Entries already include product data from backend
+    allBatches.value = entries;
+
+    toast.add({
+      severity: 'success',
+      summary: 'Filtered',
+      detail: `Showing batches for ${product.name}`,
+      life: 3000,
+    });
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load product batches',
+      life: 5000,
+    });
+  }
+};
+
+const showExpiringOnly = () => {
+  filters.value.expiryStatus = 'expiring';
+  toast.add({
+    severity: 'info',
+    summary: 'Filter Applied',
+    detail: `Showing ${expiringCount.value} expiring batches`,
+    life: 3000,
+  });
+};
+
+const clearFilters = () => {
+  filters.value = {
+    supplierId: null,
+    expiryStatus: null,
+  };
+  selectedProduct.value = null;
+  loadAllBatches();
+};
+
+const viewBatchDetails = async (batchId) => {
+  try {
+    await stockStore.fetchBatchDetails(batchId);
+    showDetailsDialog.value = true;
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load batch details',
+      life: 5000,
+    });
+  }
+};
+
+const formatDate = (date) => {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleDateString('en-GB');
+};
+
+// Initialize data
+const initializeData = async () => {
+  await loadAllBatches();
+
+  // Load suppliers for filter
+  try {
+    await supplierStore.fetchSuppliers();
+    suppliers.value = supplierStore.suppliers;
+  } catch (error) {
+    console.error('Failed to load suppliers:', error);
+  }
+};
+</script>
+
+<style scoped>
+.stock-batches-container {
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.batch-details h3 {
+  color: var(--primary-color);
+}
+
+.batch-details label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.batch-details p {
+  margin: 0;
+}
+</style>

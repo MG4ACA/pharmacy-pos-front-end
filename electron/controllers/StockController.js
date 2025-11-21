@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
-import { Product, StockEntry, Supplier } from '../database/models/index.js';
+import sequelize from '../database/connection.js';
+import { Category, Product, ProductType, StockEntry, Supplier } from '../database/models/index.js';
 
 class StockController {
   /**
@@ -16,9 +17,26 @@ class StockController {
         },
         include: [
           {
+            model: Product,
+            as: 'product',
+            attributes: ['id', 'name', 'barcode'],
+            include: [
+              {
+                model: Category,
+                as: 'category',
+                attributes: ['id', 'name'],
+              },
+              {
+                model: ProductType,
+                as: 'productType',
+                attributes: ['id', 'name'],
+              },
+            ],
+          },
+          {
             model: Supplier,
             as: 'supplier',
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'contact_person', 'email', 'phone'],
           },
         ],
         order: [
@@ -55,7 +73,19 @@ class StockController {
           {
             model: Product,
             as: 'product',
-            attributes: ['id', 'name', 'barcode', 'product_type_id', 'category_id'],
+            attributes: ['id', 'name', 'barcode'],
+            include: [
+              {
+                model: Category,
+                as: 'category',
+                attributes: ['id', 'name'],
+              },
+              {
+                model: ProductType,
+                as: 'productType',
+                attributes: ['id', 'name'],
+              },
+            ],
           },
           {
             model: Supplier,
@@ -93,6 +123,8 @@ class StockController {
    * @returns {Object} Result with success status and deduction details
    */
   async deductStock(productId, quantity) {
+    const transaction = await sequelize.transaction();
+
     try {
       let remainingToDeduct = quantity;
       const deductions = [];
@@ -107,9 +139,11 @@ class StockController {
           ['entry_date', 'ASC'],
           ['id', 'ASC'],
         ],
+        transaction,
       });
 
       if (stockEntries.length === 0) {
+        await transaction.rollback();
         return {
           success: false,
           message: 'No stock available for this product',
@@ -120,6 +154,7 @@ class StockController {
       const totalAvailable = stockEntries.reduce((sum, entry) => sum + entry.quantity_remaining, 0);
 
       if (totalAvailable < quantity) {
+        await transaction.rollback();
         return {
           success: false,
           message: `Insufficient stock. Available: ${totalAvailable}, Requested: ${quantity}`,
@@ -133,9 +168,13 @@ class StockController {
         const deductFromThisBatch = Math.min(entry.quantity_remaining, remainingToDeduct);
 
         // Update the stock entry
-        await entry.update({
-          quantity_remaining: entry.quantity_remaining - deductFromThisBatch,
-        });
+        await entry.update(
+          {
+            quantity_remaining: entry.quantity_remaining - deductFromThisBatch,
+            updated_at: new Date(),
+          },
+          { transaction }
+        );
 
         deductions.push({
           batch_id: entry.id,
@@ -148,6 +187,8 @@ class StockController {
         remainingToDeduct -= deductFromThisBatch;
       }
 
+      await transaction.commit();
+
       return {
         success: true,
         message: 'Stock deducted successfully',
@@ -157,6 +198,7 @@ class StockController {
         },
       };
     } catch (error) {
+      await transaction.rollback();
       console.error('Deduct stock error:', error);
       return {
         success: false,
@@ -190,11 +232,23 @@ class StockController {
             model: Product,
             as: 'product',
             attributes: ['id', 'name', 'barcode'],
+            include: [
+              {
+                model: Category,
+                as: 'category',
+                attributes: ['id', 'name'],
+              },
+              {
+                model: ProductType,
+                as: 'productType',
+                attributes: ['id', 'name'],
+              },
+            ],
           },
           {
             model: Supplier,
             as: 'supplier',
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'contact_person', 'email', 'phone'],
           },
         ],
         order: [['expiry_date', 'ASC']],

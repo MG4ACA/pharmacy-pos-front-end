@@ -58,6 +58,11 @@ const routes = [
         component: () => import('@/views/stockReceipts/CreateStockReceipt.vue'),
       },
       {
+        path: 'inventory/stock-batches',
+        name: 'StockBatches',
+        component: () => import('@/views/inventory/StockBatches.vue'),
+      },
+      {
         path: 'suppliers',
         name: 'SupplierList',
         component: () => import('@/views/suppliers/SupplierList.vue'),
