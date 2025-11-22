@@ -805,7 +805,7 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 
 ---
 
-### 2.3 Supplier Management
+### 2.3 Supplier Management ✅
 
 **Tasks**:
 
@@ -833,6 +833,56 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 - `supplier:delete` ✅
 - `supplier:getActive` ✅ (Extra)
 - `supplier:getProducts` ✅
+
+---
+
+### 2.5 Stock Batches Viewing ✅
+
+**Tasks**:
+
+- [x] Create stockHandlers.js IPC registration
+- [x] Create StockService.js frontend service
+- [x] Create stock.js Pinia store
+- [x] Create StockBatches.vue component
+- [x] Add route for Stock Batches page
+- [x] Update navigation menu
+- [x] Register handlers in main.js
+
+**Features**:
+
+- View all stock batches with FIFO order
+- Filter by product (AutoComplete search)
+- Filter by supplier
+- Filter by expiry status (expiring soon, expired, valid)
+- View batch details in dialog
+- Color-coded expiry warnings (red < 30 days, yellow < 90 days)
+- Show batch numbers, quantities, cost/selling prices
+- Display supplier information per batch
+- Responsive DataTable with pagination
+
+**IPC Channels**:
+
+- `stock:getByProduct` ✅ - Get all batches for a product
+- `stock:getBatchDetails` ✅ - Get detailed info for specific batch
+- `stock:deduct` ✅ - Internal use for sales (FIFO deduction)
+- `stock:getExpiring` ✅ - Get batches expiring within N days
+
+**Components Created**:
+
+- `electron/ipc/stockHandlers.js` - IPC handler registration
+- `src/services/StockService.js` - Frontend service layer
+- `src/stores/stock.js` - Pinia store for stock state
+- `src/views/inventory/StockBatches.vue` - Main view component
+
+**UI Components Used**:
+
+- PrimeVue DataTable with sorting/pagination
+- AutoComplete for product search
+- Dropdown for filters
+- Panel for filter section
+- Dialog for batch details
+- Tag for status indicators
+- Card for table container
 
 ---
 
@@ -908,17 +958,45 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 - [x] Display all sales with filters
 - [x] View sale details
 - [x] Search by date range
+- [x] Implement date range picker (single Calendar component)
+- [x] Add auto-trigger filters (remove Apply Filters button)
+- [x] Implement sales editing functionality
+- [x] Add sale items management (edit quantities, prices, remove items)
+- [x] Implement automatic stock adjustments on sale edits
 
 **Features**:
 
-- ✅ Date range filter (start/end)
-- ✅ Payment method filter
-- ✅ Payment status filter
+- ✅ Date range filter with single Calendar picker (selection-mode="range")
+- ✅ Payment method filter with auto-trigger
+- ✅ Payment status filter with auto-trigger
+- ✅ Refresh button for manual data reload
 - ✅ Paginated results
-- ✅ Sale details dialog
+- ✅ Sale details dialog (read-only)
+- ✅ Sale edit dialog with:
+  - Editable discount amount
+  - Editable tax amount
+  - Payment method update
+  - Payment status update
+  - Notes field
+  - Real-time total recalculation
+- ✅ Sale items management:
+  - Edit item quantity with +/- buttons
+  - Edit item unit price
+  - Remove items (minimum 1 item validation)
+  - Automatic subtotal recalculation
+  - Real-time total updates
+- ✅ Automatic stock adjustments:
+  - FIFO deduction on quantity increase
+  - Return to original batch on quantity decrease
+  - Full stock return on item removal
+  - Transaction-based with rollback on errors
 - ✅ Items list with batch tracking
 - ✅ User (cashier) information
 - ✅ Color-coded payment methods and statuses
+
+**IPC Channels**:
+
+- ✅ `sale:update` - Update sale with items
 
 **Moved to Phase 4**:
 
@@ -1055,9 +1133,98 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 
 ---
 
+## 📋 Recent Enhancements (Post Phase 3.2)
+
+### Sales History UI/UX Improvements
+
+**Date Range Picker Implementation**:
+- Replaced separate start/end date filters with single Calendar component
+- Uses `selection-mode="range"` for better user experience
+- Consistent with StockReceiptList and other components
+
+**Filter Auto-Triggers**:
+- Removed "Apply Filters" button for streamlined UX
+- Added `@change` triggers to payment method dropdown
+- Added `@change` triggers to payment status dropdown
+- Added `@date-select` trigger to date range picker
+- Filters apply automatically on selection
+
+**Layout Consistency**:
+- Updated filter layout from grid to flex (`flex justify-content-between`)
+- Reduced font size to 0.85em for labels
+- Matched layout pattern used in Products, Stock Receipts, and Stock Batches
+
+**Refresh Button**:
+- Added refresh icon button next to Clear button
+- Allows manual data reload without changing filters
+
+### Sales Edit & Management Features
+
+**Sale-Level Editing**:
+- Edit dialog (800px width, maximizable) for modifying completed sales
+- Editable fields:
+  - Discount amount (with validation)
+  - Tax amount (with validation)
+  - Payment method (Cash/Card/Other)
+  - Payment status (Pending/Partial/Paid)
+  - Notes (Textarea)
+- Real-time total recalculation: `subtotal - discount + tax`
+- Transaction-based updates with automatic rollback on errors
+
+**Sale Items Management**:
+- Editable items DataTable with:
+  - Quantity adjustment using InputNumber with +/- buttons
+  - Unit price editing (with validation)
+  - Remove button per item (minimum 1 item enforced)
+  - Automatic subtotal calculation per item
+- Real-time total calculations:
+  - Item subtotal: `quantity × unit_price`
+  - Sale subtotal: `sum of all item subtotals`
+  - Final total: `subtotal - discount + tax`
+
+**Automatic Stock Adjustments**:
+- **Quantity Increase**: 
+  - Calculates difference: `new_quantity - original_quantity`
+  - Calls `StockController.deductStock()` for additional quantity
+  - Uses FIFO method to select batches
+  - Validates stock availability before deduction
+- **Quantity Decrease**:
+  - Calculates difference: `original_quantity - new_quantity`
+  - Calls `StockController.returnStock()` to return to original batch
+  - Updates `quantity_remaining` in stock entry
+- **Item Removal**:
+  - Returns full quantity to original batch
+  - Deletes SaleItem record
+  - Maintains minimum 1 item in sale validation
+- All stock operations wrapped in database transaction
+- Automatic rollback on any error
+
+**Backend Enhancements**:
+- Enhanced `SaleController.updateSale()`:
+  - Loads sale with `include: [{ model: SaleItem, as: 'saleItems' }]`
+  - Creates map of existing items for comparison
+  - Processes each item update individually
+  - Tracks stock adjustments and recalculates totals
+  - Transaction-safe with row-level locking
+- New `StockController.returnStock()`:
+  - Returns quantity to specific batch
+  - Uses `transaction.LOCK.UPDATE` for row locking
+  - Transaction support for atomic operations
+- IPC handlers, services, and store actions for `sale:update`
+
+**Validation & Error Handling**:
+- Quantity validation (must be > 0)
+- Price validation (must be >= 0)
+- Stock availability validation before deduction
+- Minimum 1 item in sale validation
+- Comprehensive error messages via toast notifications
+- Transaction rollback on any validation failure
+
+---
+
 **Last Updated**: November 20, 2025  
-**Current Phase**: Phase 3 Complete - Ready for Phase 4  
-**Status**: Phase 1, 2, and 3 (3.1 & 3.2) completed successfully  
+**Current Phase**: Phase 3 Complete with Enhancements - Ready for Phase 4  
+**Status**: Phase 1, 2, and 3 (3.1 & 3.2) completed successfully with post-phase UI/UX improvements and sales editing capabilities  
 **Next Review Date**: After Phase 4 Completion
 
 **Remember**: Quality over speed. Build it right the first time! ✨

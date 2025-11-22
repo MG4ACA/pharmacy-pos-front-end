@@ -338,6 +338,200 @@ Sample Stock Receipt 2:
 [ ] SUPP-051: Open products dialog and click Close button
 [ ] SUPP-052: Verify dialog closes and returns to supplier list
 
+---
+
+## 4B. Stock Batches Management
+
+### Test Suite: BATCH
+
+**Objective**: Verify stock batches viewing, filtering, FIFO order, expiry alerts, and batch details display
+
+#### 4B.1 Access Stock Batches Page
+
+[ ] BATCH-001: Navigate to Inventory section in sidebar
+[ ] BATCH-002: Verify "Stock Batches" menu item is present with inbox icon
+[ ] BATCH-003: Click on "Stock Batches" menu item
+[ ] BATCH-004: Verify Stock Batches page loads successfully
+[ ] BATCH-005: Verify page header shows "Stock Batches" title
+[ ] BATCH-006: Verify subtitle shows "View all stock batches with expiry dates and quantities"
+[ ] BATCH-007: Verify "Expiring Soon" and "Refresh" buttons are present in header
+[ ] BATCH-008: Verify Filters panel is visible and toggleable
+[ ] BATCH-009: Verify DataTable displays with pagination controls
+
+#### 4B.2 View All Stock Batches
+
+[ ] BATCH-010: On initial load, verify all stock batches from all products are displayed
+[ ] BATCH-011: Verify DataTable columns: Product, Batch #, Supplier, Quantity, Cost Price, Selling Price, Expiry Date, Entry Date, Actions
+[ ] BATCH-012: Verify batches are sorted by expiry date (oldest first - FIFO order)
+[ ] BATCH-013: Check Product column shows product name and category
+[ ] BATCH-014: Check Batch # column displays batch number with bold font
+[ ] BATCH-015: Check Supplier column shows supplier name or "N/A" if not linked
+[ ] BATCH-016: Check Quantity column shows units with color tags (green > 10, yellow ≤ 10)
+[ ] BATCH-017: Check Cost Price and Selling Price display with "Rs." prefix and 2 decimals
+[ ] BATCH-018: Check Expiry Date column shows formatted date (DD/MM/YYYY)
+[ ] BATCH-019: Verify "Expired" tag (red) appears for batches with expiry date < today
+[ ] BATCH-020: Verify "Expiring Soon" tag (yellow) appears for batches expiring within 30 days
+[ ] BATCH-021: Verify batches with no expiry date show "No expiry" text
+[ ] BATCH-022: Check Entry Date column shows formatted date in smaller font
+
+#### 4B.3 Product Filter (AutoComplete)
+
+[ ] BATCH-023: Click on Product AutoComplete field in Filters panel
+[ ] BATCH-024: Type "para" (partial search)
+[ ] BATCH-025: Verify dropdown shows matching products with name and category
+[ ] BATCH-026: Select a product from the dropdown
+[ ] BATCH-027: Verify DataTable refreshes and shows only batches for selected product
+[ ] BATCH-028: Verify success toast shows "Showing batches for [Product Name]"
+[ ] BATCH-029: Verify other products' batches are hidden
+[ ] BATCH-030: Clear product selection by backspace
+[ ] BATCH-031: Verify all batches are displayed again
+
+#### 4B.4 Supplier Filter
+
+[ ] BATCH-032: Open Supplier dropdown in Filters panel
+[ ] BATCH-033: Verify dropdown shows all active suppliers
+[ ] BATCH-034: Select a supplier from the list
+[ ] BATCH-035: Verify only batches supplied by that supplier are shown
+[ ] BATCH-036: Verify batches from other suppliers are hidden
+[ ] BATCH-037: Click "X" (clear) button in Supplier dropdown
+[ ] BATCH-038: Verify filter is cleared and all batches are displayed
+
+#### 4B.5 Expiry Status Filter
+
+[ ] BATCH-039: Open Expiry Status dropdown in Filters panel
+[ ] BATCH-040: Verify options: "All Batches", "Expiring Soon (30 days)", "Expired", "Valid"
+[ ] BATCH-041: Select "Expiring Soon (30 days)"
+[ ] BATCH-042: Verify only batches with expiry ≤ 30 days from today are shown
+[ ] BATCH-043: Verify each shown batch has "Expiring Soon" yellow tag
+[ ] BATCH-044: Select "Expired"
+[ ] BATCH-045: Verify only batches with expiry date < today are shown
+[ ] BATCH-046: Verify each shown batch has "Expired" red tag
+[ ] BATCH-047: Select "Valid"
+[ ] BATCH-048: Verify only batches with no expiry or expiry > 30 days are shown
+[ ] BATCH-049: Verify none have "Expired" or "Expiring Soon" tags
+[ ] BATCH-050: Select "All Batches"
+[ ] BATCH-051: Verify all batches regardless of expiry status are shown
+
+#### 4B.6 Combined Filters
+
+[ ] BATCH-052: Select a product from AutoComplete
+[ ] BATCH-053: Select a supplier from dropdown
+[ ] BATCH-054: Verify only batches matching BOTH criteria are shown
+[ ] BATCH-055: Add expiry status filter "Expiring Soon"
+[ ] BATCH-056: Verify only batches matching ALL THREE criteria are shown
+[ ] BATCH-057: Change one filter while others are active
+[ ] BATCH-058: Verify results update correctly based on new filter combination
+
+#### 4B.7 Clear Filters
+
+[ ] BATCH-059: Apply multiple filters (product, supplier, expiry status)
+[ ] BATCH-060: Verify filtered results are displayed
+[ ] BATCH-061: Click "Clear Filters" button
+[ ] BATCH-062: Verify Product AutoComplete is cleared
+[ ] BATCH-063: Verify Supplier dropdown is cleared
+[ ] BATCH-064: Verify Expiry Status dropdown is cleared
+[ ] BATCH-065: Verify all batches from all products are displayed again
+
+#### 4B.8 Expiring Soon Badge Button
+
+[ ] BATCH-066: Verify "Expiring Soon" button in header shows a badge with count
+[ ] BATCH-067: Verify badge count matches number of batches expiring within 30 days
+[ ] BATCH-068: Click "Expiring Soon" button
+[ ] BATCH-069: Verify Expiry Status filter is automatically set to "Expiring Soon"
+[ ] BATCH-070: Verify DataTable shows only expiring batches
+[ ] BATCH-071: Verify info toast shows "Showing X expiring batches"
+
+#### 4B.9 Refresh Button
+
+[ ] BATCH-072: Make changes to stock (add new stock receipt in another tab/window)
+[ ] BATCH-073: Return to Stock Batches page
+[ ] BATCH-074: Click "Refresh" button in header
+[ ] BATCH-075: Verify button shows loading spinner during refresh
+[ ] BATCH-076: Verify DataTable refreshes with latest stock data
+[ ] BATCH-077: Verify newly added batches appear in the list
+
+#### 4B.10 View Batch Details Dialog
+
+[ ] BATCH-078: Click eye icon (View Details) on any batch row
+[ ] BATCH-079: Verify "Batch Details" dialog opens
+[ ] BATCH-080: Verify dialog displays three sections: Product Information, Batch Information, Supplier Information
+[ ] BATCH-081: In Product Information section, verify: Product Name, Category, Barcode
+[ ] BATCH-082: In Batch Information section, verify: Batch Number, Quantity Remaining (with color tag), Cost Price, Selling Price, Entry Date, Expiry Date (with status tag)
+[ ] BATCH-083: In Supplier Information section, verify: Supplier Name, Contact Person, Phone, Email
+[ ] BATCH-084: Verify expiry status tag appears correctly (Expired/Expiring Soon)
+[ ] BATCH-085: Verify prices display with "Rs." prefix and 2 decimal places
+[ ] BATCH-086: Verify dates are formatted correctly (DD/MM/YYYY)
+[ ] BATCH-087: Click "Close" button in dialog footer
+[ ] BATCH-088: Verify dialog closes and returns to batches list
+
+#### 4B.11 DataTable Features
+
+[ ] BATCH-089: Verify DataTable has alternating row colors (striped)
+[ ] BATCH-090: Verify pagination controls are visible at bottom
+[ ] BATCH-091: Verify default rows per page is 20
+[ ] BATCH-092: Click page number button (2, 3, etc.) if available
+[ ] BATCH-093: Verify next page of batches is displayed
+[ ] BATCH-094: Click "Rows per page" dropdown
+[ ] BATCH-095: Change to 10 rows per page
+[ ] BATCH-096: Verify DataTable refreshes and shows only 10 rows
+[ ] BATCH-097: Change to 50 rows per page
+[ ] BATCH-098: Verify DataTable shows up to 50 rows
+[ ] BATCH-099: Verify current page report shows "Showing X to Y of Z batches"
+
+#### 4B.12 Sorting
+
+[ ] BATCH-100: Click on "Expiry Date" column header
+[ ] BATCH-101: Verify batches are sorted by expiry date ascending (oldest first)
+[ ] BATCH-102: Click "Expiry Date" header again
+[ ] BATCH-103: Verify batches are sorted by expiry date descending (newest first)
+[ ] BATCH-104: Click on "Product" column header
+[ ] BATCH-105: Verify batches are sorted alphabetically by product name
+[ ] BATCH-106: Click on "Quantity" column header
+[ ] BATCH-107: Verify batches are sorted by quantity remaining (low to high)
+[ ] BATCH-108: Click on "Batch #" column header
+[ ] BATCH-109: Verify batches are sorted by batch number
+[ ] BATCH-110: Click on "Supplier" column header
+[ ] BATCH-111: Verify batches are sorted by supplier name
+
+#### 4B.13 Empty States
+
+[ ] BATCH-112: Filter batches with criteria that returns no results (e.g., expired batches when none exist)
+[ ] BATCH-113: Verify DataTable shows empty state with inbox icon
+[ ] BATCH-114: Verify message displays "No stock batches found"
+[ ] BATCH-115: Verify subtitle shows "Try adjusting your filters or add stock receipts"
+[ ] BATCH-116: Clear filters and verify batches reappear
+
+#### 4B.14 Responsive Design
+
+[ ] BATCH-117: Resize window to tablet size (768px - 1024px)
+[ ] BATCH-118: Verify DataTable columns adjust responsively
+[ ] BATCH-119: Verify filter panel remains usable
+[ ] BATCH-120: Resize window to mobile size (< 768px)
+[ ] BATCH-121: Verify horizontal scroll appears for DataTable
+[ ] BATCH-122: Verify all columns are accessible via scroll
+
+#### 4B.15 Error Handling
+
+[ ] BATCH-123: Stop the backend/database service
+[ ] BATCH-124: Try to load Stock Batches page
+[ ] BATCH-125: Verify error toast appears with "Failed to load stock batches" message
+[ ] BATCH-126: Restart backend and click Refresh
+[ ] BATCH-127: Verify batches load successfully
+[ ] BATCH-128: Click View Details on a batch while backend is stopped
+[ ] BATCH-129: Verify error toast shows "Failed to load batch details"
+
+#### 4B.16 Performance
+
+[ ] BATCH-130: Add 100+ stock batches across multiple products
+[ ] BATCH-131: Load Stock Batches page and measure load time (should be < 2 seconds)
+[ ] BATCH-132: Verify pagination handles large dataset smoothly
+[ ] BATCH-133: Apply filters on large dataset
+[ ] BATCH-134: Verify filtering completes within 500ms
+[ ] BATCH-135: Open batch details for multiple batches sequentially
+[ ] BATCH-136: Verify each details dialog loads within 500ms
+
+---
+
 **Test Data:**
 
 ```javascript
@@ -397,26 +591,47 @@ Suppliers:
 [ ] SEARCH-015: Clear all filters and verify full list shows
 [ ] SEARCH-016: Verify empty search results show appropriate message
 
-#### 5.3 Supplier Search
+#### 5.3 Stock Batches Search & Filters
+
+[ ] SEARCH-017: Navigate to Inventory > Stock Batches page
+[ ] SEARCH-018: Use product AutoComplete to search and select a product
+[ ] SEARCH-019: Verify only batches for selected product are displayed
+[ ] SEARCH-020: Select a supplier from the supplier dropdown filter
+[ ] SEARCH-021: Verify only batches from that supplier are displayed
+[ ] SEARCH-022: Select "Expiring Soon (30 days)" from expiry status filter
+[ ] SEARCH-023: Verify only batches expiring within 30 days are shown with yellow/red tags
+[ ] SEARCH-024: Select "Expired" from expiry status filter
+[ ] SEARCH-025: Verify only expired batches are shown with red "Expired" tags
+[ ] SEARCH-026: Select "Valid" from expiry status filter
+[ ] SEARCH-027: Verify only batches with no expiry or expiry > 30 days are shown
+[ ] SEARCH-028: Apply multiple filters together (product + supplier + expiry status)
+[ ] SEARCH-029: Verify results match ALL selected criteria (AND logic)
+[ ] SEARCH-030: Click "Clear Filters" button
+[ ] SEARCH-031: Verify all filters are reset and all batches are displayed
+[ ] SEARCH-032: Click "Expiring Soon" badge button in header
+[ ] SEARCH-033: Verify expiry status filter is automatically set to "Expiring Soon"
+[ ] SEARCH-034: Verify badge shows correct count of expiring batches
+
+#### 5.4 Supplier Search
 
 **Search by Name/Contact:**
-[ ] SEARCH-018: Navigate to Suppliers page
-[ ] SEARCH-019: Enter supplier name in search box
-[ ] SEARCH-020: Verify matching suppliers are shown (partial match works)
-[ ] SEARCH-021: Enter contact person name in search box
-[ ] SEARCH-022: Verify suppliers with matching contact person are shown
+[ ] SEARCH-035: Navigate to Suppliers page
+[ ] SEARCH-036: Enter supplier name in search box
+[ ] SEARCH-037: Verify matching suppliers are shown (partial match works)
+[ ] SEARCH-038: Enter contact person name in search box
+[ ] SEARCH-039: Verify suppliers with matching contact person are shown
 
 **Search by Email/Phone:**
-[ ] SEARCH-023: Enter email or part of it in search box
-[ ] SEARCH-024: Verify suppliers with matching email are shown
-[ ] SEARCH-025: Enter phone number in search box
-[ ] SEARCH-026: Verify suppliers with matching phone are shown
+[ ] SEARCH-040: Enter email or part of it in search box
+[ ] SEARCH-041: Verify suppliers with matching email are shown
+[ ] SEARCH-042: Enter phone number in search box
+[ ] SEARCH-043: Verify suppliers with matching phone are shown
 
 **Status Filter & Combined Search:**
-[ ] SEARCH-027: Select status filter: `Active`
-[ ] SEARCH-028: Verify only active suppliers are shown, inactive hidden
-[ ] SEARCH-029: Enter search term and select status filter
-[ ] SEARCH-030: Verify results match both criteria (AND logic applied)
+[ ] SEARCH-044: Select status filter: `Active`
+[ ] SEARCH-045: Verify only active suppliers are shown, inactive hidden
+[ ] SEARCH-046: Enter search term and select status filter
+[ ] SEARCH-047: Verify results match both criteria (AND logic applied)
 
 ---
 
@@ -631,6 +846,395 @@ Based on testing results, list any improvements or fixes needed before proceedin
 ---
 
 ---
+
+---
+
+## 11. Sales History & Management
+
+### Test Suite: SALES_HISTORY
+
+**Objective**: Verify sales history viewing, filtering, date range picker, auto-trigger filters, and sales editing with item management
+
+#### 11.1 Access Sales History Page
+
+[ ] SALES-001: Navigate to Sales section in sidebar
+[ ] SALES-002: Verify "Sales History" menu item is present
+[ ] SALES-003: Click on "Sales History" menu item
+[ ] SALES-004: Verify Sales History page loads successfully
+[ ] SALES-005: Verify page header shows "Sales History" title
+[ ] SALES-006: Verify Filters panel is visible with date range picker, payment method, and payment status dropdowns
+[ ] SALES-007: Verify Clear and Refresh buttons are present
+[ ] SALES-008: Verify DataTable displays with pagination controls
+
+#### 11.2 View All Sales
+
+[ ] SALES-009: On initial load, verify all sales are displayed
+[ ] SALES-010: Verify DataTable columns: ID, Date & Time, Items, Total Amount, Discount, Tax, Paid, Payment Method, Payment Status, User, Actions
+[ ] SALES-011: Verify sales are sorted by date descending (newest first)
+[ ] SALES-012: Check Date & Time column shows formatted date and time
+[ ] SALES-013: Check Items column shows count of items in sale
+[ ] SALES-014: Check Total Amount, Discount, Tax, Paid display with "Rs." prefix and 2 decimals
+[ ] SALES-015: Check Payment Method column shows Cash/Card/Other with color badges
+[ ] SALES-016: Check Payment Status column shows Pending/Partial/Paid with color badges (red/yellow/green)
+[ ] SALES-017: Check User column shows cashier's full name
+[ ] SALES-018: Verify Actions column has View and Edit buttons
+
+#### 11.3 Date Range Filter (Calendar with Range Selection)
+
+[ ] SALES-019: Click on Date Range Calendar field in Filters panel
+[ ] SALES-020: Verify Calendar popup opens with range selection mode
+[ ] SALES-021: Click on a start date in the calendar
+[ ] SALES-022: Click on an end date (after start date)
+[ ] SALES-023: Verify both dates are highlighted in the calendar
+[ ] SALES-024: Verify filter applies automatically without clicking "Apply" button
+[ ] SALES-025: Verify DataTable refreshes and shows only sales within selected date range
+[ ] SALES-026: Verify sales outside date range are hidden
+[ ] SALES-027: Select same date for start and end (single day filter)
+[ ] SALES-028: Verify only sales from that specific day are shown
+[ ] SALES-029: Clear date range by clicking "X" button
+[ ] SALES-030: Verify all sales are displayed again
+
+#### 11.4 Payment Method Filter (Auto-Trigger)
+
+[ ] SALES-031: Open Payment Method dropdown in Filters panel
+[ ] SALES-032: Verify dropdown shows options: All, Cash, Card, Other
+[ ] SALES-033: Select "Cash" from dropdown
+[ ] SALES-034: Verify filter applies automatically (no Apply button needed)
+[ ] SALES-035: Verify DataTable refreshes and shows only Cash sales
+[ ] SALES-036: Verify sales with Card or Other payment methods are hidden
+[ ] SALES-037: Select "Card" from dropdown
+[ ] SALES-038: Verify only Card sales are shown
+[ ] SALES-039: Select "Other" from dropdown
+[ ] SALES-040: Verify only Other payment method sales are shown
+[ ] SALES-041: Select "All" from dropdown
+[ ] SALES-042: Verify all sales regardless of payment method are shown
+
+#### 11.5 Payment Status Filter (Auto-Trigger)
+
+[ ] SALES-043: Open Payment Status dropdown in Filters panel
+[ ] SALES-044: Verify dropdown shows options: All, Pending, Partial, Paid
+[ ] SALES-045: Select "Pending" from dropdown
+[ ] SALES-046: Verify filter applies automatically
+[ ] SALES-047: Verify only sales with Pending status are shown (red badge)
+[ ] SALES-048: Select "Partial" from dropdown
+[ ] SALES-049: Verify only sales with Partial status are shown (yellow badge)
+[ ] SALES-050: Select "Paid" from dropdown
+[ ] SALES-051: Verify only sales with Paid status are shown (green badge)
+[ ] SALES-052: Select "All" from dropdown
+[ ] SALES-053: Verify all sales regardless of payment status are shown
+
+#### 11.6 Combined Filters
+
+[ ] SALES-054: Select a date range
+[ ] SALES-055: Select payment method "Cash"
+[ ] SALES-056: Verify only Cash sales within date range are shown
+[ ] SALES-057: Add payment status filter "Paid"
+[ ] SALES-058: Verify only Paid Cash sales within date range are shown (all 3 filters active)
+[ ] SALES-059: Change one filter while others are active
+[ ] SALES-060: Verify results update correctly based on new filter combination
+[ ] SALES-061: Verify all filters apply automatically without manual trigger
+
+#### 11.7 Clear Filters Button
+
+[ ] SALES-062: Apply multiple filters (date range, payment method, payment status)
+[ ] SALES-063: Verify filtered results are displayed
+[ ] SALES-064: Click "Clear" button
+[ ] SALES-065: Verify Date Range Calendar is cleared
+[ ] SALES-066: Verify Payment Method dropdown is reset to "All"
+[ ] SALES-067: Verify Payment Status dropdown is reset to "All"
+[ ] SALES-068: Verify all sales are displayed again
+
+#### 11.8 Refresh Button
+
+[ ] SALES-069: Make a new sale in POS (in another window/tab if possible)
+[ ] SALES-070: Return to Sales History page
+[ ] SALES-071: Click "Refresh" button in filters panel
+[ ] SALES-072: Verify button shows loading spinner during refresh
+[ ] SALES-073: Verify DataTable refreshes with latest sales data
+[ ] SALES-074: Verify newly created sale appears in the list
+
+#### 11.9 View Sale Details (Read-Only)
+
+[ ] SALES-075: Click eye icon (View Details) on any sale row
+[ ] SALES-076: Verify "Sale Details" dialog opens
+[ ] SALES-077: Verify dialog displays sale information: Date & Time, Payment Method, Payment Status, User (Cashier)
+[ ] SALES-078: Verify Sale Items table shows: Product Name, Unit Price, Quantity, Subtotal
+[ ] SALES-079: Verify Batch Number is displayed per item
+[ ] SALES-080: Verify Summary section shows: Subtotal, Discount, Tax, Total Amount
+[ ] SALES-081: Verify all prices display with "Rs." prefix and 2 decimal places
+[ ] SALES-082: Verify payment method and status badges display with correct colors
+[ ] SALES-083: Click "Close" button in dialog footer
+[ ] SALES-084: Verify dialog closes and returns to sales list
+
+#### 11.10 Edit Sale (Basic Fields)
+
+[ ] SALES-085: Click edit icon (pencil) on any sale row
+[ ] SALES-086: Verify "Edit Sale" dialog opens (800px width, maximizable)
+[ ] SALES-087: Verify dialog shows sale ID in header (e.g., "Edit Sale #123")
+[ ] SALES-088: Verify editable items DataTable is displayed
+[ ] SALES-089: Verify editable fields: Discount, Tax, Payment Method, Payment Status, Notes
+[ ] SALES-090: Change Discount value to 50
+[ ] SALES-091: Verify Total Amount recalculates automatically: `subtotal - 50 + tax`
+[ ] SALES-092: Change Tax value to 100
+[ ] SALES-093: Verify Total Amount recalculates: `subtotal - discount + 100`
+[ ] SALES-094: Change Payment Method from Cash to Card
+[ ] SALES-095: Verify dropdown updates correctly
+[ ] SALES-096: Change Payment Status from Pending to Paid
+[ ] SALES-097: Verify dropdown updates correctly
+[ ] SALES-098: Enter notes: "Customer requested discount"
+[ ] SALES-099: Click "Update Sale" button
+[ ] SALES-100: Verify success toast appears: "Sale updated successfully"
+[ ] SALES-101: Verify dialog closes automatically
+[ ] SALES-102: Verify sales list refreshes with updated data
+[ ] SALES-103: Verify updated discount, tax, payment method, and status are visible in list
+
+#### 11.11 Edit Sale Items - Quantity Increase
+
+[ ] SALES-104: Click edit icon on a sale with 2+ items
+[ ] SALES-105: Verify items table shows: Product, Unit Price, Quantity (+/- buttons), Subtotal, Remove button
+[ ] SALES-106: Note original quantity of first item (e.g., 2)
+[ ] SALES-107: Click "+" button on first item to increase quantity to 3
+[ ] SALES-108: Verify quantity field updates to 3
+[ ] SALES-109: Verify item subtotal recalculates: `unit_price × 3`
+[ ] SALES-110: Verify Sale Total recalculates automatically
+[ ] SALES-111: Click "Update Sale" button
+[ ] SALES-112: Verify success toast appears
+[ ] SALES-113: Check database: Verify stock was deducted by 1 unit (increase from 2 to 3)
+[ ] SALES-114: Verify stock deduction used FIFO method (oldest batch first)
+[ ] SALES-115: Verify sale item quantity is updated in database
+[ ] SALES-116: Verify sale subtotal and total_amount are recalculated in database
+
+#### 11.12 Edit Sale Items - Quantity Decrease
+
+[ ] SALES-117: Click edit icon on a sale with item quantity > 1
+[ ] SALES-118: Note original quantity of item (e.g., 5)
+[ ] SALES-119: Click "-" button to decrease quantity to 4
+[ ] SALES-120: Verify quantity field updates to 4
+[ ] SALES-121: Verify item subtotal recalculates: `unit_price × 4`
+[ ] SALES-122: Verify Sale Total recalculates automatically
+[ ] SALES-123: Click "Update Sale" button
+[ ] SALES-124: Verify success toast appears
+[ ] SALES-125: Check database: Verify 1 unit was returned to original stock batch
+[ ] SALES-126: Verify stock entry quantity_remaining increased by 1
+[ ] SALES-127: Verify sale item quantity is updated to 4 in database
+[ ] SALES-128: Verify sale subtotal and total_amount are recalculated
+
+#### 11.13 Edit Sale Items - Unit Price Change
+
+[ ] SALES-129: Click edit icon on any sale
+[ ] SALES-130: Click on Unit Price field of first item
+[ ] SALES-131: Change unit price from (e.g., 100.00) to 120.00
+[ ] SALES-132: Press Tab or click outside field
+[ ] SALES-133: Verify item subtotal recalculates: `120.00 × quantity`
+[ ] SALES-134: Verify Sale Total recalculates automatically
+[ ] SALES-135: Click "Update Sale" button
+[ ] SALES-136: Verify success toast appears
+[ ] SALES-137: Check database: Verify sale item unit_price is updated to 120.00
+[ ] SALES-138: Verify sale item subtotal is updated
+[ ] SALES-139: Verify sale total_amount is recalculated
+[ ] SALES-140: Verify stock is NOT affected (no deduction or return)
+
+#### 11.14 Edit Sale Items - Remove Item
+
+[ ] SALES-141: Click edit icon on a sale with 3+ items
+[ ] SALES-142: Note total number of items (e.g., 3)
+[ ] SALES-143: Note quantity of second item (e.g., 2 units)
+[ ] SALES-144: Click "Remove" button (trash icon) on second item
+[ ] SALES-145: Verify item is removed from table
+[ ] SALES-146: Verify items count decreases (from 3 to 2)
+[ ] SALES-147: Verify Sale Total recalculates without removed item
+[ ] SALES-148: Click "Update Sale" button
+[ ] SALES-149: Verify success toast appears
+[ ] SALES-150: Check database: Verify 2 units were returned to original stock batch
+[ ] SALES-151: Verify stock entry quantity_remaining increased by 2
+[ ] SALES-152: Verify sale item record is deleted from database
+[ ] SALES-153: Verify sale subtotal and total_amount are recalculated
+[ ] SALES-154: Verify sale items count is updated
+
+#### 11.15 Edit Sale Items - Minimum Item Validation
+
+[ ] SALES-155: Click edit icon on a sale with exactly 1 item
+[ ] SALES-156: Try to click "Remove" button on the only item
+[ ] SALES-157: Verify error toast appears: "Cannot remove last item. Sale must have at least one item."
+[ ] SALES-158: Verify item is NOT removed
+[ ] SALES-159: Verify sale remains editable
+
+#### 11.16 Edit Sale Items - Stock Availability Validation
+
+[ ] SALES-160: Click edit icon on a sale
+[ ] SALES-161: Try to increase quantity to more than available stock
+[ ] SALES-162: Click "Update Sale" button
+[ ] SALES-163: Verify error toast appears: "Insufficient stock"
+[ ] SALES-164: Verify sale is NOT updated
+[ ] SALES-165: Verify dialog remains open for correction
+[ ] SALES-166: Reduce quantity to available stock level
+[ ] SALES-167: Click "Update Sale" and verify success
+
+#### 11.17 Edit Sale - Combined Item Changes
+
+[ ] SALES-168: Click edit on a sale with 3 items
+[ ] SALES-169: Increase quantity of item 1 from 2 to 4 (+2 units)
+[ ] SALES-170: Decrease quantity of item 2 from 5 to 3 (-2 units)
+[ ] SALES-171: Change unit price of item 3 from 100 to 150
+[ ] SALES-172: Remove item 4 (if exists) or add discount of 50
+[ ] SALES-173: Change Payment Status to "Paid"
+[ ] SALES-174: Add notes: "Multiple adjustments made"
+[ ] SALES-175: Verify Sale Total recalculates correctly based on all changes
+[ ] SALES-176: Click "Update Sale" button
+[ ] SALES-177: Verify success toast appears
+[ ] SALES-178: Check database for item 1: Verify 2 units deducted from stock (FIFO)
+[ ] SALES-179: Check database for item 2: Verify 2 units returned to original batch
+[ ] SALES-180: Check database for item 3: Verify unit_price updated, stock unchanged
+[ ] SALES-181: Verify all sale totals recalculated correctly
+[ ] SALES-182: Verify payment status updated to "Paid"
+
+#### 11.18 Edit Sale - Cancel Changes
+
+[ ] SALES-183: Click edit icon on any sale
+[ ] SALES-184: Make several changes: edit quantities, prices, discount, tax
+[ ] SALES-185: Click "Cancel" button
+[ ] SALES-186: Verify dialog closes
+[ ] SALES-187: Verify NO changes were saved to database
+[ ] SALES-188: Verify stock was NOT adjusted
+[ ] SALES-189: Re-open same sale for editing
+[ ] SALES-190: Verify all original values are intact
+
+#### 11.19 Edit Sale - Transaction Rollback on Error
+
+[ ] SALES-191: Simulate error scenario: Stop database service or create constraint violation
+[ ] SALES-192: Click edit on a sale and make changes
+[ ] SALES-193: Click "Update Sale" button
+[ ] SALES-194: Verify error toast appears with descriptive message
+[ ] SALES-195: Check database: Verify NO partial changes were saved
+[ ] SALES-196: Verify stock adjustments were rolled back
+[ ] SALES-197: Verify sale data remains in original state
+[ ] SALES-198: Verify sale items remain unchanged
+[ ] SALES-199: Restore database service
+[ ] SALES-200: Retry edit and verify success
+
+#### 11.20 Edit Sale - Real-Time Calculation Accuracy
+
+[ ] SALES-201: Click edit on a sale
+[ ] SALES-202: Note original values: Subtotal, Discount, Tax, Total
+[ ] SALES-203: Increase item quantity and verify subtotal increases
+[ ] SALES-204: Verify Total = Subtotal - Discount + Tax
+[ ] SALES-205: Change discount to 100 and verify Total decreases by 100
+[ ] SALES-206: Change tax to 50 and verify Total increases by 50
+[ ] SALES-207: Remove an item and verify Subtotal decreases by item's subtotal
+[ ] SALES-208: Verify Total recalculates correctly after item removal
+[ ] SALES-209: Change unit price of item and verify cascading calculations
+[ ] SALES-210: Verify all displayed amounts match manual calculations
+
+#### 11.21 DataTable Features
+
+[ ] SALES-211: Verify DataTable has alternating row colors (striped)
+[ ] SALES-212: Verify pagination controls are visible at bottom
+[ ] SALES-213: Verify default rows per page is 10
+[ ] SALES-214: Click page number button (2, 3, etc.) if available
+[ ] SALES-215: Verify next page of sales is displayed
+[ ] SALES-216: Change rows per page to 20
+[ ] SALES-217: Verify DataTable shows up to 20 rows
+[ ] SALES-218: Verify current page report shows "Showing X to Y of Z sales"
+
+#### 11.22 Empty States
+
+[ ] SALES-219: Filter sales with criteria that returns no results
+[ ] SALES-220: Verify DataTable shows empty state message
+[ ] SALES-221: Verify message displays "No sales found"
+[ ] SALES-222: Clear filters and verify sales reappear
+
+#### 11.23 Error Handling
+
+[ ] SALES-223: Stop the backend/database service
+[ ] SALES-224: Try to load Sales History page
+[ ] SALES-225: Verify error toast appears with "Failed to load sales history" message
+[ ] SALES-226: Restart backend and click Refresh
+[ ] SALES-227: Verify sales load successfully
+[ ] SALES-228: Click Edit on a sale while backend is stopped
+[ ] SALES-229: Verify error toast shows "Failed to load sale details"
+[ ] SALES-230: Try updating sale with backend stopped
+[ ] SALES-231: Verify error toast shows "Failed to update sale"
+
+#### 11.24 Performance
+
+[ ] SALES-232: Create 100+ sales across multiple days
+[ ] SALES-233: Load Sales History page and measure load time (should be < 2 seconds)
+[ ] SALES-234: Verify pagination handles large dataset smoothly
+[ ] SALES-235: Apply filters on large dataset
+[ ] SALES-236: Verify filtering completes within 500ms
+[ ] SALES-237: Open edit dialog for multiple sales sequentially
+[ ] SALES-238: Verify each dialog loads within 500ms
+[ ] SALES-239: Make complex changes (multiple items) and save
+[ ] SALES-240: Verify update completes within 2 seconds
+
+#### 11.25 UI/UX Consistency
+
+[ ] SALES-241: Compare Sales History filter layout with Stock Receipts and Products
+[ ] SALES-242: Verify filter section uses flex layout consistently
+[ ] SALES-243: Verify font sizes match (0.85em for labels)
+[ ] SALES-244: Verify Clear and Refresh buttons are in same position as other pages
+[ ] SALES-245: Verify date range picker matches Stock Receipts implementation
+[ ] SALES-246: Verify edit dialog width is 800px (consistent with other edit dialogs)
+[ ] SALES-247: Verify edit dialog is maximizable
+[ ] SALES-248: Verify color scheme for badges matches other components
+
+---
+
+## Test Execution Summary
+
+**Authentication & User Management:** \_\_/20 tests passed  
+**Product Management:** \_\_/52 tests passed  
+**Stock Receipt System:** \_\_/50 tests passed  
+**Supplier Management:** \_\_/52 tests passed  
+**Stock Batches Management:** \_\_/136 tests passed  
+**Search & Filter:** \_\_/47 tests passed  
+**Data Validation:** \_\_/19 tests passed  
+**Error Handling:** \_\_/9 tests passed  
+**UI/UX & Navigation:** \_\_/36 tests passed  
+**Integration Tests:** \_\_/22 tests passed  
+**Performance & Stability:** \_\_/12 tests passed  
+**Sales History & Management:** \_\_/248 tests passed
+
+**Total Tests:** ~703  
+**Pass Rate:** \_\_\_\_%
+
+---
+
+## Issues Found
+
+| Issue ID | Severity | Test ID | Description | Status | Fix Notes |
+| -------- | -------- | ------- | ----------- | ------ | --------- |
+| ISS-001  | High     |         |             | Open   |           |
+| ISS-002  | Medium   |         |             | Open   |           |
+| ISS-003  | Low      |         |             | Open   |           |
+
+**Severity Levels:**
+
+- **Critical**: App crash, data loss, security issue
+- **High**: Feature doesn't work, blocks testing
+- **Medium**: Feature works but with issues
+- **Low**: UI/UX issues, minor bugs
+
+---
+
+## Recommendations for Phase 4
+
+Based on testing results, list any improvements or fixes needed before proceeding to Phase 4:
+
+1. ***
+2. ***
+3. ***
+
+---
+
+## Sign-Off
+
+**Tested By**: **\*\***\_\_\_**\*\***  
+**Date**: **\*\***\_\_\_**\*\***  
+**Phase 3 Testing Complete**: [ ] Yes [ ] No  
+**Ready for Phase 4**: [ ] Yes [ ] No
+
+**Notes**:
 
 ---
 
