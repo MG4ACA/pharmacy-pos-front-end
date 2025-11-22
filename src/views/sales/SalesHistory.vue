@@ -88,7 +88,7 @@
             icon="pi pi-refresh"
             severity="help"
             v-tooltip.top="'Refresh'"
-            @click="loadSales"
+            @click="fetchSales"
           />
         </div>
       </div>

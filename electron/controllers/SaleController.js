@@ -66,8 +66,8 @@ class SaleController {
           };
         }
 
-        // Get oldest stock batch with available quantity (FIFO)
-        const stockBatch = await StockEntry.findOne({
+        // Get all stock batches with available quantity for this product
+        const stockBatches = await StockEntry.findAll({
           where: {
             product_id: item.product_id,
             quantity_remaining: {
@@ -78,7 +78,7 @@ class SaleController {
           transaction,
         });
 
-        if (!stockBatch) {
+        if (!stockBatches || stockBatches.length === 0) {
           await transaction.rollback();
           return {
             success: false,
@@ -86,23 +86,29 @@ class SaleController {
           };
         }
 
+        // Calculate total available stock across all batches
+        const totalAvailableStock = stockBatches.reduce(
+          (sum, batch) => sum + batch.quantity_remaining,
+          0
+        );
+
         // Check if we have enough stock
-        if (stockBatch.quantity_remaining < item.quantity) {
+        if (totalAvailableStock < item.quantity) {
           await transaction.rollback();
           return {
             success: false,
-            message: `Insufficient stock for product: ${product.name}. Available: ${stockBatch.quantity_remaining}, Requested: ${item.quantity}`,
+            message: `Insufficient stock for product: ${product.name}. Available: ${totalAvailableStock}, Requested: ${item.quantity}`,
           };
         }
 
-        // Calculate item subtotal using the stock batch selling price
-        const unit_price = parseFloat(stockBatch.selling_price);
+        // Use the selling price from the oldest batch (FIFO pricing)
+        const unit_price = parseFloat(stockBatches[0].selling_price);
         const itemSubtotal = unit_price * item.quantity;
         subtotal += itemSubtotal;
 
         saleItems.push({
           product_id: item.product_id,
-          stock_entry_id: stockBatch.id,
+          stock_entry_id: stockBatches[0].id, // Use the oldest batch ID for reference
           quantity: item.quantity,
           unit_price: unit_price,
           subtotal: itemSubtotal,

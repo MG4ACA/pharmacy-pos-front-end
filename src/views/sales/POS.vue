@@ -36,15 +36,17 @@
                         Rs.
                         {{
                           item.average_selling_price
-                            ? item.average_selling_price.toFixed(2)
-                            : item.selling_price.toFixed(2)
+                            ? parseFloat(item.average_selling_price).toFixed(2)
+                            : item.selling_price
+                            ? parseFloat(item.selling_price).toFixed(2)
+                            : '0.00'
                         }}
                       </div>
                       <div
                         class="text-sm"
                         :class="item.total_stock > 0 ? 'text-green-600' : 'text-red-600'"
                       >
-                        Stock: {{ item.total_stock }}
+                        Stock: {{ item.total_stock || 0 }}
                       </div>
                     </div>
                   </div>
