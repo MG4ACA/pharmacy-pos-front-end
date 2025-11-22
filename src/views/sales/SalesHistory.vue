@@ -9,90 +9,92 @@
       <Button label="New Sale" outlined icon="pi pi-plus" @click="$router.push('/sales/pos')" />
     </div>
 
-    <!-- Filters Panel -->
-    <Panel header="Filters" :collapsed="false" :toggleable="true" class="mb-4">
-      <div class="grid">
-        <!-- Date Range -->
-        <div class="col-12 md:col-3">
-          <div class="field">
-            <label for="startDate" class="block mb-2">Start Date</label>
-            <Calendar
-              id="startDate"
-              v-model="filters.start_date"
-              dateFormat="yy-mm-dd"
-              showIcon
-              class="w-full"
+    <!-- Filters -->
+    <Card class="filter-card mb-4">
+      <template #content>
+        <div class="grid">
+          <!-- Date Range -->
+          <div class="col-12 md:col-3">
+            <div class="field">
+              <label for="startDate" class="block mb-2">Start Date</label>
+              <Calendar
+                id="startDate"
+                v-model="filters.start_date"
+                dateFormat="yy-mm-dd"
+                showIcon
+                class="w-full"
+              />
+            </div>
+          </div>
+
+          <div class="col-12 md:col-3">
+            <div class="field">
+              <label for="endDate" class="block mb-2">End Date</label>
+              <Calendar
+                id="endDate"
+                v-model="filters.end_date"
+                dateFormat="yy-mm-dd"
+                showIcon
+                class="w-full"
+              />
+            </div>
+          </div>
+
+          <!-- Payment Method -->
+          <div class="col-12 md:col-3">
+            <div class="field">
+              <label for="paymentMethod" class="block mb-2">Payment Method</label>
+              <Dropdown
+                id="paymentMethod"
+                v-model="filters.payment_method"
+                :options="paymentMethods"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="All Methods"
+                class="w-full"
+                showClear
+              />
+            </div>
+          </div>
+
+          <!-- Payment Status -->
+          <div class="col-12 md:col-3">
+            <div class="field">
+              <label for="paymentStatus" class="block mb-2">Status</label>
+              <Dropdown
+                id="paymentStatus"
+                v-model="filters.payment_status"
+                :options="paymentStatuses"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="All Statuses"
+                class="w-full"
+                showClear
+              />
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="col-12">
+            <Button label="Apply Filters" icon="pi pi-search" @click="applyFilters" class="mr-2" />
+            <Button
+              label="Clear Filters"
+              icon="pi pi-times"
+              severity="secondary"
+              outlined
+              @click="clearFilters"
+              class="mr-2"
+            />
+            <Button
+              icon="pi pi-refresh"
+              severity="help"
+              v-tooltip.top="'Refresh'"
+              @click="fetchSales"
             />
           </div>
         </div>
-
-        <div class="col-12 md:col-3">
-          <div class="field">
-            <label for="endDate" class="block mb-2">End Date</label>
-            <Calendar
-              id="endDate"
-              v-model="filters.end_date"
-              dateFormat="yy-mm-dd"
-              showIcon
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <!-- Payment Method -->
-        <div class="col-12 md:col-3">
-          <div class="field">
-            <label for="paymentMethod" class="block mb-2">Payment Method</label>
-            <Dropdown
-              id="paymentMethod"
-              v-model="filters.payment_method"
-              :options="paymentMethods"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="All Methods"
-              class="w-full"
-              showClear
-            />
-          </div>
-        </div>
-
-        <!-- Payment Status -->
-        <div class="col-12 md:col-3">
-          <div class="field">
-            <label for="paymentStatus" class="block mb-2">Status</label>
-            <Dropdown
-              id="paymentStatus"
-              v-model="filters.payment_status"
-              :options="paymentStatuses"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="All Statuses"
-              class="w-full"
-              showClear
-            />
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="col-12">
-          <Button label="Apply Filters" icon="pi pi-search" @click="applyFilters" class="mr-2" />
-          <Button
-            label="Clear Filters"
-            icon="pi pi-times"
-            severity="secondary"
-            outlined
-            @click="clearFilters"
-            class="mr-2"
-          />
-          <Button
-            icon="pi pi-refresh"
-            severity="help"
-            v-tooltip.top="'Refresh'"
-            @click="fetchSales"
-          />
-        </div>
-      </div>
-    </Panel>
+      </template>
+    </Card>
 
     <!-- Sales Table -->
     <Card>
@@ -299,7 +301,6 @@ import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
 import Divider from 'primevue/divider';
 import Dropdown from 'primevue/dropdown';
-import Panel from 'primevue/panel';
 import Tag from 'primevue/tag';
 
 const router = useRouter();

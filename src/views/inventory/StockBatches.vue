@@ -40,98 +40,102 @@
     </div>
 
     <!-- Filters -->
-    <Panel header="Filters" :toggleable="true" class="mb-3">
-      <div class="flex justify-content-between">
-        <div class="">
-          <label for="productSearch" class="block mb-2" style="font-size: 0.85em">Product</label>
-          <AutoComplete
-            id="productSearch"
-            v-model="selectedProduct"
-            :suggestions="filteredProducts"
-            @complete="searchProducts"
-            @item-select="onProductSelect"
-            field="name"
-            placeholder="Search product..."
-            class="w-full"
-          >
-            <template #item="{ item }">
-              <div>
-                <div style="font-size: 0.9em">{{ item.name }}</div>
-                <div style="font-size: 0.75em" class="text-500">{{ item.category?.name }}</div>
-              </div>
-            </template>
-          </AutoComplete>
-        </div>
-
-        <div>
-          <label for="supplierFilter" class="block mb-2" style="font-size: 0.85em">Supplier</label>
-          <Dropdown
-            id="supplierFilter"
-            v-model="filters.supplierId"
-            :options="suppliers"
-            optionLabel="name"
-            optionValue="id"
-            placeholder="All Suppliers"
-            showClear
-            class="w-full"
-          />
-        </div>
-
-        <div>
-          <label for="receiptFilter" class="block mb-2" style="font-size: 0.85em">Receipt</label>
-          <Dropdown
-            id="receiptFilter"
-            v-model="filters.receiptId"
-            :options="receipts"
-            optionLabel="receipt_number"
-            optionValue="id"
-            placeholder="All Receipts"
-            showClear
-            class="w-full"
-            @change="onReceiptChange"
-          >
-            <template #value="slotProps">
-              <div v-if="slotProps.value">
-                <span>{{ getReceiptLabel(slotProps.value) }}</span>
-              </div>
-              <span v-else>{{ slotProps.placeholder }}</span>
-            </template>
-            <template #option="slotProps">
-              <div>
-                <div style="font-size: 0.9em" class="font-semibold">
-                  {{ slotProps.option.receipt_number }}
+    <Card class="filter-card mb-3">
+      <template #content>
+        <div class="flex justify-content-between">
+          <div class="">
+            <label for="productSearch" class="block mb-2" style="font-size: 0.85em">Product</label>
+            <AutoComplete
+              id="productSearch"
+              v-model="selectedProduct"
+              :suggestions="filteredProducts"
+              @complete="searchProducts"
+              @item-select="onProductSelect"
+              field="name"
+              placeholder="Search product..."
+              class="w-full"
+            >
+              <template #item="{ item }">
+                <div>
+                  <div style="font-size: 0.9em">{{ item.name }}</div>
+                  <div style="font-size: 0.75em" class="text-500">{{ item.category?.name }}</div>
                 </div>
-                <div style="font-size: 0.75em" class="text-500">
-                  {{ formatDate(slotProps.option.receipt_date) }}
-                  <span v-if="slotProps.option.supplier?.name">
-                    - {{ slotProps.option.supplier.name }}
-                  </span>
+              </template>
+            </AutoComplete>
+          </div>
+
+          <div>
+            <label for="supplierFilter" class="block mb-2" style="font-size: 0.85em">
+              Supplier
+            </label>
+            <Dropdown
+              id="supplierFilter"
+              v-model="filters.supplierId"
+              :options="suppliers"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="All Suppliers"
+              showClear
+              class="w-full"
+            />
+          </div>
+
+          <div>
+            <label for="receiptFilter" class="block mb-2" style="font-size: 0.85em">Receipt</label>
+            <Dropdown
+              id="receiptFilter"
+              v-model="filters.receiptId"
+              :options="receipts"
+              optionLabel="receipt_number"
+              optionValue="id"
+              placeholder="All Receipts"
+              showClear
+              class="w-full"
+              @change="onReceiptChange"
+            >
+              <template #value="slotProps">
+                <div v-if="slotProps.value">
+                  <span>{{ getReceiptLabel(slotProps.value) }}</span>
                 </div>
-              </div>
-            </template>
-          </Dropdown>
-        </div>
+                <span v-else>{{ slotProps.placeholder }}</span>
+              </template>
+              <template #option="slotProps">
+                <div>
+                  <div style="font-size: 0.9em" class="font-semibold">
+                    {{ slotProps.option.receipt_number }}
+                  </div>
+                  <div style="font-size: 0.75em" class="text-500">
+                    {{ formatDate(slotProps.option.receipt_date) }}
+                    <span v-if="slotProps.option.supplier?.name">
+                      - {{ slotProps.option.supplier.name }}
+                    </span>
+                  </div>
+                </div>
+              </template>
+            </Dropdown>
+          </div>
 
-        <div>
-          <label for="expiryFilter" class="block mb-2" style="font-size: 0.85em">
-            Expiry Status
-          </label>
-          <Dropdown
-            id="expiryFilter"
-            v-model="filters.expiryStatus"
-            :options="expiryStatusOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="All Batches"
-            class="w-full"
-          />
-        </div>
+          <div>
+            <label for="expiryFilter" class="block mb-2" style="font-size: 0.85em">
+              Expiry Status
+            </label>
+            <Dropdown
+              id="expiryFilter"
+              v-model="filters.expiryStatus"
+              :options="expiryStatusOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="All Batches"
+              class="w-full"
+            />
+          </div>
 
-        <div class="flex align-items-end justify-content-end">
-          <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
+          <div class="flex align-items-end justify-content-end">
+            <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
+          </div>
         </div>
-      </div>
-    </Panel>
+      </template>
+    </Card>
 
     <!-- Stock Batches Table -->
     <Card>
@@ -450,7 +454,6 @@ import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
-import Panel from 'primevue/panel';
 import Tag from 'primevue/tag';
 
 const toast = useToast();
