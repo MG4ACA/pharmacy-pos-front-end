@@ -1,10 +1,11 @@
 <template>
   <div class="product-list">
     <div class="flex justify-content-between align-items-center mb-4">
-      <h1 class="page-title">Products</h1>
+      <h1 class="page-title text-primary">Products</h1>
       <Button
         label="Add Product"
         icon="pi pi-plus mr-2"
+        outlined
         @click="$router.push('/inventory/products/add')"
       />
     </div>
@@ -133,13 +134,13 @@
               <div class="flex gap-2">
                 <Button
                   icon="pi pi-pencil"
-                  class="p-button-sm p-button-warning"
+                  class="p-button-sm p-button-warning p-button-outlined"
                   v-tooltip.top="'Edit'"
                   @click="editProduct(data.id)"
                 />
                 <Button
                   icon="pi pi-trash"
-                  class="p-button-sm p-button-danger"
+                  class="p-button-sm p-button-danger p-button-outlined"
                   v-tooltip.top="'Delete'"
                   @click="confirmDelete(data)"
                 />

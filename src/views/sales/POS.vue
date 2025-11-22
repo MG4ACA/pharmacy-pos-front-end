@@ -7,7 +7,7 @@
         <Panel class="mb-3">
           <template #header>
             <div class="flex items-center gap-2 w-full justify-content-between align-items-center">
-              <span class="font-bold">Product Search</span>
+              <span class="font-bold text-primary">Product Search</span>
             </div>
           </template>
           <div class="grid">
@@ -60,7 +60,7 @@
         <Panel class="cart-panel">
           <template #header>
             <div class="flex items-center gap-2 w-full justify-content-between align-items-center">
-              <span class="font-bold">Shopping Cart</span>
+              <span class="font-bold text-primary">Shopping Cart</span>
               <Button
                 label="Clear Cart"
                 icon="pi pi-trash mr-2"
@@ -130,8 +130,8 @@
                     :max="item.available_quantity"
                     showButtons
                     mode="decimal"
-                    decrementButtonClass="p-button-danger p-button-sm"
-                    incrementButtonClass="p-button-success p-button-sm"
+                    decrementButtonClass="p-button-danger p-button-sm p-button-outlined"
+                    incrementButtonClass="p-button-success p-button-sm p-button-outlined"
                     @update:modelValue="updateQuantity(item.product_id, $event)"
                     class="input-compact quantity-input"
                   />
@@ -161,11 +161,13 @@
             <!-- Cart Summary -->
             <div class="cart-summary surface-100 border-round p-3 mt-3">
               <div class="flex justify-content-between align-items-center">
-                <span class="text-600" style="font-size: 0.85em">Total Items:</span>
+                <span class="text-600 font-semibold" style="font-size: 0.85em">Total Items:</span>
                 <span class="font-semibold" style="font-size: 0.85em">{{ cart.length }}</span>
               </div>
               <div class="flex justify-content-between align-items-center mt-2">
-                <span class="text-600" style="font-size: 0.85em">Total Quantity:</span>
+                <span class="text-600 font-semibold" style="font-size: 0.85em">
+                  Total Quantity:
+                </span>
                 <span class="font-semibold" style="font-size: 0.85em">
                   {{ cart.reduce((sum, item) => sum + item.quantity, 0) }} units
                 </span>
@@ -177,7 +179,7 @@
 
       <!-- Right Panel: Billing Summary -->
       <div class="col-12 lg:col-4">
-        <Panel header="Billing Summary" class="billing-summary">
+        <Panel header="Billing Summary" class="billing-summary text-primary">
           <!-- Totals -->
           <div class="mb-4">
             <div class="flex justify-content-between mb-2">
@@ -216,7 +218,7 @@
 
             <Divider />
 
-            <div class="flex justify-content-between align-items-center mb-3">
+            <div class="flex justify-content-between align-items-center mb-3 mt-3">
               <span class="text-xl font-bold">Total:</span>
               <span class="text-2xl font-bold text-primary">Rs. {{ cartTotal.toFixed(2) }}</span>
             </div>
@@ -252,7 +254,8 @@
           <Button
             label="Complete Sale"
             icon="pi pi-check"
-            class="w-full p-button-lg mb-2"
+            class="w-full mb-2"
+            outlined
             :disabled="cart.length === 0 || isLoading"
             :loading="isLoading"
             @click="completeSale"

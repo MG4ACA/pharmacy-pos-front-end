@@ -1,7 +1,7 @@
 <template>
   <div class="stock-receipt-list">
     <div class="flex justify-content-between align-items-center mb-4">
-      <h1 class="page-title">Stock Receipts</h1>
+      <h1 class="page-title text-primary">Stock Receipts</h1>
       <div class="flex gap-2">
         <Button label="Create Receipt" outlined icon="pi pi-plus mr-2" @click="goToCreateReceipt" />
         <Button

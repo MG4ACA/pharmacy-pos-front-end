@@ -65,8 +65,16 @@
   padding: 0;
 }
 
+.p-button-icon.pi {
+  margin-left: 1rem;
+}
+
 .p-button-label {
   margin: 0 0.5rem;
+}
+
+.p-panel-header {
+  color: var(--primary-color);
 }
 
 .p-inputtextarea {

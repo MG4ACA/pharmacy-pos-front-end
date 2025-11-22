@@ -6,7 +6,7 @@
         <h2 class="m-0 text-primary">Sales History</h2>
         <p class="text-600 m-0 mt-1">View and manage all sales transactions</p>
       </div>
-      <Button label="New Sale" icon="pi pi-plus" @click="$router.push('/sales/pos')" />
+      <Button label="New Sale" outlined icon="pi pi-plus" @click="$router.push('/sales/pos')" />
     </div>
 
     <!-- Filters Panel -->
@@ -122,19 +122,6 @@
             </template>
           </Column>
 
-          <Column header="Items" style="min-width: 200px">
-            <template #body="{ data }">
-              <div v-if="data.saleItems && data.saleItems.length > 0" class="text-sm">
-                <div v-for="(item, index) in data.saleItems.slice(0, 2)" :key="index" class="mb-1">
-                  {{ item.product?.name }} ({{ item.quantity }})
-                </div>
-                <div v-if="data.saleItems.length > 2" class="text-600">
-                  +{{ data.saleItems.length - 2 }} more items
-                </div>
-              </div>
-            </template>
-          </Column>
-
           <Column field="subtotal" header="Subtotal" style="min-width: 120px">
             <template #body="{ data }">Rs. {{ parseFloat(data.subtotal).toFixed(2) }}</template>
           </Column>
@@ -143,15 +130,6 @@
             <template #body="{ data }">
               <span v-if="data.discount > 0" class="text-red-500">
                 - Rs. {{ parseFloat(data.discount).toFixed(2) }}
-              </span>
-              <span v-else>-</span>
-            </template>
-          </Column>
-
-          <Column field="tax" header="Tax" style="min-width: 120px">
-            <template #body="{ data }">
-              <span v-if="data.tax > 0" class="text-green-600">
-                + Rs. {{ parseFloat(data.tax).toFixed(2) }}
               </span>
               <span v-else>-</span>
             </template>
@@ -182,12 +160,6 @@
                 :severity="getStatusSeverity(data.payment_status)"
                 style="text-transform: capitalize"
               />
-            </template>
-          </Column>
-
-          <Column field="user" header="User" style="min-width: 150px">
-            <template #body="{ data }">
-              {{ data.user?.username || 'N/A' }}
             </template>
           </Column>
 
