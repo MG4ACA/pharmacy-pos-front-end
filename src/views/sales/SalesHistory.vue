@@ -10,87 +10,59 @@
     </div>
 
     <!-- Filters -->
-    <Card class="filter-card mb-4">
+    <Card class="filter-card mb-3">
       <template #content>
-        <div class="grid">
-          <!-- Date Range -->
-          <div class="col-12 md:col-3">
-            <div class="field">
-              <label for="startDate" class="block mb-2">Start Date</label>
-              <Calendar
-                id="startDate"
-                v-model="filters.start_date"
-                dateFormat="yy-mm-dd"
-                showIcon
-                class="w-full"
-              />
-            </div>
-          </div>
-
-          <div class="col-12 md:col-3">
-            <div class="field">
-              <label for="endDate" class="block mb-2">End Date</label>
-              <Calendar
-                id="endDate"
-                v-model="filters.end_date"
-                dateFormat="yy-mm-dd"
-                showIcon
-                class="w-full"
-              />
-            </div>
-          </div>
-
-          <!-- Payment Method -->
-          <div class="col-12 md:col-3">
-            <div class="field">
-              <label for="paymentMethod" class="block mb-2">Payment Method</label>
-              <Dropdown
-                id="paymentMethod"
-                v-model="filters.payment_method"
-                :options="paymentMethods"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="All Methods"
-                class="w-full"
-                showClear
-              />
-            </div>
-          </div>
-
-          <!-- Payment Status -->
-          <div class="col-12 md:col-3">
-            <div class="field">
-              <label for="paymentStatus" class="block mb-2">Status</label>
-              <Dropdown
-                id="paymentStatus"
-                v-model="filters.payment_status"
-                :options="paymentStatuses"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="All Statuses"
-                class="w-full"
-                showClear
-              />
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="col-12">
-            <Button label="Apply Filters" icon="pi pi-search" @click="applyFilters" class="mr-2" />
-            <Button
-              label="Clear Filters"
-              icon="pi pi-times"
-              severity="secondary"
-              outlined
-              @click="clearFilters"
-              class="mr-2"
+        <div class="flex justify-content-between">
+          <div>
+            <label for="dateRange" class="block mb-2" style="font-size: 0.85em">Date Range</label>
+            <Calendar
+              id="dateRange"
+              v-model="filters.dateRange"
+              selection-mode="range"
+              date-format="yy-mm-dd"
+              placeholder="Select date range"
+              @date-select="applyFilters"
+              show-button-bar
+              :manual-input="false"
+              class="w-full"
             />
-            <Button
-              icon="pi pi-refresh"
-              severity="help"
-              v-tooltip.top="'Refresh'"
-              @click="fetchSales"
+          </div>
+
+          <div>
+            <label for="paymentMethod" class="block mb-2" style="font-size: 0.85em">
+              Payment Method
+            </label>
+            <Dropdown
+              id="paymentMethod"
+              v-model="filters.payment_method"
+              :options="paymentMethods"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="All Methods"
+              class="w-full"
+              showClear
+              @change="applyFilters"
             />
+          </div>
+
+          <div>
+            <label for="paymentStatus" class="block mb-2" style="font-size: 0.85em">Status</label>
+            <Dropdown
+              id="paymentStatus"
+              v-model="filters.payment_status"
+              :options="paymentStatuses"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="All Statuses"
+              class="w-full"
+              showClear
+              @change="applyFilters"
+            />
+          </div>
+
+          <div class="flex align-items-end justify-content-end gap-2">
+            <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
+            <Button icon="pi pi-refresh" outlined @click="fetchSales" />
           </div>
         </div>
       </template>
@@ -309,8 +281,7 @@ const saleStore = useSaleStore();
 
 // Refs
 const filters = ref({
-  start_date: null,
-  end_date: null,
+  dateRange: null,
   payment_method: null,
   payment_status: null,
 });
@@ -357,12 +328,14 @@ async function fetchSales(params = {}) {
 function applyFilters() {
   const params = {};
 
-  if (filters.value.start_date) {
-    params.start_date = filters.value.start_date.toISOString().split('T')[0];
-  }
-
-  if (filters.value.end_date) {
-    params.end_date = filters.value.end_date.toISOString().split('T')[0];
+  // Extract dates from dateRange
+  if (filters.value.dateRange && filters.value.dateRange.length > 0) {
+    if (filters.value.dateRange[0]) {
+      params.start_date = filters.value.dateRange[0].toISOString().split('T')[0];
+    }
+    if (filters.value.dateRange[1]) {
+      params.end_date = filters.value.dateRange[1].toISOString().split('T')[0];
+    }
   }
 
   if (filters.value.payment_method) {
@@ -378,8 +351,7 @@ function applyFilters() {
 
 function clearFilters() {
   filters.value = {
-    start_date: null,
-    end_date: null,
+    dateRange: null,
     payment_method: null,
     payment_status: null,
   };

@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard">
-    <h1 class="page-title">Dashboard</h1>
+    <h1 class="page-title text-primary">Dashboard</h1>
 
     <div class="grid">
       <!-- Summary Cards -->

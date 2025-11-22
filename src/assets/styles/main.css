@@ -69,6 +69,10 @@
   margin-left: 1rem;
 }
 
+.p-dropdown-clear-icon {
+  position: unset;
+  top: 0;
+}
 .p-button-label {
   margin: 0 0.5rem;
 }
