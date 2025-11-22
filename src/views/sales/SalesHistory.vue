@@ -268,11 +268,68 @@
     <!-- Edit Sale Dialog -->
     <Dialog
       v-model:visible="showEditDialog"
-      :header="`Edit Sale - #${editForm.id}`"
+      :header="`Edit Sale - #${editForm?.id || ''}`"
       :modal="true"
-      :style="{ width: '500px' }"
+      :style="{ width: '800px' }"
+      :maximizable="true"
     >
       <div v-if="editForm" class="grid">
+        <!-- Sale Items Section -->
+        <div class="col-12">
+          <h4 class="mb-3">Sale Items</h4>
+          <DataTable :value="editForm.items" class="p-datatable-sm mb-4" responsiveLayout="scroll">
+            <Column field="product.name" header="Product" style="min-width: 200px" />
+            <Column field="quantity" header="Quantity" style="width: 120px">
+              <template #body="{ data, index }">
+                <InputNumber
+                  v-model="data.quantity"
+                  :min="1"
+                  :max="data.available_stock + data.original_quantity"
+                  showButtons
+                  buttonLayout="horizontal"
+                  @input="updateItemSubtotal(index)"
+                  class="w-full"
+                >
+                  <template #incrementbuttonicon>
+                    <span class="pi pi-plus" />
+                  </template>
+                  <template #decrementbuttonicon>
+                    <span class="pi pi-minus" />
+                  </template>
+                </InputNumber>
+              </template>
+            </Column>
+            <Column field="unit_price" header="Unit Price" style="width: 150px">
+              <template #body="{ data, index }">
+                <InputNumber
+                  v-model="data.unit_price"
+                  mode="decimal"
+                  :minFractionDigits="2"
+                  :maxFractionDigits="2"
+                  :min="0"
+                  @input="updateItemSubtotal(index)"
+                  class="w-full"
+                />
+              </template>
+            </Column>
+            <Column field="subtotal" header="Subtotal" style="width: 150px">
+              <template #body="{ data }">Rs. {{ parseFloat(data.subtotal).toFixed(2) }}</template>
+            </Column>
+            <Column header="Actions" style="width: 80px">
+              <template #body="{ index }">
+                <Button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  text
+                  rounded
+                  @click="removeItem(index)"
+                  v-tooltip.top="'Remove Item'"
+                />
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+
         <div class="col-12">
           <label for="editDiscount" class="block mb-2 font-semibold">Discount (Rs.)</label>
           <InputNumber
@@ -357,9 +414,7 @@
             <Divider />
             <div class="flex justify-content-between">
               <span class="font-bold text-lg">New Total:</span>
-              <span class="font-bold text-lg text-primary">
-                Rs. {{ calculateNewTotal() }}
-              </span>
+              <span class="font-bold text-lg text-primary">Rs. {{ calculateNewTotal() }}</span>
             </div>
           </div>
         </div>
@@ -536,8 +591,22 @@ async function editSale(sale) {
   const result = await saleStore.fetchSaleById(sale.id);
 
   if (result.success) {
+    // Prepare items with editable fields
+    const items = result.data.saleItems.map((item) => ({
+      id: item.id,
+      product_id: item.product_id,
+      product: item.product,
+      stock_entry_id: item.stock_entry_id,
+      quantity: item.quantity,
+      original_quantity: item.quantity, // Store original for stock validation
+      unit_price: parseFloat(item.unit_price),
+      subtotal: parseFloat(item.subtotal),
+      available_stock: 0, // Will be fetched from stock
+    }));
+
     editForm.value = {
       id: result.data.id,
+      items: items,
       subtotal: result.data.subtotal,
       discount: parseFloat(result.data.discount),
       tax: parseFloat(result.data.tax),
@@ -558,14 +627,43 @@ async function editSale(sale) {
 
 function calculateNewTotal() {
   if (!editForm.value) return '0.00';
-  const subtotal = parseFloat(editForm.value.subtotal);
+  // Calculate subtotal from items
+  const subtotal = editForm.value.items.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
   const discount = parseFloat(editForm.value.discount) || 0;
   const tax = parseFloat(editForm.value.tax) || 0;
   return (subtotal - discount + tax).toFixed(2);
 }
 
+function updateItemSubtotal(index) {
+  const item = editForm.value.items[index];
+  item.subtotal = item.quantity * item.unit_price;
+}
+
+function removeItem(index) {
+  if (editForm.value.items.length <= 1) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Warning',
+      detail: 'Cannot remove the last item. A sale must have at least one item.',
+      life: 3000,
+    });
+    return;
+  }
+  editForm.value.items.splice(index, 1);
+}
+
 async function saveSaleChanges() {
+  // Prepare items for update
+  const items = editForm.value.items.map((item) => ({
+    id: item.id,
+    product_id: item.product_id,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    subtotal: item.subtotal,
+  }));
+
   const result = await saleStore.updateSale(editForm.value.id, {
+    items: items,
     discount: editForm.value.discount,
     tax: editForm.value.tax,
     payment_method: editForm.value.payment_method,

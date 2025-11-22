@@ -418,7 +418,7 @@ class SaleController {
   }
 
   /**
-   * Update sale details
+   * Update sale details including items
    * @param {number} id - Sale ID
    * @param {Object} updateData - Data to update
    * @returns {Object} Result with success status
@@ -435,7 +435,15 @@ class SaleController {
         };
       }
 
-      const sale = await Sale.findByPk(id, { transaction });
+      const sale = await Sale.findByPk(id, {
+        include: [
+          {
+            model: SaleItem,
+            as: 'saleItems',
+          },
+        ],
+        transaction,
+      });
 
       if (!sale) {
         await transaction.rollback();
@@ -445,17 +453,145 @@ class SaleController {
         };
       }
 
-      // Only allow updating certain fields
+      let newSubtotal = sale.subtotal;
+
+      // Handle item updates if provided
+      if (updateData.items && Array.isArray(updateData.items)) {
+        // Create a map of existing items
+        const existingItems = {};
+        sale.saleItems.forEach((item) => {
+          existingItems[item.id] = item;
+        });
+
+        // Process each item in the update
+        newSubtotal = 0;
+        const updatedItemIds = [];
+
+        for (const itemData of updateData.items) {
+          const existingItem = existingItems[itemData.id];
+
+          if (existingItem) {
+            updatedItemIds.push(itemData.id);
+
+            const quantityDiff = itemData.quantity - existingItem.quantity;
+
+            // If quantity changed, adjust stock
+            if (quantityDiff !== 0) {
+              if (quantityDiff > 0) {
+                // Increased quantity - need to deduct more stock
+                const product = await Product.findByPk(existingItem.product_id, { transaction });
+                if (!product) {
+                  await transaction.rollback();
+                  return {
+                    success: false,
+                    message: `Product with ID ${existingItem.product_id} not found`,
+                  };
+                }
+
+                // Check available stock
+                const stockBatches = await StockEntry.findAll({
+                  where: {
+                    product_id: existingItem.product_id,
+                    quantity_remaining: {
+                      [Op.gt]: 0,
+                    },
+                  },
+                  order: [['entry_date', 'ASC']],
+                  transaction,
+                });
+
+                const totalAvailableStock = stockBatches.reduce(
+                  (sum, batch) => sum + batch.quantity_remaining,
+                  0
+                );
+
+                if (totalAvailableStock < Math.abs(quantityDiff)) {
+                  await transaction.rollback();
+                  return {
+                    success: false,
+                    message: `Insufficient stock for ${
+                      product.name
+                    }. Available: ${totalAvailableStock}, Required: ${Math.abs(quantityDiff)}`,
+                  };
+                }
+
+                // Deduct additional stock
+                const deductResult = await StockController.deductStock(
+                  existingItem.product_id,
+                  Math.abs(quantityDiff),
+                  transaction
+                );
+
+                if (!deductResult.success) {
+                  await transaction.rollback();
+                  return deductResult;
+                }
+              } else {
+                // Decreased quantity - return stock
+                const returnResult = await StockController.returnStock(
+                  existingItem.product_id,
+                  existingItem.stock_entry_id,
+                  Math.abs(quantityDiff),
+                  transaction
+                );
+
+                if (!returnResult.success) {
+                  await transaction.rollback();
+                  return returnResult;
+                }
+              }
+            }
+
+            // Update the item
+            await existingItem.update(
+              {
+                quantity: itemData.quantity,
+                unit_price: parseFloat(itemData.unit_price),
+                subtotal: parseFloat(itemData.subtotal),
+              },
+              { transaction }
+            );
+
+            newSubtotal += parseFloat(itemData.subtotal);
+          }
+        }
+
+        // Remove items that are not in the update list
+        for (const existingItem of sale.saleItems) {
+          if (!updatedItemIds.includes(existingItem.id)) {
+            // Return stock for removed item
+            const returnResult = await StockController.returnStock(
+              existingItem.product_id,
+              existingItem.stock_entry_id,
+              existingItem.quantity,
+              transaction
+            );
+
+            if (!returnResult.success) {
+              await transaction.rollback();
+              return returnResult;
+            }
+
+            // Delete the item
+            await existingItem.destroy({ transaction });
+          }
+        }
+      }
+
+      // Update sale fields
       const allowedUpdates = {
-        discount: updateData.discount !== undefined ? parseFloat(updateData.discount) : sale.discount,
+        subtotal: newSubtotal,
+        discount:
+          updateData.discount !== undefined ? parseFloat(updateData.discount) : sale.discount,
         tax: updateData.tax !== undefined ? parseFloat(updateData.tax) : sale.tax,
         payment_method: updateData.payment_method || sale.payment_method,
         payment_status: updateData.payment_status || sale.payment_status,
         notes: updateData.notes !== undefined ? updateData.notes : sale.notes,
       };
 
-      // Recalculate total amount if discount or tax changed
-      allowedUpdates.total_amount = sale.subtotal - allowedUpdates.discount + allowedUpdates.tax;
+      // Recalculate total amount
+      allowedUpdates.total_amount =
+        allowedUpdates.subtotal - allowedUpdates.discount + allowedUpdates.tax;
 
       await sale.update(allowedUpdates, { transaction });
 

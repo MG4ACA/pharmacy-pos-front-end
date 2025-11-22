@@ -234,6 +234,66 @@ class StockController {
   }
 
   /**
+   * Return stock to a specific batch
+   * This method is used when canceling a sale or reducing sale quantity
+   * @param {Number} productId - Product ID
+   * @param {Number} batchId - Stock entry (batch) ID
+   * @param {Number} quantity - Quantity to return
+   * @param {Object} transaction - Optional transaction object
+   * @returns {Object} Result with success status
+   */
+  async returnStock(productId, batchId, quantity, transaction = null) {
+    const t = transaction || (await sequelize.transaction());
+    const shouldCommit = !transaction;
+
+    try {
+      const stockEntry = await StockEntry.findOne({
+        where: {
+          id: batchId,
+          product_id: productId,
+        },
+        lock: t.LOCK.UPDATE,
+        transaction: t,
+      });
+
+      if (!stockEntry) {
+        if (shouldCommit) await t.rollback();
+        return {
+          success: false,
+          message: 'Stock entry not found',
+        };
+      }
+
+      // Add the quantity back to the batch
+      await stockEntry.update(
+        {
+          quantity_remaining: stockEntry.quantity_remaining + quantity,
+        },
+        { transaction: t }
+      );
+
+      if (shouldCommit) await t.commit();
+
+      return {
+        success: true,
+        message: 'Stock returned successfully',
+        data: {
+          batch_id: batchId,
+          quantity_returned: quantity,
+          new_quantity_remaining: stockEntry.quantity_remaining + quantity,
+        },
+      };
+    } catch (error) {
+      if (shouldCommit) await t.rollback();
+      console.error('Return stock error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to return stock',
+      };
+    }
+  }
+
+  /**
    * Get expiring stock (within specified days)
    * @param {Number} days - Number of days to check (default: 30)
    * @returns {Object} Result with success status and data
