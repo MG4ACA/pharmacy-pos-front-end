@@ -14,25 +14,6 @@
         </div>
       </router-link>
 
-      <!-- Inventory Section with Children -->
-      <div class="sidebar-section">
-        <div class="sidebar-item-content sidebar-section-header">
-          <i class="pi pi-box sidebar-item-icon"></i>
-          <span class="sidebar-item-label">Inventory</span>
-        </div>
-        <router-link
-          v-for="child in inventoryItems"
-          :key="child.path"
-          :to="child.path"
-          class="sidebar-item sidebar-child"
-        >
-          <div class="sidebar-item-content">
-            <i :class="child.icon" class="sidebar-item-icon"></i>
-            <span class="sidebar-item-label">{{ child.label }}</span>
-          </div>
-        </router-link>
-      </div>
-
       <!-- Sales Section with Children -->
       <div class="sidebar-section">
         <div class="sidebar-item-content sidebar-section-header">
@@ -52,6 +33,32 @@
         </router-link>
       </div>
 
+      <!-- Inventory Section with Children -->
+      <div class="sidebar-section">
+        <div class="sidebar-item-content sidebar-section-header">
+          <i class="pi pi-box sidebar-item-icon"></i>
+          <span class="sidebar-item-label">Inventory</span>
+        </div>
+        <router-link
+          v-for="child in inventoryItems"
+          :key="child.path"
+          :to="child.path"
+          class="sidebar-item sidebar-child"
+        >
+          <div class="sidebar-item-content">
+            <i :class="child.icon" class="sidebar-item-icon"></i>
+            <span class="sidebar-item-label">{{ child.label }}</span>
+          </div>
+        </router-link>
+      </div>
+
+      <router-link to="/suppliers" class="sidebar-item">
+        <div class="sidebar-item-content">
+          <i class="pi pi-building sidebar-item-icon"></i>
+          <span class="sidebar-item-label">Suppliers</span>
+        </div>
+      </router-link>
+
       <!-- Reports Section with Children -->
       <div class="sidebar-section">
         <div class="sidebar-item-content sidebar-section-header">
@@ -70,13 +77,6 @@
           </div>
         </router-link>
       </div>
-
-      <router-link to="/suppliers" class="sidebar-item">
-        <div class="sidebar-item-content">
-          <i class="pi pi-building sidebar-item-icon"></i>
-          <span class="sidebar-item-label">Suppliers</span>
-        </div>
-      </router-link>
 
       <router-link to="/settings" class="sidebar-item">
         <div class="sidebar-item-content">
