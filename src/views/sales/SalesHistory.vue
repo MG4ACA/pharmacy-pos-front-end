@@ -137,7 +137,7 @@
             </template>
           </Column>
 
-          <Column header="Actions" style="width: 120px">
+          <Column header="Actions" style="width: 150px">
             <template #body="{ data }">
               <Button
                 icon="pi pi-eye"
@@ -146,6 +146,14 @@
                 rounded
                 @click="viewSaleDetails(data)"
                 v-tooltip.top="'View Details'"
+              />
+              <Button
+                icon="pi pi-pencil"
+                severity="warning"
+                text
+                rounded
+                @click="editSale(data)"
+                v-tooltip.top="'Edit Sale'"
               />
             </template>
           </Column>
@@ -256,6 +264,118 @@
         <Button label="Close" icon="pi pi-times" @click="showDetailsDialog = false" />
       </template>
     </Dialog>
+
+    <!-- Edit Sale Dialog -->
+    <Dialog
+      v-model:visible="showEditDialog"
+      :header="`Edit Sale - #${editForm.id}`"
+      :modal="true"
+      :style="{ width: '500px' }"
+    >
+      <div v-if="editForm" class="grid">
+        <div class="col-12">
+          <label for="editDiscount" class="block mb-2 font-semibold">Discount (Rs.)</label>
+          <InputNumber
+            id="editDiscount"
+            v-model="editForm.discount"
+            mode="decimal"
+            :minFractionDigits="2"
+            :maxFractionDigits="2"
+            :min="0"
+            class="w-full"
+          />
+        </div>
+
+        <div class="col-12">
+          <label for="editTax" class="block mb-2 font-semibold">Tax (Rs.)</label>
+          <InputNumber
+            id="editTax"
+            v-model="editForm.tax"
+            mode="decimal"
+            :minFractionDigits="2"
+            :maxFractionDigits="2"
+            :min="0"
+            class="w-full"
+          />
+        </div>
+
+        <div class="col-12">
+          <label for="editPaymentMethod" class="block mb-2 font-semibold">Payment Method</label>
+          <Dropdown
+            id="editPaymentMethod"
+            v-model="editForm.payment_method"
+            :options="paymentMethods"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select Payment Method"
+            class="w-full"
+          />
+        </div>
+
+        <div class="col-12">
+          <label for="editPaymentStatus" class="block mb-2 font-semibold">Payment Status</label>
+          <Dropdown
+            id="editPaymentStatus"
+            v-model="editForm.payment_status"
+            :options="paymentStatuses"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select Payment Status"
+            class="w-full"
+          />
+        </div>
+
+        <div class="col-12">
+          <label for="editNotes" class="block mb-2 font-semibold">Notes</label>
+          <Textarea
+            id="editNotes"
+            v-model="editForm.notes"
+            rows="3"
+            class="w-full"
+            placeholder="Add notes..."
+          />
+        </div>
+
+        <div class="col-12">
+          <div class="surface-100 border-round p-3">
+            <div class="flex justify-content-between mb-2">
+              <span class="text-600">Subtotal:</span>
+              <span class="font-semibold">Rs. {{ parseFloat(editForm.subtotal).toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-content-between mb-2">
+              <span class="text-600">Discount:</span>
+              <span class="font-semibold text-red-500">
+                - Rs. {{ parseFloat(editForm.discount || 0).toFixed(2) }}
+              </span>
+            </div>
+            <div class="flex justify-content-between mb-2">
+              <span class="text-600">Tax:</span>
+              <span class="font-semibold text-green-600">
+                + Rs. {{ parseFloat(editForm.tax || 0).toFixed(2) }}
+              </span>
+            </div>
+            <Divider />
+            <div class="flex justify-content-between">
+              <span class="font-bold text-lg">New Total:</span>
+              <span class="font-bold text-lg text-primary">
+                Rs. {{ calculateNewTotal() }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <Button
+          label="Cancel"
+          icon="pi pi-times"
+          severity="secondary"
+          outlined
+          @click="showEditDialog = false"
+        />
+        <Button label="Save Changes" icon="pi pi-check" @click="saveSaleChanges" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -273,7 +393,9 @@ import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
 import Divider from 'primevue/divider';
 import Dropdown from 'primevue/dropdown';
+import InputNumber from 'primevue/inputnumber';
 import Tag from 'primevue/tag';
+import Textarea from 'primevue/textarea';
 
 const router = useRouter();
 const toast = useToast();
@@ -288,6 +410,8 @@ const filters = ref({
 
 const showDetailsDialog = ref(false);
 const selectedSale = ref(null);
+const showEditDialog = ref(false);
+const editForm = ref(null);
 
 // Computed
 const salesHistory = computed(() => saleStore.salesHistory);
@@ -406,6 +530,66 @@ function getStatusSeverity(status) {
     cancelled: 'danger',
   };
   return severities[status] || 'info';
+}
+
+async function editSale(sale) {
+  const result = await saleStore.fetchSaleById(sale.id);
+
+  if (result.success) {
+    editForm.value = {
+      id: result.data.id,
+      subtotal: result.data.subtotal,
+      discount: parseFloat(result.data.discount),
+      tax: parseFloat(result.data.tax),
+      payment_method: result.data.payment_method,
+      payment_status: result.data.payment_status,
+      notes: result.data.notes || '',
+    };
+    showEditDialog.value = true;
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: result.message,
+      life: 3000,
+    });
+  }
+}
+
+function calculateNewTotal() {
+  if (!editForm.value) return '0.00';
+  const subtotal = parseFloat(editForm.value.subtotal);
+  const discount = parseFloat(editForm.value.discount) || 0;
+  const tax = parseFloat(editForm.value.tax) || 0;
+  return (subtotal - discount + tax).toFixed(2);
+}
+
+async function saveSaleChanges() {
+  const result = await saleStore.updateSale(editForm.value.id, {
+    discount: editForm.value.discount,
+    tax: editForm.value.tax,
+    payment_method: editForm.value.payment_method,
+    payment_status: editForm.value.payment_status,
+    notes: editForm.value.notes,
+  });
+
+  if (result.success) {
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Sale updated successfully',
+      life: 3000,
+    });
+    showEditDialog.value = false;
+    applyFilters(); // Refresh the list
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: result.message,
+      life: 3000,
+    });
+  }
 }
 
 onMounted(() => {

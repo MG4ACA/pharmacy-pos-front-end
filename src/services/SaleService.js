@@ -85,6 +85,25 @@ class SaleService {
       };
     }
   }
+
+  /**
+   * Update sale
+   * @param {number} id - Sale ID
+   * @param {Object} data - Update data
+   * @returns {Promise<Object>} Result
+   */
+  static async updateSale(id, data) {
+    try {
+      const result = await window.electronAPI.updateSale({ id, data });
+      return result;
+    } catch (error) {
+      console.error('SaleService.updateSale error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to update sale',
+      };
+    }
+  }
 }
 
 export default SaleService;

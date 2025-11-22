@@ -111,6 +111,40 @@ export const useSaleStore = defineStore('sale', () => {
     notes.value = value;
   }
 
+  // Actions: Update sale
+  async function updateSale(id, data) {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const result = await SaleService.updateSale(id, data);
+
+      if (result.success) {
+        // Update the sale in salesHistory if it exists
+        const index = salesHistory.value.findIndex((sale) => sale.id === id);
+        if (index !== -1) {
+          salesHistory.value[index] = result.data;
+        }
+        // Update currentSale if it matches
+        if (currentSale.value && currentSale.value.id === id) {
+          currentSale.value = result.data;
+        }
+      } else {
+        error.value = result.message;
+      }
+
+      return result;
+    } catch (err) {
+      error.value = err.message;
+      return {
+        success: false,
+        message: err.message || 'Failed to update sale',
+      };
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Actions: Sale operations
   async function completeSale(userId) {
     if (cart.value.length === 0) {
@@ -267,6 +301,7 @@ export const useSaleStore = defineStore('sale', () => {
 
     // Sale actions
     completeSale,
+    updateSale,
     fetchSalesHistory,
     fetchSaleById,
     fetchTodaySales,

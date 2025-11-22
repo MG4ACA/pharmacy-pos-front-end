@@ -418,6 +418,68 @@ class SaleController {
   }
 
   /**
+   * Update sale details
+   * @param {number} id - Sale ID
+   * @param {Object} updateData - Data to update
+   * @returns {Object} Result with success status
+   */
+  async updateSale(id, updateData) {
+    const transaction = await sequelize.transaction();
+
+    try {
+      if (!id) {
+        await transaction.rollback();
+        return {
+          success: false,
+          message: 'Sale ID is required',
+        };
+      }
+
+      const sale = await Sale.findByPk(id, { transaction });
+
+      if (!sale) {
+        await transaction.rollback();
+        return {
+          success: false,
+          message: 'Sale not found',
+        };
+      }
+
+      // Only allow updating certain fields
+      const allowedUpdates = {
+        discount: updateData.discount !== undefined ? parseFloat(updateData.discount) : sale.discount,
+        tax: updateData.tax !== undefined ? parseFloat(updateData.tax) : sale.tax,
+        payment_method: updateData.payment_method || sale.payment_method,
+        payment_status: updateData.payment_status || sale.payment_status,
+        notes: updateData.notes !== undefined ? updateData.notes : sale.notes,
+      };
+
+      // Recalculate total amount if discount or tax changed
+      allowedUpdates.total_amount = sale.subtotal - allowedUpdates.discount + allowedUpdates.tax;
+
+      await sale.update(allowedUpdates, { transaction });
+
+      await transaction.commit();
+
+      // Fetch updated sale
+      const updatedSale = await this.getSaleById(id);
+
+      return {
+        success: true,
+        data: updatedSale.data,
+        message: 'Sale updated successfully',
+      };
+    } catch (error) {
+      await transaction.rollback();
+      console.error('SaleController.updateSale error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to update sale',
+      };
+    }
+  }
+
+  /**
    * Get sales statistics for dashboard
    * @returns {Object} Result with sales statistics
    */

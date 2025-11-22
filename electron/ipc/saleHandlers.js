@@ -30,5 +30,10 @@ export function registerSaleHandlers() {
     return await SaleController.getSalesStatistics();
   });
 
+  // Update sale
+  ipcMain.handle('sale:update', async (event, { id, data }) => {
+    return await SaleController.updateSale(id, data);
+  });
+
   console.log('Sale IPC handlers registered');
 }
