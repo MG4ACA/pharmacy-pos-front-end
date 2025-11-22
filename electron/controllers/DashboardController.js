@@ -91,6 +91,8 @@ class DashboardController {
         attributes: ['id', 'sale_date', 'total_amount', 'payment_method'],
       });
 
+      const plainRecentSales = recentSales.map((sale) => sale.toJSON());
+
       return {
         success: true,
         data: {
@@ -100,7 +102,7 @@ class DashboardController {
           expiringSoon,
           monthSales: parseFloat(monthSales) || 0,
           totalSalesCount,
-          recentSales,
+          recentSales: plainRecentSales,
         },
       };
     } catch (error) {
@@ -205,9 +207,11 @@ class DashboardController {
         order: [['expiry_date', 'ASC']],
       });
 
+      const plainExpiringStock = expiringStock.map((stock) => stock.toJSON());
+
       return {
         success: true,
-        data: expiringStock,
+        data: plainExpiringStock,
       };
     } catch (error) {
       console.error('DashboardController.getExpiringProducts error:', error);

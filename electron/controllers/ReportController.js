@@ -78,6 +78,8 @@ class ReportController {
         });
       });
 
+      const plainSales = sales.map((sale) => sale.toJSON());
+
       return {
         success: true,
         data: {
@@ -94,7 +96,7 @@ class ReportController {
           },
           paymentBreakdown,
           categoryTotals,
-          sales,
+          sales: plainSales,
         },
       };
     } catch (error) {
@@ -116,14 +118,18 @@ class ReportController {
         order: [['name', 'ASC']],
       });
 
+      const plainProducts = products.map((product) => product.toJSON());
+
       // Categorize products
-      const lowStock = products.filter((p) => p.total_stock <= p.reorder_level);
-      const outOfStock = products.filter((p) => p.total_stock === 0);
-      const inStock = products.filter((p) => p.total_stock > p.reorder_level && p.total_stock > 0);
+      const lowStock = plainProducts.filter((p) => p.total_stock <= p.reorder_level);
+      const outOfStock = plainProducts.filter((p) => p.total_stock === 0);
+      const inStock = plainProducts.filter(
+        (p) => p.total_stock > p.reorder_level && p.total_stock > 0
+      );
 
       // Calculate total inventory value
       let totalValue = 0;
-      products.forEach((product) => {
+      plainProducts.forEach((product) => {
         totalValue += parseFloat(product.total_stock * (product.purchase_price || 0));
       });
 
@@ -131,14 +137,14 @@ class ReportController {
         success: true,
         data: {
           summary: {
-            totalProducts: products.length,
+            totalProducts: plainProducts.length,
             inStock: inStock.length,
             lowStock: lowStock.length,
             outOfStock: outOfStock.length,
             totalInventoryValue: totalValue,
           },
           products: {
-            all: products,
+            all: plainProducts,
             lowStock,
             outOfStock,
             inStock,
@@ -192,6 +198,8 @@ class ReportController {
         order: [['expiry_date', 'ASC']],
       });
 
+      const plainExpiringStock = expiringStock.map((stock) => stock.toJSON());
+
       // Group by urgency
       const urgent = []; // Expiring in 7 days
       const warning = []; // Expiring in 8-30 days
@@ -199,7 +207,7 @@ class ReportController {
       const sevenDaysFromNow = new Date();
       sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
-      expiringStock.forEach((stock) => {
+      plainExpiringStock.forEach((stock) => {
         if (new Date(stock.expiry_date) <= sevenDaysFromNow) {
           urgent.push(stock);
         } else {
@@ -208,7 +216,7 @@ class ReportController {
       });
 
       // Calculate total value at risk
-      const totalValueAtRisk = expiringStock.reduce((sum, stock) => {
+      const totalValueAtRisk = plainExpiringStock.reduce((sum, stock) => {
         return sum + parseFloat(stock.quantity_remaining * stock.purchase_price);
       }, 0);
 
@@ -216,14 +224,14 @@ class ReportController {
         success: true,
         data: {
           summary: {
-            totalItems: expiringStock.length,
+            totalItems: plainExpiringStock.length,
             urgentItems: urgent.length,
             warningItems: warning.length,
             totalValueAtRisk,
             daysChecked: days,
           },
           items: {
-            all: expiringStock,
+            all: plainExpiringStock,
             urgent,
             warning,
           },
@@ -290,9 +298,11 @@ class ReportController {
         raw: false,
       });
 
+      const plainSaleItems = saleItems.map((item) => item.toJSON());
+
       return {
         success: true,
-        data: saleItems,
+        data: plainSaleItems,
       };
     } catch (error) {
       console.error('ReportController.getTopSellingProducts error:', error);
