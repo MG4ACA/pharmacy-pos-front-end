@@ -1138,11 +1138,13 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 ### Sales History UI/UX Improvements
 
 **Date Range Picker Implementation**:
+
 - Replaced separate start/end date filters with single Calendar component
 - Uses `selection-mode="range"` for better user experience
 - Consistent with StockReceiptList and other components
 
 **Filter Auto-Triggers**:
+
 - Removed "Apply Filters" button for streamlined UX
 - Added `@change` triggers to payment method dropdown
 - Added `@change` triggers to payment status dropdown
@@ -1150,17 +1152,20 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 - Filters apply automatically on selection
 
 **Layout Consistency**:
+
 - Updated filter layout from grid to flex (`flex justify-content-between`)
 - Reduced font size to 0.85em for labels
 - Matched layout pattern used in Products, Stock Receipts, and Stock Batches
 
 **Refresh Button**:
+
 - Added refresh icon button next to Clear button
 - Allows manual data reload without changing filters
 
 ### Sales Edit & Management Features
 
 **Sale-Level Editing**:
+
 - Edit dialog (800px width, maximizable) for modifying completed sales
 - Editable fields:
   - Discount amount (with validation)
@@ -1172,6 +1177,7 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 - Transaction-based updates with automatic rollback on errors
 
 **Sale Items Management**:
+
 - Editable items DataTable with:
   - Quantity adjustment using InputNumber with +/- buttons
   - Unit price editing (with validation)
@@ -1183,7 +1189,8 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
   - Final total: `subtotal - discount + tax`
 
 **Automatic Stock Adjustments**:
-- **Quantity Increase**: 
+
+- **Quantity Increase**:
   - Calculates difference: `new_quantity - original_quantity`
   - Calls `StockController.deductStock()` for additional quantity
   - Uses FIFO method to select batches
@@ -1200,6 +1207,7 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 - Automatic rollback on any error
 
 **Backend Enhancements**:
+
 - Enhanced `SaleController.updateSale()`:
   - Loads sale with `include: [{ model: SaleItem, as: 'saleItems' }]`
   - Creates map of existing items for comparison
@@ -1213,6 +1221,7 @@ This enhancement should be implemented as **Phase 2.4** after completing Phase 2
 - IPC handlers, services, and store actions for `sale:update`
 
 **Validation & Error Handling**:
+
 - Quantity validation (must be > 0)
 - Price validation (must be >= 0)
 - Stock availability validation before deduction
