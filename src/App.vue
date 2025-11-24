@@ -1,25 +1,16 @@
 <template>
-  <ElectronRequired v-if="!isElectron" />
-  <template v-else>
-    <Toast position="top-right" />
-    <ConfirmDialog />
-    <router-view />
-  </template>
+  <Toast position="top-right" />
+  <ConfirmDialog />
+  <router-view />
 </template>
 
 <script setup>
-import ElectronRequired from '@/components/ElectronRequired.vue';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Toast from 'primevue/toast';
-import { computed, onMounted } from 'vue';
-
-const isElectron = computed(() => {
-  return typeof window !== 'undefined' && window.electronAPI !== undefined;
-});
+import { onMounted } from 'vue';
 
 onMounted(() => {
   console.log('Pharmacy POS Application Started');
-  console.log('Running in Electron:', isElectron.value);
 });
 </script>
 

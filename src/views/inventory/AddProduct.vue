@@ -203,8 +203,8 @@ const fillSampleData = () => {
   formData.barcode = '8901234567890';
   formData.description = 'Paracetamol tablets for pain relief and fever reduction. 500mg strength.';
   // Set to first available type and category if they exist
-  formData.product_type_id = productTypes.value.length > 0 ? productTypes.value[0].id : null;
-  formData.category_id = categories.value.length > 0 ? categories.value[0].id : null;
+  formData.product_type_id = productTypes.value?.length > 0 ? productTypes.value[0].id : null;
+  formData.category_id = categories.value?.length > 0 ? categories.value[0].id : null;
   formData.reorder_level = 50;
   formData.status = 'active';
   // Clear any errors
@@ -223,16 +223,23 @@ const loadMetadata = async () => {
       MetaService.getCategories(),
     ]);
 
-    if (typesResult.success) {
+    if (typesResult?.success && typesResult.data) {
       productTypes.value = typesResult.data;
+    } else {
+      productTypes.value = [];
     }
 
-    if (categoriesResult.success) {
+    if (categoriesResult?.success && categoriesResult.data) {
       categories.value = categoriesResult.data;
+    } else {
+      categories.value = [];
     }
   } catch (err) {
     console.error('Failed to load metadata:', err);
     error('Failed to load product types and categories');
+    // Ensure arrays are initialized even on error
+    productTypes.value = productTypes.value || [];
+    categories.value = categories.value || [];
   }
 };
 
