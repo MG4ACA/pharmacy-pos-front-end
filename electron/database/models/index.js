@@ -5,6 +5,7 @@ import ProductType from './ProductType.js';
 import Sale from './Sale.js';
 import SaleItem from './SaleItem.js';
 import StockEntry from './StockEntry.js';
+import StockReceipt from './StockReceipt.js';
 import Supplier from './Supplier.js';
 import User from './User.js';
 
@@ -48,6 +49,34 @@ Supplier.hasMany(StockEntry, {
   as: 'stockEntries',
 });
 
+StockEntry.belongsTo(StockReceipt, {
+  foreignKey: 'receipt_id',
+  as: 'receipt',
+});
+StockReceipt.hasMany(StockEntry, {
+  foreignKey: 'receipt_id',
+  as: 'entries',
+});
+
+// StockReceipt associations
+StockReceipt.belongsTo(Supplier, {
+  foreignKey: 'supplier_id',
+  as: 'supplier',
+});
+Supplier.hasMany(StockReceipt, {
+  foreignKey: 'supplier_id',
+  as: 'receipts',
+});
+
+StockReceipt.belongsTo(User, {
+  foreignKey: 'created_by',
+  as: 'creator',
+});
+User.hasMany(StockReceipt, {
+  foreignKey: 'created_by',
+  as: 'receipts',
+});
+
 // Sale associations
 Sale.belongsTo(User, {
   foreignKey: 'user_id',
@@ -86,4 +115,15 @@ StockEntry.hasMany(SaleItem, {
   as: 'saleItems',
 });
 
-export { Category, Product, ProductType, Sale, SaleItem, StockEntry, Supplier, User, sequelize };
+export {
+  Category,
+  Product,
+  ProductType,
+  Sale,
+  SaleItem,
+  StockEntry,
+  StockReceipt,
+  Supplier,
+  User,
+  sequelize,
+};

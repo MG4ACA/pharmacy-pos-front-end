@@ -50,6 +50,57 @@
   text-overflow: ellipsis;
 }
 
+.search-icon {
+  position: absolute;
+  right: 0;
+  margin-right: 15px;
+}
+
+.p-button,
+.p-inputtext {
+  height: 2.4rem;
+}
+
+.p-card .p-card-content {
+  padding: 0;
+}
+
+.p-button-icon.pi {
+  margin-left: 1rem;
+}
+
+.p-dropdown-clear-icon {
+  position: unset;
+  top: 0;
+}
+.p-button-label {
+  margin: 0 0.5rem;
+}
+
+.p-panel-header {
+  color: var(--primary-color);
+}
+
+.p-inputtextarea {
+  height: auto !important;
+}
+
+.p-toast .pi {
+  margin-right: 1rem;
+}
+
+.p-dropdown-clear-icon {
+  top: 1rem;
+}
+
+.quantity-input .p-inputtext {
+  width: 4rem !important;
+}
+
+.unit-price-input .p-inputtext {
+  width: 10rem !important;
+}
+
 /* Animation */
 @keyframes fadeIn {
   from {

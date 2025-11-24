@@ -31,7 +31,7 @@ export const validateRequired = (value, fieldName = 'This field') => {
     return `${fieldName} is required`;
   }
 
-  return true;
+  return null; // Return null when validation passes (no error)
 };
 
 /**

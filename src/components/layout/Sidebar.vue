@@ -14,6 +14,25 @@
         </div>
       </router-link>
 
+      <!-- Sales Section with Children -->
+      <div class="sidebar-section">
+        <div class="sidebar-item-content sidebar-section-header">
+          <i class="pi pi-shopping-cart sidebar-item-icon"></i>
+          <span class="sidebar-item-label">Sales</span>
+        </div>
+        <router-link
+          v-for="child in salesItems"
+          :key="child.path"
+          :to="child.path"
+          class="sidebar-item sidebar-child"
+        >
+          <div class="sidebar-item-content">
+            <i :class="child.icon" class="sidebar-item-icon"></i>
+            <span class="sidebar-item-label">{{ child.label }}</span>
+          </div>
+        </router-link>
+      </div>
+
       <!-- Inventory Section with Children -->
       <div class="sidebar-section">
         <div class="sidebar-item-content sidebar-section-header">
@@ -33,24 +52,12 @@
         </router-link>
       </div>
 
-      <!-- Sales Section with Children -->
-      <div class="sidebar-section">
-        <div class="sidebar-item-content sidebar-section-header">
-          <i class="pi pi-shopping-cart sidebar-item-icon"></i>
-          <span class="sidebar-item-label">Sales</span>
+      <router-link to="/suppliers" class="sidebar-item">
+        <div class="sidebar-item-content">
+          <i class="pi pi-building sidebar-item-icon"></i>
+          <span class="sidebar-item-label">Suppliers</span>
         </div>
-        <router-link
-          v-for="child in salesItems"
-          :key="child.path"
-          :to="child.path"
-          class="sidebar-item sidebar-child"
-        >
-          <div class="sidebar-item-content">
-            <i :class="child.icon" class="sidebar-item-icon"></i>
-            <span class="sidebar-item-label">{{ child.label }}</span>
-          </div>
-        </router-link>
-      </div>
+      </router-link>
 
       <!-- Reports Section with Children -->
       <div class="sidebar-section">
@@ -71,13 +78,6 @@
         </router-link>
       </div>
 
-      <router-link to="/suppliers" class="sidebar-item">
-        <div class="sidebar-item-content">
-          <i class="pi pi-building sidebar-item-icon"></i>
-          <span class="sidebar-item-label">Suppliers</span>
-        </div>
-      </router-link>
-
       <router-link to="/settings" class="sidebar-item">
         <div class="sidebar-item-content">
           <i class="pi pi-cog sidebar-item-icon"></i>
@@ -93,8 +93,8 @@ const menuItems = [{ path: '/dashboard', label: 'Dashboard', icon: 'pi pi-home' 
 
 const inventoryItems = [
   { path: '/inventory/products', label: 'Products', icon: 'pi pi-list' },
-  { path: '/inventory/stock-entry', label: 'Stock Entry', icon: 'pi pi-plus-circle' },
-  { path: '/inventory/stock-history', label: 'Stock History', icon: 'pi pi-history' },
+  { path: '/inventory/stock-receipts', label: 'Stock Receipts', icon: 'pi pi-file-import' },
+  { path: '/inventory/stock-batches', label: 'Stock Batches', icon: 'pi pi-inbox' },
 ];
 
 const salesItems = [
@@ -105,6 +105,12 @@ const salesItems = [
 const reportItems = [
   { path: '/reports/daily-sales', label: 'Daily Sales', icon: 'pi pi-calendar' },
   { path: '/reports/stock', label: 'Stock Report', icon: 'pi pi-box' },
+  {
+    path: '/reports/expiring-products',
+    label: 'Expiring Products',
+    icon: 'pi pi-exclamation-triangle',
+  },
+  { path: '/reports/top-selling', label: 'Top Selling', icon: 'pi pi-chart-line' },
 ];
 </script>
 

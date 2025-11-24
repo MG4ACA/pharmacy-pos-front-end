@@ -38,14 +38,29 @@ const routes = [
         component: () => import('@/views/inventory/EditProduct.vue'),
       },
       {
-        path: 'inventory/stock-entry',
-        name: 'StockEntry',
-        component: () => import('@/views/inventory/StockEntry.vue'),
+        path: 'inventory/stock-receipts',
+        name: 'StockReceiptList',
+        component: () => import('@/views/stockReceipts/StockReceiptList.vue'),
       },
       {
-        path: 'inventory/stock-history',
-        name: 'StockHistory',
-        component: () => import('@/views/inventory/StockHistory.vue'),
+        path: 'inventory/stock-receipts/create',
+        name: 'CreateStockReceipt',
+        component: () => import('@/views/stockReceipts/CreateStockReceipt.vue'),
+      },
+      {
+        path: 'inventory/stock-receipts/:id',
+        name: 'ViewStockReceipt',
+        component: () => import('@/views/stockReceipts/ViewStockReceipt.vue'),
+      },
+      {
+        path: 'inventory/stock-receipts/:id/edit',
+        name: 'EditStockReceipt',
+        component: () => import('@/views/stockReceipts/CreateStockReceipt.vue'),
+      },
+      {
+        path: 'inventory/stock-batches',
+        name: 'StockBatches',
+        component: () => import('@/views/inventory/StockBatches.vue'),
       },
       {
         path: 'suppliers',
@@ -71,6 +86,16 @@ const routes = [
         path: 'reports/stock',
         name: 'StockReport',
         component: () => import('@/views/reports/StockReport.vue'),
+      },
+      {
+        path: 'reports/expiring-products',
+        name: 'ExpiringProducts',
+        component: () => import('@/views/reports/ExpiringProducts.vue'),
+      },
+      {
+        path: 'reports/top-selling',
+        name: 'TopSelling',
+        component: () => import('@/views/reports/TopSelling.vue'),
       },
       {
         path: 'settings',

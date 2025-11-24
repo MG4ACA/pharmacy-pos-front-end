@@ -17,27 +17,46 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteProduct: (id) => ipcRenderer.invoke('product:delete', id),
   searchProducts: (query) => ipcRenderer.invoke('product:search', query),
 
-  // Stock
-  addStockEntry: (data) => ipcRenderer.invoke('stock:addEntry', data),
+  // Stock - Internal operations only (used by POS and reports)
   getStockByProduct: (productId) => ipcRenderer.invoke('stock:getByProduct', productId),
-  getStockHistory: (params) => ipcRenderer.invoke('stock:getHistory', params),
   getBatchDetails: (batchId) => ipcRenderer.invoke('stock:getBatchDetails', batchId),
+  deductStock: (data) => ipcRenderer.invoke('stock:deduct', data),
+  getExpiringStock: (days) => ipcRenderer.invoke('stock:getExpiring', days),
+
+  // Stock Receipts
+  generateReceiptNumber: () => ipcRenderer.invoke('stockReceipt:generateNumber'),
+  createStockReceipt: (data) => ipcRenderer.invoke('stockReceipt:create', data),
+  getAllStockReceipts: (filters) => ipcRenderer.invoke('stockReceipt:getAll', filters),
+  getStockReceiptById: (id) => ipcRenderer.invoke('stockReceipt:getById', id),
+  updateStockReceipt: (data) => ipcRenderer.invoke('stockReceipt:update', data.id, data.data),
+  cancelStockReceipt: (id) => ipcRenderer.invoke('stockReceipt:cancel', id),
+  getStockReceiptsBySupplier: (supplierId) =>
+    ipcRenderer.invoke('stockReceipt:getBySupplier', supplierId),
 
   // Suppliers
-  getAllSuppliers: () => ipcRenderer.invoke('supplier:getAll'),
+  getAllSuppliers: (params) => ipcRenderer.invoke('supplier:getAll', params),
   getSupplierById: (id) => ipcRenderer.invoke('supplier:getById', id),
   createSupplier: (data) => ipcRenderer.invoke('supplier:create', data),
-  updateSupplier: (id, data) => ipcRenderer.invoke('supplier:update', { id, data }),
+  updateSupplier: (data) => ipcRenderer.invoke('supplier:update', data),
   deleteSupplier: (id) => ipcRenderer.invoke('supplier:delete', id),
+  getActiveSuppliers: () => ipcRenderer.invoke('supplier:getActive'),
+  getProductsFromSupplier: (supplierId) => ipcRenderer.invoke('supplier:getProducts', supplierId),
 
   // Sales
   createSale: (data) => ipcRenderer.invoke('sale:create', data),
   getSaleHistory: (params) => ipcRenderer.invoke('sale:getHistory', params),
   getSaleById: (id) => ipcRenderer.invoke('sale:getById', id),
   getTodaySales: () => ipcRenderer.invoke('sale:getTodaySales'),
+  updateSale: (data) => ipcRenderer.invoke('sale:update', data),
 
   // Dashboard
   getDashboardSummary: () => ipcRenderer.invoke('dashboard:getSummary'),
+
+  // Reports
+  getDailySalesReport: (params) => ipcRenderer.invoke('report:dailySales', params),
+  getStockLevelReport: () => ipcRenderer.invoke('report:stockLevel'),
+  getExpiringProductsReport: (days) => ipcRenderer.invoke('report:expiringProducts', days),
+  getTopSellingProducts: (params) => ipcRenderer.invoke('report:topSelling', params),
 
   // Product Types & Categories
   getProductTypes: () => ipcRenderer.invoke('productType:getAll'),

@@ -26,6 +26,7 @@
             <Password
               id="password"
               v-model="credentials.password"
+              class="w-full"
               placeholder="Enter password"
               :feedback="false"
               toggleMask
@@ -34,7 +35,23 @@
             <small v-if="errors.password" class="p-error">{{ errors.password }}</small>
           </div>
 
-          <Button type="submit" label="Sign In" icon="pi pi-sign-in" :loading="loading" />
+          <div class="flex gap-2">
+            <Button
+              type="button"
+              label="Fill Demo Login"
+              icon="pi pi-user"
+              class="p-button-secondary p-button-sm"
+              @click="fillDemoCredentials"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            label="Sign In"
+            icon="pi pi-sign-in"
+            :loading="loading"
+            class="mt-3"
+          />
         </form>
       </template>
     </Card>
@@ -66,6 +83,13 @@ const errors = reactive({
 });
 
 const loading = ref(false);
+
+const fillDemoCredentials = () => {
+  credentials.username = 'admin';
+  credentials.password = 'admin123';
+  errors.username = '';
+  errors.password = '';
+};
 
 const validateForm = () => {
   let isValid = true;

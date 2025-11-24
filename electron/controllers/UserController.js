@@ -71,7 +71,7 @@ class UserController {
 
       return {
         success: true,
-        user: user,
+        user: user.toJSON(),
       };
     } catch (error) {
       console.error('Get user error:', error);
@@ -160,9 +160,11 @@ class UserController {
         order: [['created_at', 'DESC']],
       });
 
+      const plainUsers = users.map((user) => user.toJSON());
+
       return {
         success: true,
-        users: users,
+        users: plainUsers,
       };
     } catch (error) {
       console.error('Get all users error:', error);

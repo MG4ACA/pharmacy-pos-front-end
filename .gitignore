@@ -33,6 +33,7 @@ dist-ssr
 # Build outputs
 build/
 out/
+backend-project/
 
 # Database
 *.sqlite
