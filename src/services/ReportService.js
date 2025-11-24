@@ -1,3 +1,5 @@
+import apiClient from '@/api/client';
+
 /**
  * Report Service
  * Handles all report-related operations
@@ -10,7 +12,7 @@ class ReportService {
    */
   static async getDailySalesReport(params) {
     try {
-      const result = await window.electronAPI.getDailySalesReport(params);
+      const result = await apiClient.get('/reports/daily-sales', { params });
       return result;
     } catch (error) {
       console.error('ReportService.getDailySalesReport error:', error);
@@ -27,7 +29,7 @@ class ReportService {
    */
   static async getStockLevelReport() {
     try {
-      const result = await window.electronAPI.getStockLevelReport();
+      const result = await apiClient.get('/reports/stock-level');
       return result;
     } catch (error) {
       console.error('ReportService.getStockLevelReport error:', error);
@@ -45,7 +47,7 @@ class ReportService {
    */
   static async getExpiringProductsReport(days = 30) {
     try {
-      const result = await window.electronAPI.getExpiringProductsReport(days);
+      const result = await apiClient.get('/reports/expiring', { params: { days } });
       return result;
     } catch (error) {
       console.error('ReportService.getExpiringProductsReport error:', error);
@@ -63,7 +65,7 @@ class ReportService {
    */
   static async getTopSellingProducts(params) {
     try {
-      const result = await window.electronAPI.getTopSellingProducts(params);
+      const result = await apiClient.get('/reports/top-selling', { params });
       return result;
     } catch (error) {
       console.error('ReportService.getTopSellingProducts error:', error);

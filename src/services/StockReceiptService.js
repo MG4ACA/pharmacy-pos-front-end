@@ -1,3 +1,5 @@
+import apiClient from '@/api/client';
+
 /**
  * Stock Receipt Service
  * Handles all stock receipt related operations
@@ -9,7 +11,7 @@ export class StockReceiptService {
    */
   static async generateReceiptNumber() {
     try {
-      return await window.electronAPI.generateReceiptNumber();
+      return await apiClient.get('/stock-receipts/generate-number');
     } catch (error) {
       console.error('StockReceiptService.generateReceiptNumber error:', error);
       throw error;
@@ -23,7 +25,7 @@ export class StockReceiptService {
    */
   static async createReceipt(receiptData) {
     try {
-      return await window.electronAPI.createStockReceipt(receiptData);
+      return await apiClient.post('/stock-receipts', receiptData);
     } catch (error) {
       console.error('StockReceiptService.createReceipt error:', error);
       throw error;
@@ -37,11 +39,7 @@ export class StockReceiptService {
    */
   static async getAllReceipts(filters = {}) {
     try {
-      // Serialize filters to ensure they're IPC-safe (no Date objects, functions, etc.)
-      const serializedFilters = JSON.parse(JSON.stringify(filters));
-      const result = await window.electronAPI.getAllStockReceipts(serializedFilters);
-
-      return result;
+      return await apiClient.get('/stock-receipts', { params: filters });
     } catch (error) {
       console.error('StockReceiptService.getAllReceipts error:', error);
       throw error;
@@ -55,7 +53,7 @@ export class StockReceiptService {
    */
   static async getReceiptById(id) {
     try {
-      return await window.electronAPI.getStockReceiptById(id);
+      return await apiClient.get(`/stock-receipts/${id}`);
     } catch (error) {
       console.error('StockReceiptService.getReceiptById error:', error);
       throw error;
@@ -70,7 +68,7 @@ export class StockReceiptService {
    */
   static async updateReceipt(id, receiptData) {
     try {
-      return await window.electronAPI.updateStockReceipt({ id, data: receiptData });
+      return await apiClient.put(`/stock-receipts/${id}`, receiptData);
     } catch (error) {
       console.error('StockReceiptService.updateReceipt error:', error);
       throw error;
@@ -84,7 +82,7 @@ export class StockReceiptService {
    */
   static async cancelReceipt(id) {
     try {
-      return await window.electronAPI.cancelStockReceipt(id);
+      return await apiClient.delete(`/stock-receipts/${id}`);
     } catch (error) {
       console.error('StockReceiptService.cancelReceipt error:', error);
       throw error;
@@ -98,7 +96,7 @@ export class StockReceiptService {
    */
   static async getReceiptsBySupplier(supplierId) {
     try {
-      return await window.electronAPI.getStockReceiptsBySupplier(supplierId);
+      return await apiClient.get(`/stock-receipts/supplier/${supplierId}`);
     } catch (error) {
       console.error('StockReceiptService.getReceiptsBySupplier error:', error);
       throw error;

@@ -1,24 +1,20 @@
-import { requireElectron } from '@/utils/environment';
+import { AuthService } from '@/services/AuthService';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null);
-  const token = ref(null);
+  // Initialize from localStorage
+  const storedUser = localStorage.getItem('user');
+  const storedToken = localStorage.getItem('auth_token');
 
-  const isAuthenticated = computed(() => !!user.value);
+  const user = ref(storedUser ? JSON.parse(storedUser) : null);
+  const token = ref(storedToken || null);
+
+  const isAuthenticated = computed(() => !!user.value && !!token.value);
 
   const login = async (credentials) => {
     try {
-      requireElectron();
-
-      // Convert reactive object to plain object for IPC
-      const plainCredentials = {
-        username: credentials.username,
-        password: credentials.password,
-      };
-
-      const result = await window.electronAPI.login(plainCredentials);
+      const result = await AuthService.login(credentials);
 
       if (result.success) {
         user.value = result.user;
@@ -35,20 +31,24 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     try {
-      await window.electronAPI.logout();
+      await AuthService.logout();
       user.value = null;
       token.value = null;
     } catch (error) {
       console.error('Logout error:', error);
+      // Clear state even if API call fails
+      user.value = null;
+      token.value = null;
       throw error;
     }
   };
 
   const getCurrentUser = async () => {
     try {
-      const result = await window.electronAPI.getCurrentUser();
+      const result = await AuthService.getCurrentUser();
       if (result.success) {
         user.value = result.user;
+        localStorage.setItem('user', JSON.stringify(result.user));
       }
       return result;
     } catch (error) {
@@ -59,11 +59,26 @@ export const useAuthStore = defineStore('auth', () => {
 
   const changePassword = async (data) => {
     try {
-      const result = await window.electronAPI.changePassword(data);
+      const result = await AuthService.changePassword(data);
       return result;
     } catch (error) {
       console.error('Change password error:', error);
       throw error;
+    }
+  };
+
+  // Initialize user from token on app load
+  const initAuth = async () => {
+    if (token.value && !user.value) {
+      try {
+        await getCurrentUser();
+      } catch (error) {
+        // Token might be expired, clear it
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        token.value = null;
+        user.value = null;
+      }
     }
   };
 
@@ -75,5 +90,6 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     getCurrentUser,
     changePassword,
+    initAuth,
   };
 });

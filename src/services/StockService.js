@@ -1,3 +1,5 @@
+import apiClient from '@/api/client';
+
 /**
  * Stock Service
  * Handles all stock-related operations
@@ -10,7 +12,7 @@ class StockService {
    */
   async getStockByProduct(productId) {
     try {
-      const result = await window.electronAPI.getStockByProduct(productId);
+      const result = await apiClient.get(`/stock/product/${productId}`);
 
       if (result.success) {
         return result.data;
@@ -30,7 +32,7 @@ class StockService {
    */
   async getBatchDetails(batchId) {
     try {
-      const result = await window.electronAPI.getBatchDetails(batchId);
+      const result = await apiClient.get(`/stock/batch/${batchId}`);
 
       if (result.success) {
         return result.data;
@@ -50,7 +52,7 @@ class StockService {
    */
   async getExpiringStock(days = 30) {
     try {
-      const result = await window.electronAPI.getExpiringStock(days);
+      const result = await apiClient.get('/stock/expiring', { params: { days } });
 
       if (result.success) {
         return result.data;

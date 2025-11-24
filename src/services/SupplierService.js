@@ -1,3 +1,5 @@
+import apiClient from '@/api/client';
+
 export class SupplierService {
   /**
    * Get all suppliers
@@ -6,7 +8,7 @@ export class SupplierService {
    */
   static async getAllSuppliers(params = {}) {
     try {
-      return await window.electronAPI.getAllSuppliers(params);
+      return await apiClient.get('/suppliers', { params });
     } catch (error) {
       console.error('SupplierService.getAllSuppliers error:', error);
       throw error;
@@ -20,7 +22,7 @@ export class SupplierService {
    */
   static async getSupplierById(id) {
     try {
-      return await window.electronAPI.getSupplierById(id);
+      return await apiClient.get(`/suppliers/${id}`);
     } catch (error) {
       console.error('SupplierService.getSupplierById error:', error);
       throw error;
@@ -34,7 +36,7 @@ export class SupplierService {
    */
   static async createSupplier(data) {
     try {
-      return await window.electronAPI.createSupplier(data);
+      return await apiClient.post('/suppliers', data);
     } catch (error) {
       console.error('SupplierService.createSupplier error:', error);
       throw error;
@@ -49,7 +51,7 @@ export class SupplierService {
    */
   static async updateSupplier(id, data) {
     try {
-      return await window.electronAPI.updateSupplier({ id, data });
+      return await apiClient.put(`/suppliers/${id}`, data);
     } catch (error) {
       console.error('SupplierService.updateSupplier error:', error);
       throw error;
@@ -63,7 +65,7 @@ export class SupplierService {
    */
   static async deleteSupplier(id) {
     try {
-      return await window.electronAPI.deleteSupplier(id);
+      return await apiClient.delete(`/suppliers/${id}`);
     } catch (error) {
       console.error('SupplierService.deleteSupplier error:', error);
       throw error;
@@ -76,7 +78,7 @@ export class SupplierService {
    */
   static async getActiveSuppliers() {
     try {
-      return await window.electronAPI.getActiveSuppliers();
+      return await apiClient.get('/suppliers/active');
     } catch (error) {
       console.error('SupplierService.getActiveSuppliers error:', error);
       throw error;
@@ -90,7 +92,7 @@ export class SupplierService {
    */
   static async getProductsFromSupplier(supplierId) {
     try {
-      return await window.electronAPI.getProductsFromSupplier(supplierId);
+      return await apiClient.get(`/suppliers/${supplierId}/products`);
     } catch (error) {
       console.error('SupplierService.getProductsFromSupplier error:', error);
       throw error;

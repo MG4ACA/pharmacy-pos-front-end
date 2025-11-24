@@ -1,3 +1,5 @@
+import apiClient from '@/api/client';
+
 /**
  * Dashboard Service
  * Handles all dashboard-related operations
@@ -9,7 +11,7 @@ class DashboardService {
    */
   static async getDashboardSummary() {
     try {
-      const result = await window.electronAPI.getDashboardSummary();
+      const result = await apiClient.get('/dashboard/summary');
       return result;
     } catch (error) {
       console.error('DashboardService.getDashboardSummary error:', error);

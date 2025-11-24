@@ -1,3 +1,5 @@
+import apiClient from '@/api/client';
+
 /**
  * Sale Service
  * Handles all sale-related operations
@@ -10,7 +12,7 @@ class SaleService {
    */
   static async createSale(saleData) {
     try {
-      const result = await window.electronAPI.createSale(saleData);
+      const result = await apiClient.post('/sales', saleData);
       return result;
     } catch (error) {
       console.error('SaleService.createSale error:', error);
@@ -28,7 +30,7 @@ class SaleService {
    */
   static async getSalesHistory(params = {}) {
     try {
-      const result = await window.electronAPI.getSaleHistory(params);
+      const result = await apiClient.get('/sales', { params });
       return result;
     } catch (error) {
       console.error('SaleService.getSalesHistory error:', error);
@@ -48,7 +50,7 @@ class SaleService {
    */
   static async getSaleById(id) {
     try {
-      const result = await window.electronAPI.getSaleById(id);
+      const result = await apiClient.get(`/sales/${id}`);
       return result;
     } catch (error) {
       console.error('SaleService.getSaleById error:', error);
@@ -65,7 +67,7 @@ class SaleService {
    */
   static async getTodaySales() {
     try {
-      const result = await window.electronAPI.getTodaySales();
+      const result = await apiClient.get('/sales/today');
       return result;
     } catch (error) {
       console.error('SaleService.getTodaySales error:', error);
@@ -94,7 +96,7 @@ class SaleService {
    */
   static async updateSale(id, data) {
     try {
-      const result = await window.electronAPI.updateSale({ id, data });
+      const result = await apiClient.put(`/sales/${id}`, data);
       return result;
     } catch (error) {
       console.error('SaleService.updateSale error:', error);
