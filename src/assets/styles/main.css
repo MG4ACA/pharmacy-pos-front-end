@@ -73,6 +73,10 @@
   position: unset;
   top: 0;
 }
+.p-autocomplete-input {
+  width: 100% !important;
+}
+
 .p-button-label {
   margin: 0 0.5rem;
 }

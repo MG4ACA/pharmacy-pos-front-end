@@ -263,25 +263,27 @@
         <div class="col-12">
           <div class="field">
             <label for="product" class="block mb-2">Product *</label>
-            <Dropdown
+            <AutoComplete
               id="product"
-              v-model="currentEntry.productId"
-              :options="products"
-              option-label="name"
-              option-value="id"
-              placeholder="Select Product"
+              v-model="currentEntry.productSearch"
+              :suggestions="filteredProducts"
+              field="name"
+              placeholder="Search by product name, barcode or UPC"
               class="w-full"
-              filter
               :class="{ 'p-invalid': productSubmitted && !currentEntry.productId }"
-              @change="onProductChange"
+              @complete="searchProducts"
+              @item-select="onProductSelect"
             >
-              <template #option="{ option }">
-                <div>
-                  <div>{{ option.name }}</div>
-                  <small class="text-500">{{ option.barcode }}</small>
+              <template #item="{ item }">
+                <div class="flex justify-content-between align-items-center w-full">
+                  <div>
+                    <div class="font-semibold">{{ item.name }}</div>
+                    <div class="text-sm text-500">{{ item.barcode || item.upc || '' }}</div>
+                  </div>
                 </div>
               </template>
-            </Dropdown>
+            </AutoComplete>
+            <small class="text-500">Type name, barcode or UPC to search</small>
             <small v-if="productSubmitted && !currentEntry.productId" class="p-error">
               Product is required
             </small>
@@ -406,12 +408,14 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth';
 import { useProductStore } from '@/stores/product';
+import { useStockStore } from '@/stores/stock';
 import { useStockReceiptStore } from '@/stores/stockReceipt';
 import { useSupplierStore } from '@/stores/supplier';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import AutoComplete from 'primevue/autocomplete';
 import Button from 'primevue/button';
 import Calendar from 'primevue/calendar';
 import Card from 'primevue/card';
@@ -429,6 +433,7 @@ const stockReceiptStore = useStockReceiptStore();
 const supplierStore = useSupplierStore();
 const productStore = useProductStore();
 const authStore = useAuthStore();
+const stockStore = useStockStore();
 
 // State
 const isEditMode = computed(() => route.params.id && route.name === 'EditStockReceipt');
@@ -455,6 +460,7 @@ const currentEntry = ref({
   productId: null,
   productName: '',
   barcode: '',
+  productSearch: '',
   batchNumber: '',
   quantity: 1,
   costPrice: 0,
@@ -463,6 +469,9 @@ const currentEntry = ref({
   notes: '',
   tempId: Date.now(),
 });
+
+// Suggestions for product autocomplete
+const filteredProducts = ref([]);
 
 const statusOptions = [
   { label: 'Draft', value: 'draft' },
@@ -503,7 +512,7 @@ const showAddProductDialog = () => {
 
 const editProductLine = (index) => {
   const entry = entries.value[index];
-  currentEntry.value = { ...entry };
+  currentEntry.value = { ...entry, productSearch: entry.productName };
   editingIndex.value = index;
   productSubmitted.value = false;
   productDialogVisible.value = true;
@@ -551,6 +560,7 @@ const resetCurrentEntry = () => {
     productId: null,
     productName: '',
     barcode: '',
+    productSearch: '',
     batchNumber: '',
     quantity: 1,
     costPrice: 0,
@@ -561,12 +571,117 @@ const resetCurrentEntry = () => {
   };
 };
 
-const onProductChange = (event) => {
-  const product = products.value.find((p) => p.id === event.value);
-  if (product) {
-    currentEntry.value.productName = product.name;
-    currentEntry.value.barcode = product.barcode;
+const generateBatchNumber = (productId) => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `BATCH-${productId}-${y}${m}${d}`;
+};
+
+const handleProductSelection = async (product) => {
+  if (!product) return;
+  currentEntry.value.productId = product.id;
+  currentEntry.value.productName = product.name;
+  currentEntry.value.barcode = product.barcode || '';
+
+  // Auto-generate a batch number for new entries
+  currentEntry.value.batchNumber = generateBatchNumber(product.id);
+
+  // Try to fetch last stock entries for this product and prefill prices
+  try {
+    const entriesData = await stockStore.fetchStockByProduct(product.id);
+    if (Array.isArray(entriesData) && entriesData.length > 0) {
+      // Find the most recent entry by entry_date or id
+      let lastEntry = null;
+      if (entriesData.every((e) => e.entry_date)) {
+        lastEntry = entriesData
+          .slice()
+          .sort((a, b) => new Date(b.entry_date) - new Date(a.entry_date))[0];
+      } else {
+        lastEntry = entriesData.slice().sort((a, b) => b.id - a.id)[0];
+      }
+
+      if (lastEntry) {
+        if (lastEntry.cost_price !== undefined && lastEntry.cost_price !== null) {
+          currentEntry.value.costPrice = parseFloat(lastEntry.cost_price);
+        }
+        if (lastEntry.selling_price !== undefined && lastEntry.selling_price !== null) {
+          currentEntry.value.sellingPrice = parseFloat(lastEntry.selling_price);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch last stock entry for product:', err);
   }
+};
+
+// AutoComplete handlers
+async function searchProducts(event) {
+  const query = (
+    event && event.query ? event.query : currentEntry.value.productSearch || ''
+  ).trim();
+
+  if (query.length < 1) {
+    filteredProducts.value = [];
+    return;
+  }
+
+  try {
+    const results = await productStore.searchProducts(query);
+    filteredProducts.value = results || [];
+  } catch (err) {
+    filteredProducts.value = [];
+    toast.add({
+      severity: 'error',
+      summary: 'Search Error',
+      detail: err.message || 'Failed to search products',
+      life: 3000,
+    });
+  }
+}
+
+async function onProductSelect(event) {
+  const product = event && event.value ? event.value : null;
+  if (!product) return;
+
+  // set the visible search text
+  currentEntry.value.productSearch = product.name;
+
+  // handle selection (fills ids, batch number, last prices)
+  await handleProductSelection(product);
+
+  // clear suggestions
+  filteredProducts.value = [];
+}
+
+const onProductSearch = async () => {
+  const q = (currentEntry.value.productSearch || '').trim();
+  if (!q) return;
+
+  // Try exact barcode or UPC match first
+  let product = products.value.find(
+    (p) => (p.barcode && p.barcode === q) || (p.upc && p.upc === q)
+  );
+
+  // If not found, search by name (case-insensitive contains)
+  if (!product) {
+    const ql = q.toLowerCase();
+    product = products.value.find((p) => p.name && p.name.toLowerCase().includes(ql));
+  }
+
+  if (!product) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Not found',
+      detail: 'No matching product found',
+      life: 3000,
+    });
+    return;
+  }
+
+  // If product found, handle selection
+  await handleProductSelection(product);
 };
 
 const saveReceipt = async (status) => {
