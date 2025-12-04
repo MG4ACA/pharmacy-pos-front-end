@@ -73,8 +73,10 @@
           striped-rows
           show-gridlines
           responsive-layout="scroll"
-          sort-field="name"
-          :sort-order="1"
+          lazy="true"
+          :totalRecords="pagination.total"
+          @page="onPage"
+          @sort="onSort"
         >
           <template #empty>
             <div class="text-center p-4">
@@ -186,6 +188,8 @@ const filters = reactive({
   category_id: null,
   product_type_id: null,
   status: 'active',
+  sortField: 'created_at',
+  sortOrder: 'DESC',
 });
 
 const pagination = reactive({
@@ -250,6 +254,13 @@ const handleFilter = () => {
 const onPage = (event) => {
   pagination.page = event.page + 1;
   pagination.limit = event.rows;
+  loadProducts();
+};
+
+const onSort = (event) => {
+  filters.sortField = event.sortField;
+  filters.sortOrder = event.sortOrder === 1 ? 'ASC' : 'DESC';
+  pagination.page = 1; // Reset to first page when sorting
   loadProducts();
 };
 

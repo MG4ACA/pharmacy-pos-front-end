@@ -99,6 +99,7 @@
           :rowsPerPageOptions="[10, 20, 50]"
           sort-field="receipt_date"
           :sort-order="-1"
+          @sort="onSort"
         >
           <Column field="receipt_number" header="Receipt #" style="width: 150px">
             <template #body="{ data }">
@@ -212,6 +213,8 @@ const filters = ref({
   supplierId: null,
   status: null,
   dateRange: null,
+  sortField: 'receipt_date',
+  sortOrder: -1,
 });
 
 const searchTimeout = ref(null);
@@ -245,6 +248,8 @@ const loadReceipts = async () => {
       status: filters.value.status,
       startDate,
       endDate,
+      sortField: filters.value.sortField,
+      sortOrder: filters.value.sortOrder,
     };
     stockReceiptStore.setFilters(filterData);
     await stockReceiptStore.loadReceipts();
@@ -273,6 +278,8 @@ const clearFilters = () => {
     supplierId: null,
     status: null,
     dateRange: null,
+    sortField: 'receipt_date',
+    sortOrder: -1,
   };
   stockReceiptStore.clearFilters();
   loadReceipts();
@@ -350,6 +357,12 @@ const formatCurrency = (amount) => {
     currency: 'LKR',
     minimumFractionDigits: 2,
   }).format(amount || 0);
+};
+
+const onSort = (event) => {
+  filters.value.sortField = event.sortField;
+  filters.value.sortOrder = event.sortOrder;
+  loadReceipts();
 };
 
 // Lifecycle

@@ -68,10 +68,11 @@
           data-key="id"
           responsive-layout="scroll"
           striped-rows
+          @sort="onSort"
         >
-          <Column field="id" header="ID" style="width: 80px"></Column>
+          <Column field="id" header="ID" style="width: 80px" sortable></Column>
 
-          <Column header="Supplier Name">
+          <Column header="Supplier Name" sortable>
             <template #body="{ data }">
               <div>
                 <div class="font-semibold">{{ data.name }}</div>
@@ -97,17 +98,9 @@
             </template>
           </Column>
 
-          <Column field="address" header="Address">
-            <template #body="{ data }">
-              {{ data.address || '-' }}
-            </template>
-          </Column>
+          <Column field="address" header="Address" sortable></Column>
 
-          <Column field="status" header="Status" style="width: 120px">
-            <template #body="{ data }">
-              <Tag :value="data.status" :severity="getStatusSeverity(data.status)" />
-            </template>
-          </Column>
+          <Column field="status" header="Status" style="width: 120px" sortable></Column>
 
           <Column header="Actions" style="width: 150px">
             <template #body="{ data }">
@@ -339,7 +332,6 @@ import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
-import Tag from 'primevue/tag';
 import Textarea from 'primevue/textarea';
 
 const supplierStore = useSupplierStore();
@@ -350,6 +342,8 @@ const suppliers = computed(() => supplierStore.suppliers);
 
 const searchQuery = ref('');
 const statusFilter = ref('');
+const sortField = ref('');
+const sortOrder = ref(null);
 const dialogVisible = ref(false);
 const dialogMode = ref('add');
 const deleteDialogVisible = ref(false);
@@ -396,6 +390,8 @@ const loadSuppliers = async () => {
   const params = {};
   if (searchQuery.value) params.search = searchQuery.value;
   if (statusFilter.value) params.status = statusFilter.value;
+  if (sortField.value) params.sortField = sortField.value;
+  if (sortOrder.value !== null) params.sortOrder = sortOrder.value;
 
   const result = await supplierStore.fetchSuppliers(params);
   if (!result.success) {
@@ -406,6 +402,8 @@ const loadSuppliers = async () => {
 const clearFilters = () => {
   searchQuery.value = '';
   statusFilter.value = '';
+  sortField.value = '';
+  sortOrder.value = null;
   loadSuppliers();
 };
 
@@ -532,6 +530,12 @@ const viewProducts = async (supplier) => {
   } else {
     error(result.message || 'Failed to load products from supplier');
   }
+};
+
+const onSort = (event) => {
+  sortField.value = event.sortField;
+  sortOrder.value = event.sortOrder;
+  loadSuppliers();
 };
 
 onMounted(() => {

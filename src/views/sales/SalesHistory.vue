@@ -79,28 +79,29 @@
           :totalRecords="pagination.total"
           :lazy="true"
           @page="onPage"
+          @sort="onSort"
           dataKey="id"
           responsiveLayout="scroll"
           :empty-message="'No sales found'"
           class="p-datatable-sm"
         >
-          <Column field="id" header="Sale ID" style="width: 100px">
+          <Column field="id" header="Sale ID" style="width: 100px" sortable>
             <template #body="{ data }">
               <span class="font-semibold">#{{ data.id }}</span>
             </template>
           </Column>
 
-          <Column field="sale_date" header="Date & Time" style="min-width: 180px">
+          <Column field="sale_date" header="Date & Time" style="min-width: 180px" sortable>
             <template #body="{ data }">
               {{ formatDate(data.sale_date) }}
             </template>
           </Column>
 
-          <Column field="subtotal" header="Subtotal" style="min-width: 120px">
+          <Column field="subtotal" header="Subtotal" style="min-width: 120px" sortable>
             <template #body="{ data }">Rs. {{ parseFloat(data.subtotal).toFixed(2) }}</template>
           </Column>
 
-          <Column field="discount" header="Discount" style="min-width: 120px">
+          <Column field="discount" header="Discount" style="min-width: 120px" sortable>
             <template #body="{ data }">
               <span v-if="data.discount > 0" class="text-red-500">
                 - Rs. {{ parseFloat(data.discount).toFixed(2) }}
@@ -109,7 +110,7 @@
             </template>
           </Column>
 
-          <Column field="total_amount" header="Total" style="min-width: 130px">
+          <Column field="total_amount" header="Total" style="min-width: 130px" sortable>
             <template #body="{ data }">
               <span class="font-bold text-primary">
                 Rs. {{ parseFloat(data.total_amount).toFixed(2) }}
@@ -117,7 +118,7 @@
             </template>
           </Column>
 
-          <Column field="payment_method" header="Payment" style="min-width: 120px">
+          <Column field="payment_method" header="Payment" style="min-width: 120px" sortable>
             <template #body="{ data }">
               <Tag
                 :value="data.payment_method"
@@ -127,7 +128,7 @@
             </template>
           </Column>
 
-          <Column field="payment_status" header="Status" style="min-width: 120px">
+          <Column field="payment_status" header="Status" style="min-width: 120px" sortable>
             <template #body="{ data }">
               <Tag
                 :value="data.payment_status"
@@ -461,6 +462,8 @@ const filters = ref({
   dateRange: null,
   payment_method: null,
   payment_status: null,
+  sortField: null,
+  sortOrder: null,
 });
 
 const showDetailsDialog = ref(false);
@@ -525,6 +528,14 @@ function applyFilters() {
     params.payment_status = filters.value.payment_status;
   }
 
+  if (filters.value.sortField) {
+    params.sortField = filters.value.sortField;
+  }
+
+  if (filters.value.sortOrder !== null) {
+    params.sortOrder = filters.value.sortOrder;
+  }
+
   fetchSales(params);
 }
 
@@ -533,12 +544,20 @@ function clearFilters() {
     dateRange: null,
     payment_method: null,
     payment_status: null,
+    sortField: null,
+    sortOrder: null,
   };
   fetchSales();
 }
 
 function onPage(event) {
   pagination.value.page = event.page + 1;
+  applyFilters();
+}
+
+function onSort(event) {
+  filters.value.sortField = event.sortField;
+  filters.value.sortOrder = event.sortOrder;
   applyFilters();
 }
 

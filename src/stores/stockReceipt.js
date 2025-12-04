@@ -11,6 +11,8 @@ export const useStockReceiptStore = defineStore('stockReceipt', {
       startDate: null,
       endDate: null,
       searchQuery: '',
+      sortField: 'receipt_date',
+      sortOrder: -1,
     },
     loading: false,
     error: null,
@@ -228,6 +230,8 @@ export const useStockReceiptStore = defineStore('stockReceipt', {
         startDate: null,
         endDate: null,
         searchQuery: '',
+        sortField: 'receipt_date',
+        sortOrder: -1,
       };
     },
 
