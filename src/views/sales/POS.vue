@@ -13,6 +13,7 @@
           <div class="grid">
             <div class="col-12">
               <AutoComplete
+                ref="productSearchInput"
                 v-model="selectedProduct"
                 :suggestions="filteredProducts"
                 @complete="searchProducts"
@@ -328,7 +329,7 @@ import { useProductStore } from '@/stores/product';
 import { useSaleStore } from '@/stores/sale';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import AutoComplete from 'primevue/autocomplete';
@@ -351,6 +352,7 @@ const authStore = useAuthStore();
 const selectedProduct = ref(null);
 const filteredProducts = ref([]);
 const showSuccessDialog = ref(false);
+const productSearchInput = ref(null);
 
 // Computed
 const cart = computed(() => saleStore.cart);
@@ -380,6 +382,18 @@ const paymentMethods = [
   { label: 'Card', value: 'card' },
   { label: 'Other', value: 'other' },
 ];
+
+// Helper function to focus the AutoComplete input
+function focusAutoComplete() {
+  nextTick(() => {
+    if (productSearchInput.value && productSearchInput.value.$el) {
+      const input = productSearchInput.value.$el.querySelector('input');
+      if (input) {
+        input.focus();
+      }
+    }
+  });
+}
 
 // Methods
 async function searchProducts(event) {
@@ -427,6 +441,9 @@ function onProductSelect(event) {
     detail: `${product.name} added to cart`,
     life: 2000,
   });
+
+  // Set focus back to AutoComplete for next product search
+  focusAutoComplete();
 }
 
 function updateQuantity(productId, quantity) {
@@ -445,6 +462,9 @@ function removeItem(productId) {
     detail: 'Product removed from cart',
     life: 2000,
   });
+
+  // Set focus back to AutoComplete for next product search
+  focusAutoComplete();
 }
 
 function confirmClearCart() {
@@ -461,6 +481,9 @@ function confirmClearCart() {
         detail: 'Shopping cart has been cleared',
         life: 2000,
       });
+
+      // Set focus back to AutoComplete for new product search
+      focusAutoComplete();
     },
   });
 }
@@ -499,6 +522,9 @@ async function completeSale() {
 function startNewSale() {
   showSuccessDialog.value = false;
   saleStore.clearCart();
+
+  // Set focus to AutoComplete for new product search
+  focusAutoComplete();
 }
 
 function viewSaleDetails() {
@@ -509,6 +535,9 @@ function viewSaleDetails() {
 onMounted(() => {
   // Clear cart on mount
   saleStore.clearCart();
+
+  // Set initial focus to AutoComplete
+  focusAutoComplete();
 });
 </script>
 

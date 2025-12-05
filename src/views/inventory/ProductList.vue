@@ -73,7 +73,7 @@
           striped-rows
           show-gridlines
           responsive-layout="scroll"
-          lazy="true"
+          :lazy="true"
           :totalRecords="pagination.total"
           @page="onPage"
           @sort="onSort"
