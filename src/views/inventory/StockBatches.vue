@@ -447,15 +447,6 @@ import { useSupplierStore } from '@/stores/supplier';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 
-import AutoComplete from 'primevue/autocomplete';
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Column from 'primevue/column';
-import DataTable from 'primevue/datatable';
-import Dialog from 'primevue/dialog';
-import Dropdown from 'primevue/dropdown';
-import Tag from 'primevue/tag';
-
 const toast = useToast();
 const stockStore = useStockStore();
 const productStore = useProductStore();

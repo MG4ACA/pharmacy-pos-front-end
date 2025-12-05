@@ -332,15 +332,6 @@ import { useToast } from 'primevue/usetoast';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import AutoComplete from 'primevue/autocomplete';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import Divider from 'primevue/divider';
-import Dropdown from 'primevue/dropdown';
-import InputNumber from 'primevue/inputnumber';
-import Panel from 'primevue/panel';
-import Textarea from 'primevue/textarea';
-
 const router = useRouter();
 const toast = useToast();
 const confirm = useConfirm();
@@ -441,9 +432,6 @@ function onProductSelect(event) {
     detail: `${product.name} added to cart`,
     life: 2000,
   });
-
-  // Set focus back to AutoComplete for next product search
-  focusAutoComplete();
 }
 
 function updateQuantity(productId, quantity) {

@@ -192,15 +192,6 @@ import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import Button from 'primevue/button';
-import Calendar from 'primevue/calendar';
-import Card from 'primevue/card';
-import Column from 'primevue/column';
-import DataTable from 'primevue/datatable';
-import Dropdown from 'primevue/dropdown';
-import InputText from 'primevue/inputtext';
-import Tag from 'primevue/tag';
-
 const router = useRouter();
 const toast = useToast();
 const confirm = useConfirm();

@@ -441,18 +441,6 @@ import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import Button from 'primevue/button';
-import Calendar from 'primevue/calendar';
-import Card from 'primevue/card';
-import Column from 'primevue/column';
-import DataTable from 'primevue/datatable';
-import Dialog from 'primevue/dialog';
-import Divider from 'primevue/divider';
-import Dropdown from 'primevue/dropdown';
-import InputNumber from 'primevue/inputnumber';
-import Tag from 'primevue/tag';
-import Textarea from 'primevue/textarea';
-
 const router = useRouter();
 const toast = useToast();
 const saleStore = useSaleStore();

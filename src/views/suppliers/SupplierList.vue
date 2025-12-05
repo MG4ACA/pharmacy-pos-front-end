@@ -325,15 +325,6 @@ import { useNotification } from '@/composables/useNotification';
 import { useSupplierStore } from '@/stores/supplier';
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Column from 'primevue/column';
-import DataTable from 'primevue/datatable';
-import Dialog from 'primevue/dialog';
-import Dropdown from 'primevue/dropdown';
-import InputText from 'primevue/inputtext';
-import Textarea from 'primevue/textarea';
-
 const supplierStore = useSupplierStore();
 const { success, error } = useNotification();
 

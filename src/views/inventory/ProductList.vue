@@ -166,15 +166,6 @@ import { useConfirm } from 'primevue/useconfirm';
 import { onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Column from 'primevue/column';
-import ConfirmDialog from 'primevue/confirmdialog';
-import DataTable from 'primevue/datatable';
-import Dropdown from 'primevue/dropdown';
-import InputText from 'primevue/inputtext';
-import Tag from 'primevue/tag';
-
 const router = useRouter();
 const productStore = useProductStore();
 const confirm = useConfirm();

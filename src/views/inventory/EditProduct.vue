@@ -198,16 +198,6 @@ import { validateRequired } from '@/utils/validators';
 import { onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Divider from 'primevue/divider';
-import Dropdown from 'primevue/dropdown';
-import InputNumber from 'primevue/inputnumber';
-import InputText from 'primevue/inputtext';
-import ProgressSpinner from 'primevue/progressspinner';
-import Tag from 'primevue/tag';
-import Textarea from 'primevue/textarea';
-
 const route = useRoute();
 const router = useRouter();
 const productStore = useProductStore();

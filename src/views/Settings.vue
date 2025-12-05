@@ -248,12 +248,6 @@ import { useAuthStore } from '@/stores/auth';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Divider from 'primevue/divider';
-import Password from 'primevue/password';
-import Tag from 'primevue/tag';
-
 const toast = useToast();
 const authStore = useAuthStore();
 

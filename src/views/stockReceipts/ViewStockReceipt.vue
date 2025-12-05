@@ -190,13 +190,6 @@ import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Column from 'primevue/column';
-import DataTable from 'primevue/datatable';
-import ProgressSpinner from 'primevue/progressspinner';
-import Tag from 'primevue/tag';
-
 const router = useRouter();
 const route = useRoute();
 const toast = useToast();
