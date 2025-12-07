@@ -47,7 +47,7 @@
     </Panel>
 
     <!-- Summary Cards -->
-    <div v-if="reportData" class="grid mb-4">
+    <div v-if="reportData && reportData.items" class="grid mb-4">
       <div class="col-12 md:col-4">
         <Card class="summary-card bg-red-50">
           <template #content>
@@ -55,7 +55,7 @@
               <div>
                 <div class="text-500 font-medium mb-2">Urgent (≤7 days)</div>
                 <div class="text-900 font-bold text-2xl text-red-600">
-                  {{ reportData.urgent.length }} items
+                  {{ reportData.items.urgent.length }} items
                 </div>
               </div>
               <i class="pi pi-exclamation-circle text-red-500 text-4xl"></i>
@@ -71,7 +71,7 @@
               <div>
                 <div class="text-500 font-medium mb-2">Warning (8-30 days)</div>
                 <div class="text-900 font-bold text-2xl text-orange-600">
-                  {{ reportData.warning.length }} items
+                  {{ reportData.items.warning.length }} items
                 </div>
               </div>
               <i class="pi pi-exclamation-triangle text-orange-500 text-4xl"></i>
@@ -87,7 +87,7 @@
               <div>
                 <div class="text-500 font-medium mb-2">Total Value at Risk</div>
                 <div class="text-900 font-bold text-2xl text-purple-700">
-                  LKR {{ formatCurrency(reportData.totalValueAtRisk) }}
+                  LKR {{ formatCurrency(reportData.summary.totalValueAtRisk) }}
                 </div>
               </div>
               <i class="pi pi-money-bill text-purple-500 text-4xl"></i>
@@ -98,7 +98,7 @@
     </div>
 
     <!-- Expiring Products Tabs -->
-    <Card v-if="reportData">
+    <Card v-if="reportData && reportData.items">
       <template #content>
         <TabView>
           <!-- Urgent Tab (≤7 days) -->
@@ -106,21 +106,23 @@
             <template #header>
               <span class="flex align-items-center gap-2">
                 <i class="pi pi-exclamation-circle text-red-500"></i>
-                <span>Urgent - Expires in 7 Days or Less ({{ reportData.urgent.length }})</span>
+                <span>
+                  Urgent - Expires in 7 Days or Less ({{ reportData.items.urgent.length }})
+                </span>
               </span>
             </template>
             <DataTable
-              :value="reportData.urgent"
+              :value="reportData.items.urgent"
               paginator
               :rows="10"
               class="p-datatable-sm"
               responsiveLayout="scroll"
               :empty-message="'No urgent expiring products'"
             >
-              <Column field="Product.name" header="Product" style="min-width: 250px">
+              <Column field="product.name" header="Product" style="min-width: 250px">
                 <template #body="{ data }">
-                  <div class="font-semibold">{{ data.Product.name }}</div>
-                  <div class="text-sm text-500">{{ data.Product.generic_name || '-' }}</div>
+                  <div class="font-semibold">{{ data.product.name }}</div>
+                  <div class="text-sm text-500">{{ data.product.description || '-' }}</div>
                 </template>
               </Column>
 
@@ -141,29 +143,27 @@
                 </template>
               </Column>
 
-              <Column field="quantity" header="Quantity" style="min-width: 120px">
+              <Column field="quantity_remaining" header="Quantity" style="min-width: 120px">
                 <template #body="{ data }">
-                  <span class="font-semibold">{{ data.quantity }} {{ data.Product.unit }}</span>
+                  <span class="font-semibold">{{ data.quantity_remaining }}</span>
                 </template>
               </Column>
 
-              <Column field="Product.purchase_price" header="Unit Price" style="min-width: 130px">
-                <template #body="{ data }">
-                  LKR {{ formatCurrency(data.Product.purchase_price) }}
-                </template>
+              <Column field="cost_price" header="Unit Price" style="min-width: 130px">
+                <template #body="{ data }">LKR {{ formatCurrency(data.cost_price) }}</template>
               </Column>
 
               <Column header="Total Value" style="min-width: 140px">
                 <template #body="{ data }">
                   <span class="font-semibold text-red-600">
-                    LKR {{ formatCurrency(data.quantity * data.Product.purchase_price) }}
+                    LKR {{ formatCurrency(data.quantity_remaining * data.cost_price) }}
                   </span>
                 </template>
               </Column>
 
-              <Column field="Supplier.name" header="Supplier" style="min-width: 180px">
+              <Column field="supplier.name" header="Supplier" style="min-width: 180px">
                 <template #body="{ data }">
-                  {{ data.Supplier?.name || 'N/A' }}
+                  {{ data.supplier?.name || 'N/A' }}
                 </template>
               </Column>
             </DataTable>
@@ -174,21 +174,21 @@
             <template #header>
               <span class="flex align-items-center gap-2">
                 <i class="pi pi-exclamation-triangle text-orange-500"></i>
-                <span>Warning - Expires in 8-30 Days ({{ reportData.warning.length }})</span>
+                <span>Warning - Expires in 8-30 Days ({{ reportData.items.warning.length }})</span>
               </span>
             </template>
             <DataTable
-              :value="reportData.warning"
+              :value="reportData.items.warning"
               paginator
               :rows="10"
               class="p-datatable-sm"
               responsiveLayout="scroll"
               :empty-message="'No products expiring in this period'"
             >
-              <Column field="Product.name" header="Product" style="min-width: 250px">
+              <Column field="product.name" header="Product" style="min-width: 250px">
                 <template #body="{ data }">
-                  <div class="font-semibold">{{ data.Product.name }}</div>
-                  <div class="text-sm text-500">{{ data.Product.generic_name || '-' }}</div>
+                  <div class="font-semibold">{{ data.product.name }}</div>
+                  <div class="text-sm text-500">{{ data.product.description || '-' }}</div>
                 </template>
               </Column>
 
@@ -209,29 +209,27 @@
                 </template>
               </Column>
 
-              <Column field="quantity" header="Quantity" style="min-width: 120px">
+              <Column field="quantity_remaining" header="Quantity" style="min-width: 120px">
                 <template #body="{ data }">
-                  <span class="font-semibold">{{ data.quantity }} {{ data.Product.unit }}</span>
+                  <span class="font-semibold">{{ data.quantity_remaining }}</span>
                 </template>
               </Column>
 
-              <Column field="Product.purchase_price" header="Unit Price" style="min-width: 130px">
-                <template #body="{ data }">
-                  LKR {{ formatCurrency(data.Product.purchase_price) }}
-                </template>
+              <Column field="cost_price" header="Unit Price" style="min-width: 130px">
+                <template #body="{ data }">LKR {{ formatCurrency(data.cost_price) }}</template>
               </Column>
 
               <Column header="Total Value" style="min-width: 140px">
                 <template #body="{ data }">
                   <span class="font-semibold text-orange-600">
-                    LKR {{ formatCurrency(data.quantity * data.Product.purchase_price) }}
+                    LKR {{ formatCurrency(data.quantity_remaining * data.cost_price) }}
                   </span>
                 </template>
               </Column>
 
-              <Column field="Supplier.name" header="Supplier" style="min-width: 180px">
+              <Column field="supplier.name" header="Supplier" style="min-width: 180px">
                 <template #body="{ data }">
-                  {{ data.Supplier?.name || 'N/A' }}
+                  {{ data.supplier?.name || 'N/A' }}
                 </template>
               </Column>
             </DataTable>
@@ -247,6 +245,25 @@
           <i class="pi pi-calendar-times text-6xl text-400 mb-3"></i>
           <p class="text-xl text-600 mb-2">No Report Generated</p>
           <p class="text-500">Select a time period and generate the report</p>
+        </div>
+      </template>
+    </Card>
+
+    <!-- No Expiring Products State -->
+    <Card
+      v-if="
+        reportData &&
+        reportData.items &&
+        reportData.items.urgent.length === 0 &&
+        reportData.items.warning.length === 0 &&
+        !isLoading
+      "
+    >
+      <template #content>
+        <div class="text-center py-6">
+          <i class="pi pi-check-circle text-6xl text-green-400 mb-3"></i>
+          <p class="text-xl text-600 mb-2">No Expiring Products Found</p>
+          <p class="text-500">All products are safe for the selected time period</p>
         </div>
       </template>
     </Card>
@@ -295,7 +312,9 @@ async function generateReport() {
       toast.add({
         severity: 'success',
         summary: 'Report Generated',
-        detail: `Found ${result.data.urgent.length + result.data.warning.length} expiring products`,
+        detail: `Found ${
+          result.data.items.urgent.length + result.data.items.warning.length
+        } expiring products`,
         life: 3000,
       });
     } else {
@@ -332,42 +351,39 @@ function exportReport() {
 
   // Combine urgent and warning into one dataset
   const allExpiring = [
-    ...reportData.value.urgent.map((item) => ({
-      product_name: item.Product.name,
-      generic_name: item.Product.generic_name,
+    ...reportData.value.items.urgent.map((item) => ({
+      product_name: item.product.name,
+      description: item.product.description,
       batch_number: item.batch_number,
       expiry_date: item.expiry_date,
       days_remaining: getDaysRemaining(item.expiry_date),
-      quantity: item.quantity,
-      unit: item.Product.unit,
-      unit_price: item.Product.purchase_price,
-      total_value: item.quantity * item.Product.purchase_price,
-      supplier: item.Supplier?.name || 'N/A',
+      quantity: item.quantity_remaining,
+      unit_price: item.cost_price,
+      total_value: item.quantity_remaining * item.cost_price,
+      supplier: item.supplier?.name || 'N/A',
       urgency: 'Urgent (≤7 days)',
     })),
-    ...reportData.value.warning.map((item) => ({
-      product_name: item.Product.name,
-      generic_name: item.Product.generic_name,
+    ...reportData.value.items.warning.map((item) => ({
+      product_name: item.product.name,
+      description: item.product.description,
       batch_number: item.batch_number,
       expiry_date: item.expiry_date,
       days_remaining: getDaysRemaining(item.expiry_date),
-      quantity: item.quantity,
-      unit: item.Product.unit,
-      unit_price: item.Product.purchase_price,
-      total_value: item.quantity * item.Product.purchase_price,
-      supplier: item.Supplier?.name || 'N/A',
+      quantity: item.quantity_remaining,
+      unit_price: item.cost_price,
+      total_value: item.quantity_remaining * item.cost_price,
+      supplier: item.supplier?.name || 'N/A',
       urgency: 'Warning (8-30 days)',
     })),
   ];
 
   const columns = [
     { field: 'product_name', header: 'Product Name' },
-    { field: 'generic_name', header: 'Generic Name' },
+    { field: 'description', header: 'Description' },
     { field: 'batch_number', header: 'Batch Number' },
     { field: 'expiry_date', header: 'Expiry Date' },
     { field: 'days_remaining', header: 'Days Remaining' },
     { field: 'quantity', header: 'Quantity' },
-    { field: 'unit', header: 'Unit' },
     { field: 'unit_price', header: 'Unit Price' },
     { field: 'total_value', header: 'Total Value' },
     { field: 'supplier', header: 'Supplier' },

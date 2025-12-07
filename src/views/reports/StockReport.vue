@@ -49,7 +49,7 @@
               <div>
                 <div class="text-500 font-medium mb-2">In Stock</div>
                 <div class="text-900 font-bold text-2xl text-green-600">
-                  {{ reportData.inStock.length }}
+                  {{ reportData.products.inStock.length }}
                 </div>
               </div>
               <i class="pi pi-check-circle text-green-500 text-4xl"></i>
@@ -65,7 +65,7 @@
               <div>
                 <div class="text-500 font-medium mb-2">Low Stock</div>
                 <div class="text-900 font-bold text-2xl text-orange-600">
-                  {{ reportData.lowStock.length }}
+                  {{ reportData.products.lowStock.length }}
                 </div>
               </div>
               <i class="pi pi-exclamation-triangle text-orange-500 text-4xl"></i>
@@ -81,7 +81,7 @@
               <div>
                 <div class="text-500 font-medium mb-2">Out of Stock</div>
                 <div class="text-900 font-bold text-2xl text-red-600">
-                  {{ reportData.outOfStock.length }}
+                  {{ reportData.products.outOfStock.length }}
                 </div>
               </div>
               <i class="pi pi-times-circle text-red-500 text-4xl"></i>
@@ -99,7 +99,7 @@
             <div>
               <div class="text-600 font-medium mb-1">Total Inventory Value</div>
               <div class="text-900 font-bold text-3xl">
-                LKR {{ formatCurrency(reportData.totalInventoryValue) }}
+                LKR {{ formatCurrency(reportData.summary.totalInventoryValue) }}
               </div>
               <div class="text-500 text-sm mt-1">Based on purchase prices</div>
             </div>
@@ -118,11 +118,11 @@
             <template #header>
               <span class="flex align-items-center gap-2">
                 <i class="pi pi-check-circle text-green-500"></i>
-                <span>In Stock ({{ reportData.inStock.length }})</span>
+                <span>In Stock ({{ reportData.products.inStock.length }})</span>
               </span>
             </template>
             <DataTable
-              :value="reportData.inStock"
+              :value="reportData.products.inStock"
               paginator
               :rows="10"
               class="p-datatable-sm"
@@ -136,16 +136,16 @@
                 </template>
               </Column>
 
-              <Column field="category" header="Category" style="min-width: 150px">
+              <Column field="category.name" header="Category" style="min-width: 150px">
                 <template #body="{ data }">
-                  <Tag :value="data.category" severity="info" />
+                  <Tag :value="data.category?.name || 'N/A'" severity="info" />
                 </template>
               </Column>
 
-              <Column field="total_stock" header="Stock" style="min-width: 120px">
+              <Column field="totalStock" header="Stock" style="min-width: 120px">
                 <template #body="{ data }">
                   <span class="font-semibold text-green-600">
-                    {{ data.total_stock }} {{ data.unit }}
+                    {{ data.totalStock }} {{ data.unit }}
                   </span>
                 </template>
               </Column>
@@ -154,18 +154,25 @@
                 <template #body="{ data }">{{ data.reorder_level }} {{ data.unit }}</template>
               </Column>
 
-              <Column field="purchase_price" header="Purchase Price" style="min-width: 150px">
-                <template #body="{ data }">LKR {{ formatCurrency(data.purchase_price) }}</template>
+              <Column field="batchCount" header="Batch Count" style="min-width: 120px">
+                <template #body="{ data }">
+                  <Tag :value="data.batchCount" severity="info" />
+                </template>
               </Column>
 
-              <Column field="selling_price" header="Selling Price" style="min-width: 140px">
-                <template #body="{ data }">LKR {{ formatCurrency(data.selling_price) }}</template>
+              <Column header="Earliest Expiry" style="min-width: 150px">
+                <template #body="{ data }">
+                  <span v-if="data.earliestExpiry">
+                    {{ formatDate(data.earliestExpiry) }}
+                  </span>
+                  <span v-else class="text-500">N/A</span>
+                </template>
               </Column>
 
-              <Column header="Stock Value" style="min-width: 140px">
+              <Column header="Inventory Value" style="min-width: 150px">
                 <template #body="{ data }">
                   <span class="font-semibold text-primary">
-                    LKR {{ formatCurrency(data.total_stock * data.purchase_price) }}
+                    LKR {{ formatCurrency(data.inventoryValue) }}
                   </span>
                 </template>
               </Column>
@@ -177,11 +184,11 @@
             <template #header>
               <span class="flex align-items-center gap-2">
                 <i class="pi pi-exclamation-triangle text-orange-500"></i>
-                <span>Low Stock ({{ reportData.lowStock.length }})</span>
+                <span>Low Stock ({{ reportData.products.lowStock.length }})</span>
               </span>
             </template>
             <DataTable
-              :value="reportData.lowStock"
+              :value="reportData.products.lowStock"
               paginator
               :rows="10"
               class="p-datatable-sm"
@@ -195,16 +202,16 @@
                 </template>
               </Column>
 
-              <Column field="category" header="Category" style="min-width: 150px">
+              <Column field="category.name" header="Category" style="min-width: 150px">
                 <template #body="{ data }">
-                  <Tag :value="data.category" severity="warning" />
+                  <Tag :value="data.category?.name || 'N/A'" severity="warning" />
                 </template>
               </Column>
 
-              <Column field="total_stock" header="Stock" style="min-width: 120px">
+              <Column field="totalStock" header="Stock" style="min-width: 120px">
                 <template #body="{ data }">
                   <span class="font-semibold text-orange-600">
-                    {{ data.total_stock }} {{ data.unit }}
+                    {{ data.totalStock }} {{ data.unit }}
                   </span>
                 </template>
               </Column>
@@ -215,18 +222,25 @@
                 </template>
               </Column>
 
-              <Column field="purchase_price" header="Purchase Price" style="min-width: 150px">
-                <template #body="{ data }">LKR {{ formatCurrency(data.purchase_price) }}</template>
+              <Column field="batchCount" header="Batch Count" style="min-width: 120px">
+                <template #body="{ data }">
+                  <Tag :value="data.batchCount" severity="warning" />
+                </template>
               </Column>
 
-              <Column field="selling_price" header="Selling Price" style="min-width: 140px">
-                <template #body="{ data }">LKR {{ formatCurrency(data.selling_price) }}</template>
+              <Column header="Earliest Expiry" style="min-width: 150px">
+                <template #body="{ data }">
+                  <span v-if="data.earliestExpiry">
+                    {{ formatDate(data.earliestExpiry) }}
+                  </span>
+                  <span v-else class="text-500">N/A</span>
+                </template>
               </Column>
 
-              <Column header="Stock Value" style="min-width: 140px">
+              <Column header="Inventory Value" style="min-width: 150px">
                 <template #body="{ data }">
                   <span class="font-semibold text-primary">
-                    LKR {{ formatCurrency(data.total_stock * data.purchase_price) }}
+                    LKR {{ formatCurrency(data.inventoryValue) }}
                   </span>
                 </template>
               </Column>
@@ -238,11 +252,11 @@
             <template #header>
               <span class="flex align-items-center gap-2">
                 <i class="pi pi-times-circle text-red-500"></i>
-                <span>Out of Stock ({{ reportData.outOfStock.length }})</span>
+                <span>Out of Stock ({{ reportData.products.outOfStock.length }})</span>
               </span>
             </template>
             <DataTable
-              :value="reportData.outOfStock"
+              :value="reportData.products.outOfStock"
               paginator
               :rows="10"
               class="p-datatable-sm"
@@ -256,16 +270,16 @@
                 </template>
               </Column>
 
-              <Column field="category" header="Category" style="min-width: 150px">
+              <Column field="category.name" header="Category" style="min-width: 150px">
                 <template #body="{ data }">
-                  <Tag :value="data.category" severity="danger" />
+                  <Tag :value="data.category?.name || 'N/A'" severity="danger" />
                 </template>
               </Column>
 
-              <Column field="total_stock" header="Stock" style="min-width: 120px">
+              <Column field="totalStock" header="Stock" style="min-width: 120px">
                 <template #body="{ data }">
                   <span class="font-semibold text-red-600">
-                    {{ data.total_stock }} {{ data.unit }}
+                    {{ data.totalStock }} {{ data.unit }}
                   </span>
                 </template>
               </Column>
@@ -276,12 +290,16 @@
                 </template>
               </Column>
 
-              <Column field="purchase_price" header="Purchase Price" style="min-width: 150px">
-                <template #body="{ data }">LKR {{ formatCurrency(data.purchase_price) }}</template>
+              <Column field="batchCount" header="Batch Count" style="min-width: 120px">
+                <template #body="{ data }">
+                  <Tag :value="data.batchCount || 0" severity="danger" />
+                </template>
               </Column>
 
-              <Column field="selling_price" header="Selling Price" style="min-width: 140px">
-                <template #body="{ data }">LKR {{ formatCurrency(data.selling_price) }}</template>
+              <Column header="Earliest Expiry" style="min-width: 150px">
+                <template #body="{ data }">
+                  <span class="text-500">N/A</span>
+                </template>
               </Column>
             </DataTable>
           </TabPanel>
@@ -370,20 +388,20 @@ function exportReport() {
 
   // Combine all stock levels into one dataset for export
   const allProducts = [
-    ...reportData.value.inStock.map((p) => ({ ...p, stock_status: 'In Stock' })),
-    ...reportData.value.lowStock.map((p) => ({ ...p, stock_status: 'Low Stock' })),
-    ...reportData.value.outOfStock.map((p) => ({ ...p, stock_status: 'Out of Stock' })),
+    ...reportData.value.products.inStock.map((p) => ({ ...p, stock_status: 'In Stock' })),
+    ...reportData.value.products.lowStock.map((p) => ({ ...p, stock_status: 'Low Stock' })),
+    ...reportData.value.products.outOfStock.map((p) => ({ ...p, stock_status: 'Out of Stock' })),
   ];
 
   const columns = [
     { field: 'name', header: 'Product Name' },
     { field: 'generic_name', header: 'Generic Name' },
-    { field: 'category', header: 'Category' },
-    { field: 'total_stock', header: 'Total Stock' },
+    { field: 'category.name', header: 'Category' },
+    { field: 'totalStock', header: 'Total Stock' },
     { field: 'unit', header: 'Unit' },
     { field: 'reorder_level', header: 'Reorder Level' },
-    { field: 'purchase_price', header: 'Purchase Price' },
-    { field: 'selling_price', header: 'Selling Price' },
+    { field: 'inventoryValue', header: 'Inventory Value' },
+    { field: 'batchCount', header: 'Batch Count' },
     { field: 'stock_status', header: 'Stock Status' },
   ];
 
@@ -401,16 +419,22 @@ function exportReport() {
 }
 
 function getTotalProducts() {
-  if (!reportData.value) return 0;
+  if (!reportData.value || !reportData.value.products) return 0;
   return (
-    reportData.value.inStock.length +
-    reportData.value.lowStock.length +
-    reportData.value.outOfStock.length
+    reportData.value.products.inStock.length +
+    reportData.value.products.lowStock.length +
+    reportData.value.products.outOfStock.length
   );
 }
 
 function formatCurrency(value) {
   return parseFloat(value || 0).toFixed(2);
+}
+
+function formatDate(date) {
+  if (!date) return 'N/A';
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 </script>
 

@@ -63,13 +63,13 @@
 
     <!-- Report Summary -->
     <div v-if="reportData" class="grid mb-4">
-      <div class="col-12 md:col-6 lg:col-3">
+      <div class="col-12 md:col-6 lg:col-2">
         <Card class="summary-card bg-blue-50">
           <template #content>
             <div class="flex align-items-center justify-content-between">
               <div>
-                <div class="text-500 font-medium mb-2">Total Sales</div>
-                <div class="text-900 font-bold text-2xl">
+                <div class="summery-card-title">Total Sales</div>
+                <div class="summery-card-description">
                   {{ reportData.summary.totalSales }}
                 </div>
               </div>
@@ -79,14 +79,15 @@
         </Card>
       </div>
 
-      <div class="col-12 md:col-6 lg:col-3">
+      <div class="col-12 md:col-6 lg:col-2">
         <Card class="summary-card bg-green-50">
           <template #content>
             <div class="flex align-items-center justify-content-between">
               <div>
-                <div class="text-500 font-medium mb-2">Total Revenue</div>
-                <div class="text-900 font-bold text-2xl">
-                  LKR {{ formatCurrency(reportData.summary.totalRevenue) }}
+                <div class="summery-card-title">Total Revenue</div>
+                <div class="summery-card-description">
+                  <span class="class-lkr">LKR</span>
+                  {{ formatCurrency(reportData.summary.totalRevenue) }}
                 </div>
               </div>
               <i class="pi pi-money-bill text-green-500 text-4xl"></i>
@@ -95,14 +96,15 @@
         </Card>
       </div>
 
-      <div class="col-12 md:col-6 lg:col-3">
+      <div class="col-12 md:col-6 lg:col-2">
         <Card class="summary-card bg-orange-50">
           <template #content>
             <div class="flex align-items-center justify-content-between">
               <div>
-                <div class="text-500 font-medium mb-2">Total Discount</div>
-                <div class="text-900 font-bold text-2xl">
-                  LKR {{ formatCurrency(reportData.summary.totalDiscount) }}
+                <div class="summery-card-title">Total Discount</div>
+                <div class="summery-card-description">
+                  <span class="class-lkr">LKR</span>
+                  {{ formatCurrency(reportData.summary.totalDiscount) }}
                 </div>
               </div>
               <i class="pi pi-percentage text-orange-500 text-4xl"></i>
@@ -111,17 +113,60 @@
         </Card>
       </div>
 
-      <div class="col-12 md:col-6 lg:col-3">
+      <div class="col-12 md:col-6 lg:col-2">
         <Card class="summary-card bg-purple-50">
           <template #content>
             <div class="flex align-items-center justify-content-between">
               <div>
-                <div class="text-500 font-medium mb-2">Net Revenue</div>
-                <div class="text-900 font-bold text-2xl">
-                  LKR {{ formatCurrency(reportData.summary.netRevenue) }}
+                <div class="summery-card-title">Net Revenue</div>
+                <div class="summery-card-description">
+                  <span class="class-lkr">LKR</span>
+                  {{ formatCurrency(reportData.summary.netRevenue) }}
                 </div>
               </div>
               <i class="pi pi-wallet text-purple-500 text-4xl"></i>
+            </div>
+          </template>
+        </Card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-2">
+        <Card class="summary-card bg-cyan-50">
+          <template #content>
+            <div class="flex align-items-center justify-content-between">
+              <div>
+                <div class="summery-card-title">Gross Profit</div>
+                <div class="summery-card-description">
+                  <span class="class-lkr">LKR</span>
+                  {{ formatCurrency(reportData.summary.grossProfit) }}
+                </div>
+                <div class="text-500 text-sm mt-1">
+                  Margin: {{ reportData.summary.profitMargin.toFixed(1) }}%
+                </div>
+              </div>
+              <i class="pi pi-chart-line text-cyan-500 text-4xl"></i>
+            </div>
+          </template>
+        </Card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-2">
+        <Card class="summary-card bg-teal-50">
+          <template #content>
+            <div class="flex align-items-center justify-content-between">
+              <div>
+                <div class="summery-card-title">Net Profit</div>
+                <div class="summery-card-description">
+                  <span class="class-lkr">LKR</span>
+                  {{ formatCurrency(reportData.summary.netProfit) }}
+                </div>
+                <div class="text-500 text-sm mt-1">
+                  Cost:
+                  <span class="class-lkr">LKR</span>
+                  {{ formatCurrency(reportData.summary.totalCost) }}
+                </div>
+              </div>
+              <i class="pi pi-dollar text-teal-500 text-4xl"></i>
             </div>
           </template>
         </Card>
@@ -436,5 +481,18 @@ function getPaymentMethodSeverity(method) {
 
 .summary-card :deep(.p-card-content) {
   padding: 0;
+}
+
+.summery-card-title {
+  font-size: 12px;
+}
+
+.summery-card-description {
+  font-size: 1.2rem;
+  color: var(--surface-900) !important;
+  font-weight: 700 !important;
+}
+.class-lkr {
+  font-size: 12px;
 }
 </style>

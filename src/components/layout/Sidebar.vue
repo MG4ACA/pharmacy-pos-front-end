@@ -78,6 +78,13 @@
         </router-link>
       </div>
 
+      <router-link to="/export" class="sidebar-item">
+        <div class="sidebar-item-content">
+          <i class="pi pi-download sidebar-item-icon"></i>
+          <span class="sidebar-item-label">Data Export</span>
+        </div>
+      </router-link>
+
       <router-link to="/settings" class="sidebar-item">
         <div class="sidebar-item-content">
           <i class="pi pi-cog sidebar-item-icon"></i>

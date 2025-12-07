@@ -6,7 +6,17 @@
         <h2 class="m-0 text-primary">Sales History</h2>
         <p class="text-600 m-0 mt-1">View and manage all sales transactions</p>
       </div>
-      <Button label="New Sale" outlined icon="pi pi-plus" @click="$router.push('/sales/pos')" />
+      <div class="flex gap-2">
+        <Button
+          label="Export to CSV"
+          icon="pi pi-download"
+          severity="secondary"
+          outlined
+          @click="handleQuickExport"
+          :loading="exporting"
+        />
+        <Button label="New Sale" outlined icon="pi pi-plus" @click="$router.push('/sales/pos')" />
+      </div>
     </div>
 
     <!-- Filters -->
@@ -436,6 +446,7 @@
 </template>
 
 <script setup>
+import ExportService from '@/services/ExportService';
 import { useSaleStore } from '@/stores/sale';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -477,7 +488,43 @@ const paymentStatuses = [
   { label: 'Cancelled', value: 'cancelled' },
 ];
 
+const exporting = ref(false);
+
 // Methods
+async function handleQuickExport() {
+  exporting.value = true;
+  try {
+    const exportFilters = {};
+
+    // Apply current filters if any
+    if (filters.value.dateRange && filters.value.dateRange[0]) {
+      exportFilters.startDate = new Date(filters.value.dateRange[0]).toISOString().split('T')[0];
+      if (filters.value.dateRange[1]) {
+        exportFilters.endDate = new Date(filters.value.dateRange[1]).toISOString().split('T')[0];
+      }
+    }
+
+    await ExportService.exportSales(exportFilters);
+
+    toast.add({
+      severity: 'success',
+      summary: 'Export Successful',
+      detail: 'Sales data has been exported to CSV',
+      life: 3000,
+    });
+  } catch (error) {
+    console.error('Error exporting sales:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Export Failed',
+      detail: error.message || 'Failed to export sales data',
+      life: 3000,
+    });
+  } finally {
+    exporting.value = false;
+  }
+}
+
 async function fetchSales(params = {}) {
   const result = await saleStore.fetchSalesHistory({
     page: pagination.value.page,

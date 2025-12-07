@@ -98,6 +98,11 @@ const routes = [
         component: () => import('@/views/reports/TopSelling.vue'),
       },
       {
+        path: 'export',
+        name: 'ExportData',
+        component: () => import('@/views/ExportData.vue'),
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/Settings.vue'),

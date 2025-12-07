@@ -3,6 +3,14 @@
     <div class="flex justify-content-between align-items-center mb-4">
       <h1 class="page-title text-primary">Stock Receipts</h1>
       <div class="flex gap-2">
+        <Button
+          label="Export to CSV"
+          icon="pi pi-download"
+          severity="secondary"
+          outlined
+          @click="handleQuickExport"
+          :loading="exporting"
+        />
         <Button label="Create Receipt" outlined icon="pi pi-plus mr-2" @click="goToCreateReceipt" />
         <Button
           icon="pi pi-refresh"
@@ -185,6 +193,7 @@
 </template>
 
 <script setup>
+import ExportService from '@/services/ExportService';
 import { useStockReceiptStore } from '@/stores/stockReceipt';
 import { useSupplierStore } from '@/stores/supplier';
 import { useConfirm } from 'primevue/useconfirm';
@@ -216,12 +225,52 @@ const statusOptions = [
   { label: 'Cancelled', value: 'cancelled' },
 ];
 
+const exporting = ref(false);
+
 // Computed
 const receipts = computed(() => stockReceiptStore.receipts);
 const loading = computed(() => stockReceiptStore.loading);
 const suppliers = computed(() => supplierStore.suppliers);
 
 // Methods
+async function handleQuickExport() {
+  exporting.value = true;
+  try {
+    const exportFilters = {};
+
+    // Apply current filters if any
+    if (filters.value.dateRange && filters.value.dateRange[0]) {
+      exportFilters.startDate = new Date(filters.value.dateRange[0]).toISOString().split('T')[0];
+      if (filters.value.dateRange[1]) {
+        exportFilters.endDate = new Date(filters.value.dateRange[1]).toISOString().split('T')[0];
+      }
+    }
+
+    if (filters.value.supplierId) {
+      exportFilters.supplierId = filters.value.supplierId;
+    }
+
+    await ExportService.exportStockReceipts(exportFilters);
+
+    toast.add({
+      severity: 'success',
+      summary: 'Export Successful',
+      detail: 'Stock receipts data has been exported to CSV',
+      life: 3000,
+    });
+  } catch (error) {
+    console.error('Error exporting stock receipts:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Export Failed',
+      detail: error.message || 'Failed to export stock receipts data',
+      life: 3000,
+    });
+  } finally {
+    exporting.value = false;
+  }
+}
+
 const loadReceipts = async () => {
   try {
     // Format dates for API - extract from dateRange

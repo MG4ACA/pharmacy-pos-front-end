@@ -17,7 +17,7 @@
     <!-- Filter Panel -->
     <Panel header="Report Parameters" class="mb-4">
       <div class="grid">
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-6 lg:col-3">
           <div class="field">
             <label for="startDate" class="block mb-2">Start Date *</label>
             <Calendar
@@ -31,7 +31,7 @@
           </div>
         </div>
 
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-6 lg:col-3">
           <div class="field">
             <label for="endDate" class="block mb-2">End Date *</label>
             <Calendar
@@ -46,7 +46,21 @@
           </div>
         </div>
 
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-6 lg:col-2">
+          <div class="field">
+            <label for="sortBy" class="block mb-2">Sort By</label>
+            <Dropdown
+              id="sortBy"
+              v-model="selectedSortBy"
+              :options="sortByOptions"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+            />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6 lg:col-2">
           <div class="field">
             <label for="limitFilter" class="block mb-2">Number of Products</label>
             <Dropdown
@@ -60,11 +74,11 @@
           </div>
         </div>
 
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-6 lg:col-2">
           <div class="field">
             <label class="block mb-2">&nbsp;</label>
             <Button
-              label="Generate Report"
+              label="Generate"
               icon="pi pi-chart-bar"
               @click="generateReport"
               :loading="isLoading"
@@ -114,9 +128,12 @@
           <template #content>
             <div class="flex align-items-center justify-content-between">
               <div>
-                <div class="text-500 font-medium mb-2">Total Quantity Sold</div>
+                <div class="text-500 font-medium mb-2">Total Profit</div>
                 <div class="text-900 font-bold text-2xl">
-                  {{ getTotalQuantity() }}
+                  LKR {{ formatCurrency(getTotalProfit()) }}
+                </div>
+                <div class="text-500 text-sm mt-1">
+                  Margin: {{ getAverageProfitMargin().toFixed(1) }}%
                 </div>
               </div>
               <i class="pi pi-chart-line text-purple-500 text-4xl"></i>
@@ -147,18 +164,18 @@
             </template>
           </Column>
 
-          <Column field="Product.name" header="Product" style="min-width: 250px">
+          <Column field="product.name" header="Product" style="min-width: 250px">
             <template #body="{ data }">
               <div>
-                <div class="font-semibold text-lg">{{ data.Product.name }}</div>
-                <div class="text-sm text-500">{{ data.Product.generic_name || '-' }}</div>
+                <div class="font-semibold text-lg">{{ data.product.name }}</div>
+                <div class="text-sm text-500">{{ data.product.description || '-' }}</div>
               </div>
             </template>
           </Column>
 
-          <Column field="Product.category" header="Category" style="min-width: 150px">
+          <Column field="product.category.name" header="Category" style="min-width: 150px">
             <template #body="{ data }">
-              <Tag :value="data.Product.category" severity="info" />
+              <Tag :value="data.product.category?.name || 'N/A'" severity="info" />
             </template>
           </Column>
 
@@ -167,7 +184,7 @@
               <div class="flex align-items-center gap-2">
                 <i class="pi pi-shopping-cart text-primary"></i>
                 <span class="font-semibold text-lg">
-                  {{ data.total_quantity }} {{ data.Product.unit }}
+                  {{ data.total_quantity }}
                 </span>
               </div>
             </template>
@@ -190,28 +207,64 @@
             </template>
           </Column>
 
-          <Column header="Avg per Sale" style="min-width: 150px">
+          <Column field="total_profit" header="Total Profit" style="min-width: 180px">
             <template #body="{ data }">
-              <span class="text-600">
-                LKR {{ formatCurrency(data.total_revenue / data.sale_count) }}
-              </span>
+              <div
+                class="font-bold text-xl"
+                :class="data.total_profit >= 0 ? 'text-green-600' : 'text-red-600'"
+              >
+                LKR {{ formatCurrency(data.total_profit) }}
+              </div>
             </template>
           </Column>
 
-          <Column header="Performance" style="min-width: 200px">
-            <template #body="{ data, index }">
-              <div class="flex flex-column gap-1">
-                <div class="flex justify-content-between text-sm mb-1">
-                  <span class="text-600">Revenue Share</span>
-                  <span class="font-semibold">
-                    {{ ((data.total_revenue / getTotalRevenue()) * 100).toFixed(1) }}%
-                  </span>
-                </div>
-                <ProgressBar
-                  :value="(data.total_revenue / getTotalRevenue()) * 100"
-                  :showValue="false"
-                  style="height: 6px"
+          <Column field="profit_margin" header="Profit Margin" style="min-width: 150px">
+            <template #body="{ data }">
+              <div class="flex align-items-center gap-2">
+                <Tag
+                  :value="data.profit_margin.toFixed(1) + '%'"
+                  :severity="
+                    data.profit_margin >= 30
+                      ? 'success'
+                      : data.profit_margin >= 15
+                      ? 'warning'
+                      : 'danger'
+                  "
                 />
+              </div>
+            </template>
+          </Column>
+
+          <Column header="Performance" style="min-width: 250px">
+            <template #body="{ data, index }">
+              <div class="flex flex-column gap-2">
+                <div class="flex flex-column gap-1">
+                  <div class="flex justify-content-between text-sm">
+                    <span class="text-600">Revenue Share</span>
+                    <span class="font-semibold">
+                      {{ ((data.total_revenue / getTotalRevenue()) * 100).toFixed(1) }}%
+                    </span>
+                  </div>
+                  <ProgressBar
+                    :value="(data.total_revenue / getTotalRevenue()) * 100"
+                    :showValue="false"
+                    style="height: 6px"
+                  />
+                </div>
+                <div class="flex flex-column gap-1">
+                  <div class="flex justify-content-between text-sm">
+                    <span class="text-600">Profit Share</span>
+                    <span class="font-semibold">
+                      {{ ((data.total_profit / getTotalProfit()) * 100).toFixed(1) }}%
+                    </span>
+                  </div>
+                  <ProgressBar
+                    :value="(data.total_profit / getTotalProfit()) * 100"
+                    :showValue="false"
+                    style="height: 6px"
+                    severity="success"
+                  />
+                </div>
               </div>
             </template>
           </Column>
@@ -257,11 +310,17 @@ const reportData = ref(null);
 const startDate = ref(new Date());
 const endDate = ref(new Date());
 const selectedLimit = ref(10);
+const selectedSortBy = ref('revenue');
 
 // Set default dates (last 30 days)
 startDate.value.setDate(startDate.value.getDate() - 30);
 startDate.value.setHours(0, 0, 0, 0);
 endDate.value.setHours(23, 59, 59, 999);
+
+const sortByOptions = [
+  { label: 'Sort by Revenue', value: 'revenue' },
+  { label: 'Sort by Profit', value: 'profit' },
+];
 
 const limitOptions = [
   { label: 'Top 5', value: 5 },
@@ -300,6 +359,7 @@ async function generateReport() {
       start_date: startDate.value.toISOString().split('T')[0],
       end_date: endDate.value.toISOString().split('T')[0],
       limit: selectedLimit.value,
+      sort_by: selectedSortBy.value,
     });
 
     if (result.success) {
@@ -344,28 +404,32 @@ function exportReport() {
 
   const exportData = reportData.value.map((item, index) => ({
     rank: index + 1,
-    product_name: item.Product.name,
-    generic_name: item.Product.generic_name,
-    category: item.Product.category,
+    product_name: item.product.name,
+    description: item.product.description,
+    category: item.product.category?.name || 'N/A',
     quantity_sold: item.total_quantity,
-    unit: item.Product.unit,
     number_of_sales: item.sale_count,
     total_revenue: item.total_revenue,
-    average_per_sale: (item.total_revenue / item.sale_count).toFixed(2),
+    total_cost: item.total_cost,
+    total_profit: item.total_profit,
+    profit_margin: item.profit_margin.toFixed(2),
     revenue_share_percent: ((item.total_revenue / getTotalRevenue()) * 100).toFixed(2),
+    profit_share_percent: ((item.total_profit / getTotalProfit()) * 100).toFixed(2),
   }));
 
   const columns = [
     { field: 'rank', header: 'Rank' },
     { field: 'product_name', header: 'Product Name' },
-    { field: 'generic_name', header: 'Generic Name' },
+    { field: 'description', header: 'Description' },
     { field: 'category', header: 'Category' },
     { field: 'quantity_sold', header: 'Quantity Sold' },
-    { field: 'unit', header: 'Unit' },
     { field: 'number_of_sales', header: 'Number of Sales' },
     { field: 'total_revenue', header: 'Total Revenue' },
-    { field: 'average_per_sale', header: 'Average per Sale' },
+    { field: 'total_cost', header: 'Total Cost' },
+    { field: 'total_profit', header: 'Total Profit' },
+    { field: 'profit_margin', header: 'Profit Margin %' },
     { field: 'revenue_share_percent', header: 'Revenue Share %' },
+    { field: 'profit_share_percent', header: 'Profit Share %' },
   ];
 
   const csvContent = ReportService.exportToCSV(exportData, columns);
@@ -386,6 +450,20 @@ function exportReport() {
 function getTotalRevenue() {
   if (!reportData.value) return 0;
   return reportData.value.reduce((sum, item) => sum + parseFloat(item.total_revenue), 0);
+}
+
+function getTotalProfit() {
+  if (!reportData.value) return 0;
+  return reportData.value.reduce((sum, item) => sum + parseFloat(item.total_profit || 0), 0);
+}
+
+function getAverageProfitMargin() {
+  if (!reportData.value || reportData.value.length === 0) return 0;
+  const totalMargin = reportData.value.reduce(
+    (sum, item) => sum + parseFloat(item.profit_margin || 0),
+    0
+  );
+  return totalMargin / reportData.value.length;
 }
 
 function getTotalQuantity() {
