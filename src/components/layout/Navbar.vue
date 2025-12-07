@@ -13,6 +13,8 @@
         {{ currentDate }}
       </span>
 
+      <NotificationBell @open-settings="handleOpenNotificationSettings" />
+
       <div class="user-menu">
         <Button
           type="button"
@@ -28,6 +30,7 @@
 </template>
 
 <script setup>
+import NotificationBell from '@/components/notifications/NotificationBell.vue';
 import { useAuthStore } from '@/stores/auth';
 import Button from 'primevue/button';
 import Menu from 'primevue/menu';
@@ -84,6 +87,11 @@ const handleLogout = async () => {
       life: 3000,
     });
   }
+};
+
+const handleOpenNotificationSettings = () => {
+  router.push('/settings');
+  // After navigation, the settings page will handle opening the notification modal
 };
 
 const userMenuItems = [

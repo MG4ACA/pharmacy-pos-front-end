@@ -300,10 +300,13 @@
             </div>
 
             <div class="col-12 md:col-6 lg:col-4">
-              <div class="p-3 surface-100 border-round text-center">
-                <i class="pi pi-bell text-4xl text-500 mb-2"></i>
-                <div class="font-semibold mb-1 text-600">Notifications</div>
-                <small class="text-500">Coming Soon</small>
+              <div
+                class="p-3 surface-100 border-round text-center cursor-pointer hover:surface-200 transition-colors transition-duration-200"
+                @click="showNotificationSettings = true"
+              >
+                <i class="pi pi-bell text-4xl text-blue-500 mb-2"></i>
+                <div class="font-semibold mb-1">Notifications</div>
+                <small class="text-600">Configure notification preferences</small>
               </div>
             </div>
 
@@ -318,10 +321,17 @@
         </template>
       </Card>
     </div>
+
+    <!-- Notification Preferences Modal -->
+    <NotificationPreferencesModal
+      v-model:visible="showNotificationSettings"
+      @saved="handleNotificationsSaved"
+    />
   </div>
 </template>
 
 <script setup>
+import NotificationPreferencesModal from '@/components/notifications/NotificationPreferencesModal.vue';
 import { AuthService } from '@/services/AuthService';
 import BackupService from '@/services/BackupService';
 import { useAuthStore } from '@/stores/auth';
@@ -339,6 +349,7 @@ const isChangingPassword = ref(false);
 const backups = ref([]);
 const isLoadingBackups = ref(false);
 const isCreatingBackup = ref(false);
+const showNotificationSettings = ref(false);
 
 const passwordForm = ref({
   currentPassword: '',
@@ -606,6 +617,15 @@ function clearPasswordForm() {
     newPassword: '',
     confirmPassword: '',
   };
+}
+
+function handleNotificationsSaved() {
+  toast.add({
+    severity: 'success',
+    summary: 'Success',
+    detail: 'Notification preferences saved successfully',
+    life: 3000,
+  });
 }
 </script>
 

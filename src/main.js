@@ -6,6 +6,7 @@ import Tooltip from 'primevue/tooltip';
 
 // PrimeVue Components - Global Registration
 import AutoComplete from 'primevue/autocomplete';
+import Badge from 'primevue/badge';
 import Button from 'primevue/button';
 import Calendar from 'primevue/calendar';
 import Card from 'primevue/card';
@@ -16,11 +17,14 @@ import Dialog from 'primevue/dialog';
 import Divider from 'primevue/divider';
 import Dropdown from 'primevue/dropdown';
 import InputNumber from 'primevue/inputnumber';
+import InputSwitch from 'primevue/inputswitch';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
+import OverlayPanel from 'primevue/overlaypanel';
 import Panel from 'primevue/panel';
 import Password from 'primevue/password';
 import ProgressSpinner from 'primevue/progressspinner';
+import ScrollPanel from 'primevue/scrollpanel';
 import Tag from 'primevue/tag';
 import Textarea from 'primevue/textarea';
 
@@ -48,6 +52,7 @@ app.use(ConfirmationService);
 
 // Global Component Registration
 app.component('AutoComplete', AutoComplete);
+app.component('Badge', Badge);
 app.component('Button', Button);
 app.component('Calendar', Calendar);
 app.component('Card', Card);
@@ -58,11 +63,14 @@ app.component('Dialog', Dialog);
 app.component('Divider', Divider);
 app.component('Dropdown', Dropdown);
 app.component('InputNumber', InputNumber);
+app.component('InputSwitch', InputSwitch);
 app.component('InputText', InputText);
 app.component('Message', Message);
+app.component('OverlayPanel', OverlayPanel);
 app.component('Panel', Panel);
 app.component('Password', Password);
 app.component('ProgressSpinner', ProgressSpinner);
+app.component('ScrollPanel', ScrollPanel);
 app.component('Tag', Tag);
 app.component('Textarea', Textarea);
 
