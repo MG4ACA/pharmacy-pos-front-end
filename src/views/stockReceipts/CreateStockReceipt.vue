@@ -721,6 +721,28 @@ const saveReceipt = async (status) => {
     saving.value = true;
     header.value.status = status;
 
+    // Generate receipt number if completing and number is not set
+    if (status === 'completed' && !header.value.receiptNumber) {
+      try {
+        const generatedNumber = await stockReceiptStore.generateReceiptNumber();
+        header.value.receiptNumber = generatedNumber;
+        toast.add({
+          severity: 'info',
+          summary: 'Receipt Number Generated',
+          detail: `Receipt #${generatedNumber} generated successfully`,
+          life: 3000,
+        });
+      } catch (err) {
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to generate receipt number',
+          life: 3000,
+        });
+        throw err;
+      }
+    }
+
     const receiptData = {
       header: {
         receiptNumber: header.value.receiptNumber,
@@ -903,9 +925,8 @@ onMounted(async () => {
 
   if (isEditMode.value) {
     await loadReceipt(receiptId.value);
-  } else {
-    await generateReceiptNumber();
   }
+  // Receipt number is now generated only when saving as completed to prevent race conditions
 });
 </script>
 
