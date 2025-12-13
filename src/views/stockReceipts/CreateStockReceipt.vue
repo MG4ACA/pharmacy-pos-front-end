@@ -325,27 +325,6 @@
 
         <div class="col-12 md:col-6">
           <div class="field">
-            <label for="costPrice" class="block mb-2">Cost Price *</label>
-            <InputNumber
-              id="costPrice"
-              v-model="currentEntry.costPrice"
-              placeholder="0.00"
-              class="w-full"
-              mode="currency"
-              currency="LKR"
-              locale="en-LK"
-              :min="0"
-              :min-fraction-digits="2"
-              :class="{ 'p-invalid': productSubmitted && !currentEntry.costPrice }"
-            />
-            <small v-if="productSubmitted && !currentEntry.costPrice" class="p-error">
-              Cost price is required
-            </small>
-          </div>
-        </div>
-
-        <div class="col-12 md:col-6">
-          <div class="field">
             <label for="sellingPrice" class="block mb-2">Selling Price *</label>
             <InputNumber
               id="sellingPrice"
@@ -361,6 +340,27 @@
             />
             <small v-if="productSubmitted && !currentEntry.sellingPrice" class="p-error">
               Selling price is required
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="costPrice" class="block mb-2">Cost Price *</label>
+            <InputNumber
+              id="costPrice"
+              v-model="currentEntry.costPrice"
+              placeholder="0.00"
+              class="w-full"
+              mode="currency"
+              currency="LKR"
+              locale="en-LK"
+              :min="0"
+              :min-fraction-digits="2"
+              :class="{ 'p-invalid': productSubmitted && !currentEntry.costPrice }"
+            />
+            <small v-if="productSubmitted && !currentEntry.costPrice" class="p-error">
+              Cost price is required
             </small>
           </div>
         </div>
@@ -412,7 +412,7 @@ import { useStockStore } from '@/stores/stock';
 import { useStockReceiptStore } from '@/stores/stockReceipt';
 import { useSupplierStore } from '@/stores/supplier';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -476,6 +476,22 @@ const totalAmount = computed(() => {
     return sum + entry.costPrice * entry.quantity;
   }, 0);
 });
+
+// Watch for selling price changes and auto-calculate cost price and expiry date
+watch(
+  () => currentEntry.value.sellingPrice,
+  (newSellingPrice) => {
+    if (newSellingPrice && newSellingPrice > 0) {
+      // Calculate cost price as 87% of selling price
+      currentEntry.value.costPrice = parseFloat((newSellingPrice * 0.87).toFixed(2));
+
+      // Set expiry date to 2026-12-13 if not already set
+      if (!currentEntry.value.expiryDate) {
+        currentEntry.value.expiryDate = new Date('2026-12-13');
+      }
+    }
+  }
+);
 
 // Methods
 const generateReceiptNumber = async () => {
@@ -545,6 +561,9 @@ const closeProductDialog = () => {
 };
 
 const resetCurrentEntry = () => {
+  // Set default expiry date to 2026-12-13
+  const defaultExpiryDate = new Date('2026-12-13');
+
   currentEntry.value = {
     productId: null,
     productName: '',
@@ -554,7 +573,7 @@ const resetCurrentEntry = () => {
     quantity: 1,
     costPrice: 0,
     sellingPrice: 0,
-    expiryDate: null,
+    expiryDate: defaultExpiryDate,
     notes: '',
     tempId: Date.now(),
   };

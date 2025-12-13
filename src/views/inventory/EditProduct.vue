@@ -182,6 +182,14 @@
               @click="$router.push('/inventory/products')"
               type="button"
             />
+            <Button
+              label="Duplicate Product"
+              icon="pi pi-copy"
+              class="p-button-info"
+              @click="handleDuplicate"
+              type="button"
+              :loading="loading"
+            />
             <Button label="Update Product" icon="pi pi-check" type="submit" :loading="loading" />
           </div>
         </form>
@@ -315,6 +323,33 @@ const handleSubmit = async () => {
     router.push('/inventory/products');
   } catch (err) {
     error(err.message || 'Failed to update product');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleDuplicate = async () => {
+  if (!validateForm()) {
+    error('Please fix the form errors');
+    return;
+  }
+
+  loading.value = true;
+
+  try {
+    // Create duplicate with cleared barcode
+    const duplicateData = {
+      ...formData,
+      barcode: null, // Clear barcode for user to enter
+      description: formData.description || null,
+    };
+
+    // Create new product using the store
+    await productStore.createProduct(duplicateData);
+    success('Product duplicated successfully. Barcode cleared for your entry.');
+    router.push('/inventory/products');
+  } catch (err) {
+    error(err.message || 'Failed to duplicate product');
   } finally {
     loading.value = false;
   }
