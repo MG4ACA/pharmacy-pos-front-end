@@ -98,6 +98,11 @@ const routes = [
         component: () => import('@/views/reports/TopSelling.vue'),
       },
       {
+        path: 'reports/free-items',
+        name: 'FreeItemsReport',
+        component: () => import('@/views/reports/FreeItemsReport.vue'),
+      },
+      {
         path: 'export',
         name: 'ExportData',
         component: () => import('@/views/ExportData.vue'),

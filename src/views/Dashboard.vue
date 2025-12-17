@@ -100,6 +100,61 @@
         </Card>
       </div>
 
+      <!-- Free Items Card -->
+      <div class="col-12 md:col-6 lg:col-3">
+        <Card
+          class="summary-card bg-teal-50"
+          style="cursor: pointer"
+          @click="$router.push('/reports/free-items')"
+        >
+          <template #content>
+            <div class="flex align-items-center justify-content-between">
+              <div>
+                <div class="text-500 font-medium mb-2">Free Items in Stock</div>
+                <div class="text-900 font-bold text-2xl" v-if="!isLoading">
+                  {{ dashboardData.freeItems?.totalInStock || 0 }}
+                </div>
+                <Skeleton v-else height="2rem" width="3rem" />
+                <div class="text-500 text-sm mt-1" v-if="!isLoading && dashboardData.freeItems">
+                  Sold today: {{ dashboardData.freeItems.soldToday || 0 }}
+                </div>
+              </div>
+              <div
+                class="bg-teal-500 border-circle flex align-items-center justify-content-center"
+                style="width: 3rem; height: 3rem"
+              >
+                <i class="pi pi-gift text-white text-xl"></i>
+              </div>
+            </div>
+          </template>
+        </Card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <Card class="summary-card bg-purple-50">
+          <template #content>
+            <div class="flex align-items-center justify-content-between">
+              <div>
+                <div class="text-500 font-medium mb-2">Free Items Revenue</div>
+                <div class="text-900 font-bold text-2xl" v-if="!isLoading">
+                  LKR {{ formatCurrency(dashboardData.freeItems?.revenueThisMonth || 0) }}
+                </div>
+                <Skeleton v-else height="2rem" width="8rem" />
+                <div class="text-500 text-sm mt-1" v-if="!isLoading && dashboardData.freeItems">
+                  This month
+                </div>
+              </div>
+              <div
+                class="bg-purple-500 border-circle flex align-items-center justify-content-center"
+                style="width: 3rem; height: 3rem"
+              >
+                <i class="pi pi-dollar text-white text-xl"></i>
+              </div>
+            </div>
+          </template>
+        </Card>
+      </div>
+
       <!-- Recent Sales -->
       <div class="col-12 lg:col-8">
         <Card>

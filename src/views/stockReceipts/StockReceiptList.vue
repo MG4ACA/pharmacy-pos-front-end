@@ -138,6 +138,16 @@
             </template>
           </Column>
 
+          <Column header="Free Items" style="width: 110px">
+            <template #body="{ data }">
+              <div v-if="data.total_free_quantity > 0" class="flex align-items-center gap-2">
+                <span class="font-semibold text-green-600">{{ data.total_free_quantity }}</span>
+                <Tag value="FREE" severity="success" icon="pi pi-gift" class="text-xs" />
+              </div>
+              <span v-else class="text-500">-</span>
+            </template>
+          </Column>
+
           <Column field="total_amount" header="Total Amount" sortable style="width: 150px">
             <template #body="{ data }">
               {{ formatCurrency(data.total_amount) }}

@@ -146,9 +146,30 @@
 
             <Column field="batchNumber" header="Batch #" style="width: 150px"></Column>
 
-            <Column field="quantity" header="Qty" style="width: 100px">
+            <Column field="quantity" header="Purchased Qty" style="width: 120px">
               <template #body="{ data }">
                 <span class="font-semibold">{{ data.quantity }}</span>
+              </template>
+            </Column>
+
+            <Column field="freeQuantity" header="Free Qty" style="width: 110px">
+              <template #body="{ data }">
+                <div class="flex align-items-center gap-2">
+                  <span>{{ data.freeQuantity || 0 }}</span>
+                  <Tag
+                    v-if="data.freeQuantity > 0"
+                    value="FREE"
+                    severity="success"
+                    icon="pi pi-gift"
+                    class="text-xs"
+                  />
+                </div>
+              </template>
+            </Column>
+
+            <Column header="Total Qty" style="width: 100px">
+              <template #body="{ data }">
+                <span class="font-semibold">{{ data.quantity + (data.freeQuantity || 0) }}</span>
               </template>
             </Column>
 
@@ -216,13 +237,36 @@
         <div class="grid mb-4">
           <div class="col-12 md:col-6 md:col-offset-6">
             <div class="grid">
-              <div class="col-6 text-right font-semibold">Total Items:</div>
+              <div class="col-6 text-right font-semibold">Total Items (Lines):</div>
               <div class="col-6 text-right">{{ entries.length }}</div>
+
+              <div class="col-6 text-right font-semibold">Purchased Qty:</div>
+              <div class="col-6 text-right">{{ totalPurchasedQty }}</div>
+
+              <div class="col-6 text-right font-semibold">Free Qty:</div>
+              <div class="col-6 text-right text-green-600">
+                {{ totalFreeQty }}
+                <Tag
+                  v-if="totalFreeQty > 0"
+                  value="FREE"
+                  severity="success"
+                  icon="pi pi-gift"
+                  class="ml-2 text-xs"
+                />
+              </div>
+
+              <div class="col-6 text-right font-semibold">Grand Total Qty:</div>
+              <div class="col-6 text-right font-semibold">
+                {{ totalPurchasedQty + totalFreeQty }}
+              </div>
+
+              <Divider class="my-2" />
 
               <div class="col-6 text-right font-semibold">Total Amount:</div>
               <div class="col-6 text-right font-bold text-xl">
                 {{ formatCurrency(totalAmount) }}
               </div>
+              <div class="col-12 text-right text-sm text-500">(Cost of purchased items only)</div>
             </div>
           </div>
         </div>
@@ -306,9 +350,9 @@
           </div>
         </div>
 
-        <div class="col-12 md:col-6">
+        <div class="col-12 md:col-4">
           <div class="field">
-            <label for="quantity" class="block mb-2">Quantity *</label>
+            <label for="quantity" class="block mb-2">Purchased Qty *</label>
             <InputNumber
               id="quantity"
               v-model="currentEntry.quantity"
@@ -320,6 +364,34 @@
             <small v-if="productSubmitted && !currentEntry.quantity" class="p-error">
               Quantity is required
             </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label for="freeQuantity" class="block mb-2">Free Qty</label>
+            <InputNumber
+              id="freeQuantity"
+              v-model="currentEntry.freeQuantity"
+              placeholder="0"
+              class="w-full"
+              :min="0"
+              :max="currentEntry.quantity"
+            />
+            <small class="text-500">Optional - from supplier promotions</small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label for="totalQty" class="block mb-2">Total Qty</label>
+            <InputNumber
+              id="totalQty"
+              :model-value="currentEntry.quantity + (currentEntry.freeQuantity || 0)"
+              disabled
+              class="w-full p-inputtext-filled"
+            />
+            <small class="text-500">Purchased + Free</small>
           </div>
         </div>
 
@@ -477,6 +549,14 @@ const totalAmount = computed(() => {
   }, 0);
 });
 
+const totalPurchasedQty = computed(() => {
+  return entries.value.reduce((sum, entry) => sum + (entry.quantity || 0), 0);
+});
+
+const totalFreeQty = computed(() => {
+  return entries.value.reduce((sum, entry) => sum + (entry.freeQuantity || 0), 0);
+});
+
 // Watch for selling price changes and auto-calculate cost price and expiry date
 watch(
   () => currentEntry.value.sellingPrice,
@@ -571,6 +651,7 @@ const resetCurrentEntry = () => {
     productSearch: '',
     batchNumber: '',
     quantity: 1,
+    freeQuantity: 0,
     costPrice: 0,
     sellingPrice: 0,
     expiryDate: defaultExpiryDate,
@@ -759,6 +840,7 @@ const saveReceipt = async (status) => {
         productId: entry.productId,
         batchNumber: entry.batchNumber,
         quantity: entry.quantity,
+        freeQuantity: entry.freeQuantity || 0,
         costPrice: entry.costPrice,
         sellingPrice: entry.sellingPrice,
         expiryDate: entry.expiryDate ? formatDateForAPI(entry.expiryDate) : null,

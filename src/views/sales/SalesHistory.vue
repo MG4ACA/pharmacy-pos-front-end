@@ -70,6 +70,21 @@
             />
           </div>
 
+          <div class="flex align-items-end">
+            <div class="field-checkbox mb-0">
+              <Checkbox
+                id="hasFreeItems"
+                v-model="filters.hasFreeItems"
+                :binary="true"
+                @change="applyFilters"
+              />
+              <label for="hasFreeItems" class="ml-2" style="font-size: 0.85em">
+                <i class="pi pi-gift text-green-600 mr-1"></i>
+                Has free items
+              </label>
+            </div>
+          </div>
+
           <div class="flex align-items-end justify-content-end gap-2">
             <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
             <Button icon="pi pi-refresh" outlined @click="fetchSales" />
@@ -125,6 +140,35 @@
               <span class="font-bold text-primary">
                 Rs. {{ parseFloat(data.total_amount).toFixed(2) }}
               </span>
+            </template>
+          </Column>
+
+          <Column header="Free Items" style="min-width: 110px">
+            <template #body="{ data }">
+              <div
+                v-if="data.profitMetrics?.freeItemsSold > 0"
+                class="flex align-items-center gap-1"
+              >
+                <i class="pi pi-gift text-green-600"></i>
+                <span class="text-sm font-semibold text-green-600">
+                  {{ data.profitMetrics.freeItemsSold }}
+                </span>
+              </div>
+              <span v-else class="text-500 text-sm">-</span>
+            </template>
+          </Column>
+
+          <Column header="Profit" style="min-width: 150px">
+            <template #body="{ data }">
+              <div v-if="data.profitMetrics">
+                <div class="font-semibold">
+                  Rs. {{ parseFloat(data.profitMetrics.grossProfit || 0).toFixed(2) }}
+                </div>
+                <div class="text-xs text-500" v-if="data.profitMetrics.freeItemsRevenue > 0">
+                  Net: Rs. {{ parseFloat(data.profitMetrics.netProfit || 0).toFixed(2) }}
+                </div>
+              </div>
+              <span v-else class="text-500">-</span>
             </template>
           </Column>
 
@@ -461,6 +505,7 @@ const filters = ref({
   dateRange: null,
   payment_method: null,
   payment_status: null,
+  hasFreeItems: false,
   sortField: null,
   sortOrder: null,
 });
@@ -579,6 +624,7 @@ function clearFilters() {
     dateRange: null,
     payment_method: null,
     payment_status: null,
+    hasFreeItems: false,
     sortField: null,
     sortOrder: null,
   };

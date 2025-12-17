@@ -106,18 +106,24 @@
 
           <Column field="total_stock" header="Stock" :sortable="true">
             <template #body="{ data }">
-              <Tag
-                :value="data.total_stock"
-                :severity="
-                  data.is_low_stock ? 'danger' : data.total_stock > 0 ? 'success' : 'warning'
-                "
-              >
-                <i
-                  :class="data.is_low_stock ? 'pi pi-exclamation-triangle' : 'pi pi-check-circle'"
-                  class="mr-1"
-                ></i>
-                {{ data.total_stock }}
-              </Tag>
+              <div>
+                <Tag
+                  :value="data.total_stock"
+                  :severity="
+                    data.is_low_stock ? 'danger' : data.total_stock > 0 ? 'success' : 'warning'
+                  "
+                >
+                  <i
+                    :class="data.is_low_stock ? 'pi pi-exclamation-triangle' : 'pi pi-check-circle'"
+                    class="mr-1"
+                  ></i>
+                  {{ data.total_stock }}
+                </Tag>
+                <div v-if="data.free_items_count > 0" class="text-xs text-green-600 mt-1">
+                  <i class="pi pi-gift mr-1"></i>
+                  {{ data.free_items_count }} free
+                </div>
+              </div>
             </template>
           </Column>
 

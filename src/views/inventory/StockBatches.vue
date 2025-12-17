@@ -130,6 +130,16 @@
             />
           </div>
 
+          <div class="flex align-items-end">
+            <div class="field-checkbox mb-0">
+              <Checkbox id="freeItemsFilter" v-model="filters.hasFreeItems" :binary="true" />
+              <label for="freeItemsFilter" class="ml-2" style="font-size: 0.85em">
+                <i class="pi pi-gift text-green-600 mr-1"></i>
+                Show only free items
+              </label>
+            </div>
+          </div>
+
           <div class="flex align-items-end justify-content-end">
             <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
           </div>
@@ -206,12 +216,27 @@
             </template>
           </Column>
 
-          <Column field="quantity_remaining" header="Quantity" sortable style="min-width: 100px">
+          <Column field="quantity_remaining" header="Quantity" sortable style="min-width: 180px">
             <template #body="{ data }">
-              <Tag
-                :value="data.quantity_remaining + ' units'"
-                :severity="data.quantity_remaining > 10 ? 'success' : 'warning'"
-              />
+              <div>
+                <div class="flex align-items-center gap-2 mb-1">
+                  <Tag
+                    :value="data.quantity_remaining + ' total'"
+                    :severity="data.quantity_remaining > 10 ? 'success' : 'warning'"
+                  />
+                  <Tag
+                    v-if="data.free_quantity > 0"
+                    :value="data.free_quantity + ' FREE'"
+                    severity="success"
+                    icon="pi pi-gift"
+                    class="text-xs"
+                  />
+                </div>
+                <div style="font-size: 0.75em" class="text-500">
+                  Purchased: {{ data.quantity - (data.free_quantity || 0) }} | Free:
+                  {{ data.free_quantity || 0 }}
+                </div>
+              </div>
             </template>
           </Column>
 
@@ -323,9 +348,27 @@
               <label style="font-size: 0.75em" class="text-600">Quantity Remaining</label>
               <p style="font-size: 0.9em" class="mt-1">
                 <Tag
-                  :value="currentBatch.quantity_remaining + ' units'"
+                  :value="currentBatch.quantity_remaining + ' total'"
                   :severity="currentBatch.quantity_remaining > 10 ? 'success' : 'warning'"
                 />
+              </p>
+            </div>
+            <div class="col-6">
+              <label style="font-size: 0.75em" class="text-600">Free Items</label>
+              <p style="font-size: 0.9em" class="mt-1">
+                <span v-if="currentBatch.free_quantity > 0" class="text-green-600 font-semibold">
+                  <i class="pi pi-gift mr-1"></i>
+                  {{ currentBatch.free_quantity }} units
+                </span>
+                <span v-else class="text-500">None</span>
+              </p>
+            </div>
+            <div class="col-12">
+              <label style="font-size: 0.75em" class="text-600">Breakdown</label>
+              <p style="font-size: 0.85em" class="mt-1">
+                Purchased: {{ currentBatch.quantity - (currentBatch.free_quantity || 0) }} | Free:
+                {{ currentBatch.free_quantity || 0 }} |
+                <span class="font-semibold">Total: {{ currentBatch.quantity }}</span>
               </p>
             </div>
             <div class="col-6">
@@ -464,6 +507,7 @@ const filters = ref({
   supplierId: null,
   receiptId: null,
   expiryStatus: null,
+  hasFreeItems: false,
 });
 
 const expiryStatusOptions = [
@@ -519,6 +563,10 @@ const filteredBatches = computed(() => {
       const status = getExpiryStatus(batch.expiry_date);
       return status === filters.value.expiryStatus;
     });
+  }
+
+  if (filters.value.hasFreeItems) {
+    result = result.filter((batch) => batch.free_quantity > 0);
   }
 
   return result;
@@ -634,6 +682,7 @@ const clearFilters = () => {
     supplierId: null,
     receiptId: null,
     expiryStatus: null,
+    hasFreeItems: false,
   };
   selectedProduct.value = null;
   loadAllBatches();

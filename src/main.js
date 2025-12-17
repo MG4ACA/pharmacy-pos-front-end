@@ -23,6 +23,7 @@ import Message from 'primevue/message';
 import OverlayPanel from 'primevue/overlaypanel';
 import Panel from 'primevue/panel';
 import Password from 'primevue/password';
+import ProgressBar from 'primevue/progressbar';
 import ProgressSpinner from 'primevue/progressspinner';
 import ScrollPanel from 'primevue/scrollpanel';
 import Tag from 'primevue/tag';
@@ -73,6 +74,7 @@ app.component('ProgressSpinner', ProgressSpinner);
 app.component('ScrollPanel', ScrollPanel);
 app.component('Tag', Tag);
 app.component('Textarea', Textarea);
+app.component('ProgressBar', ProgressBar);
 
 app.directive('tooltip', Tooltip);
 

@@ -106,6 +106,34 @@ class SaleService {
       };
     }
   }
+
+  /**
+   * Get free items sales report
+   * @param {Object} params - Query parameters with date range
+   * @returns {Promise<Object>} Result with free items analytics
+   */
+  static async getFreeItemsSalesReport(params = {}) {
+    try {
+      const result = await apiClient.get('/sales/reports/free-items', { params });
+      return result;
+    } catch (error) {
+      console.error('SaleService.getFreeItemsSalesReport error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch free items sales report',
+        data: {
+          sales: [],
+          summary: {
+            totalSalesWithFreeItems: 0,
+            totalFreeItemsSold: 0,
+            totalFreeItemsRevenue: 0,
+            averageRevenuePerSale: 0,
+          },
+          topProducts: [],
+        },
+      };
+    }
+  }
 }
 
 export default SaleService;

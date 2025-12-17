@@ -45,10 +45,25 @@
                 <p class="font-semibold m-0">{{ formatDate(receipt.receipt_date) }}</p>
               </div>
             </div>
-            <div class="col-12 md:col-3">
+            <div class="col-12 md:col-2">
               <div class="field">
-                <label class="block text-500 mb-2">Total Items</label>
-                <p class="font-semibold text-lg m-0">{{ receipt.total_items }}</p>
+                <label class="block text-500 mb-2">Purchased Qty</label>
+                <p class="font-semibold text-lg m-0">{{ totalPurchasedQty }}</p>
+              </div>
+            </div>
+            <div class="col-12 md:col-2">
+              <div class="field">
+                <label class="block text-500 mb-2">Free Qty</label>
+                <p class="font-semibold text-lg text-green-600 m-0">
+                  <i class="pi pi-gift mr-1"></i>
+                  {{ totalFreeQty }}
+                </p>
+              </div>
+            </div>
+            <div class="col-12 md:col-2">
+              <div class="field">
+                <label class="block text-500 mb-2">Grand Total</label>
+                <p class="font-bold text-lg m-0">{{ totalPurchasedQty + totalFreeQty }}</p>
               </div>
             </div>
             <div class="col-12 md:col-3">
@@ -57,6 +72,7 @@
                 <p class="font-bold text-xl text-primary m-0">
                   {{ formatCurrency(receipt.total_amount) }}
                 </p>
+                <p class="text-xs text-500 m-0">Purchased items only</p>
               </div>
             </div>
           </div>
@@ -127,12 +143,36 @@
 
             <Column field="batch_number" header="Batch #" style="width: 150px"></Column>
 
-            <Column header="Quantity" style="width: 120px">
+            <Column header="Purchased" style="width: 110px">
               <template #body="{ data }">
-                <div>
-                  <div class="font-semibold">{{ data.quantity_received }}</div>
-                  <div class="text-sm text-500">Remaining: {{ data.quantity_remaining }}</div>
+                <div class="font-semibold">{{ data.quantity }}</div>
+              </template>
+            </Column>
+
+            <Column header="Free Qty" style="width: 110px">
+              <template #body="{ data }">
+                <div class="flex align-items-center gap-2">
+                  <span>{{ data.free_quantity || 0 }}</span>
+                  <Tag
+                    v-if="data.free_quantity > 0"
+                    value="FREE"
+                    severity="success"
+                    icon="pi pi-gift"
+                    class="text-xs"
+                  />
                 </div>
+              </template>
+            </Column>
+
+            <Column header="Total" style="width: 100px">
+              <template #body="{ data }">
+                <div class="font-semibold">{{ data.quantity_received }}</div>
+              </template>
+            </Column>
+
+            <Column header="Remaining" style="width: 110px">
+              <template #body="{ data }">
+                <div class="text-sm text-500">{{ data.quantity_remaining }}</div>
               </template>
             </Column>
 
@@ -151,7 +191,7 @@
             <Column header="Line Total" style="width: 120px">
               <template #body="{ data }">
                 <span class="font-semibold">
-                  {{ formatCurrency(data.cost_price * data.quantity_received) }}
+                  {{ formatCurrency(data.cost_price * data.quantity) }}
                 </span>
               </template>
             </Column>
@@ -187,7 +227,7 @@
 <script setup>
 import { useStockReceiptStore } from '@/stores/stockReceipt';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -198,6 +238,17 @@ const stockReceiptStore = useStockReceiptStore();
 // State
 const receipt = ref(null);
 const loading = ref(false);
+
+// Computed
+const totalPurchasedQty = computed(() => {
+  if (!receipt.value?.entries) return 0;
+  return receipt.value.entries.reduce((sum, entry) => sum + (entry.quantity || 0), 0);
+});
+
+const totalFreeQty = computed(() => {
+  if (!receipt.value?.entries) return 0;
+  return receipt.value.entries.reduce((sum, entry) => sum + (entry.free_quantity || 0), 0);
+});
 
 // Methods
 const loadReceipt = async () => {
