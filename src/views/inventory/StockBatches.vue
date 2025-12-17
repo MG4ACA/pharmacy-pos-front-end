@@ -174,7 +174,7 @@
             </div>
           </template>
 
-          <Column field="product.name" header="Product" sortable style="min-width: 200px">
+          <Column field="product.name" header="Product" sortable style="width: 18%">
             <template #body="{ data }">
               <div>
                 <div style="font-size: 0.9em" class="font-semibold">
@@ -187,12 +187,7 @@
             </template>
           </Column>
 
-          <Column
-            field="receipt.receipt_number"
-            header="Receipt #"
-            sortable
-            style="min-width: 145px"
-          >
+          <Column field="receipt.receipt_number" header="Receipt #" sortable style="width: 12%">
             <template #body="{ data }">
               <div v-if="data.receipt">
                 <div style="font-size: 0.85em" class="font-semibold text-primary">
@@ -210,13 +205,13 @@
             </template>
           </Column>
 
-          <Column field="supplier.name" header="Supplier" sortable style="min-width: 165px">
+          <Column field="supplier.name" header="Supplier" sortable style="width: 15%">
             <template #body="{ data }">
               <span style="font-size: 0.85em">{{ data.supplier?.name || 'N/A' }}</span>
             </template>
           </Column>
 
-          <Column field="quantity_remaining" header="Quantity" sortable style="min-width: 180px">
+          <Column field="quantity_remaining" header="Quantity" sortable style="width: 15%">
             <template #body="{ data }">
               <div>
                 <div class="flex align-items-center gap-2 mb-1">
@@ -228,19 +223,18 @@
                     v-if="data.free_quantity > 0"
                     :value="data.free_quantity + ' FREE'"
                     severity="success"
-                    icon="pi pi-gift"
+                    icon="pi pi-gift mr-1"
                     class="text-xs"
                   />
                 </div>
                 <div style="font-size: 0.75em" class="text-500">
-                  Purchased: {{ data.quantity - (data.free_quantity || 0) }} | Free:
-                  {{ data.free_quantity || 0 }}
+                  Purchased: {{ data.quantity_received }}
                 </div>
               </div>
             </template>
           </Column>
 
-          <Column field="cost_price" header="Cost Price" sortable style="min-width: 120px">
+          <Column field="cost_price" header="Cost P" sortable style="width: 9%">
             <template #body="{ data }">
               <span style="font-size: 0.85em">
                 Rs. {{ parseFloat(data.cost_price).toFixed(2) }}
@@ -248,7 +242,7 @@
             </template>
           </Column>
 
-          <Column field="selling_price" header="Selling Price" sortable style="min-width: 120px">
+          <Column field="selling_price" header="Selling P" sortable style="width: 9%">
             <template #body="{ data }">
               <span style="font-size: 0.85em" class="font-semibold text-primary">
                 Rs. {{ parseFloat(data.selling_price).toFixed(2) }}
@@ -256,38 +250,41 @@
             </template>
           </Column>
 
-          <Column field="expiry_date" header="Expiry Date" sortable style="min-width: 130px">
+          <Column field="expiry_date" header="Dates" sortable style="width: 15%">
             <template #body="{ data }">
-              <div v-if="data.expiry_date">
-                <div style="font-size: 0.85em">{{ formatDate(data.expiry_date) }}</div>
-                <Tag
-                  v-if="getExpiryStatus(data.expiry_date) === 'expired'"
-                  value="Expired"
-                  severity="danger"
-                  class="mt-1"
-                  style="font-size: 0.7em"
-                />
-                <Tag
-                  v-else-if="getExpiryStatus(data.expiry_date) === 'expiring'"
-                  value="Expiring Soon"
-                  severity="warning"
-                  class="mt-1"
-                  style="font-size: 0.7em"
-                />
+              <div>
+                <div class="mb-1 flex">
+                  <div style="font-size: 0.8em" class="text-600 mr-2">Expiry:</div>
+                  <div v-if="data.expiry_date" style="font-size: 0.85em">
+                    {{ formatDate(data.expiry_date) }}
+                    <Tag
+                      v-if="getExpiryStatus(data.expiry_date) === 'expired'"
+                      value="Expired"
+                      severity="danger"
+                      class="mt-1 ml-1"
+                      style="font-size: 0.65em; padding: 0.1rem 0.3rem"
+                    />
+                    <Tag
+                      v-else-if="getExpiryStatus(data.expiry_date) === 'expiring'"
+                      value="Expiring Soon"
+                      severity="warning"
+                      class="mt-1 ml-1"
+                      style="font-size: 0.65em; padding: 0.1rem 0.3rem"
+                    />
+                  </div>
+                  <span v-else style="font-size: 0.85em" class="text-500">No expiry</span>
+                </div>
+                <div class="flex">
+                  <div style="font-size: 0.8em" class="text-600 mr-2">Entry:</div>
+                  <span style="font-size: 0.75em" class="text-600">
+                    {{ formatDate(data.entry_date) }}
+                  </span>
+                </div>
               </div>
-              <span v-else style="font-size: 0.85em" class="text-500">No expiry</span>
             </template>
           </Column>
 
-          <Column field="entry_date" header="Entry Date" sortable style="min-width: 110px">
-            <template #body="{ data }">
-              <span style="font-size: 0.75em" class="text-600">
-                {{ formatDate(data.entry_date) }}
-              </span>
-            </template>
-          </Column>
-
-          <Column header="Actions" :exportable="false" style="width: 60px">
+          <Column header="Actions" :exportable="false" style="width: 5%">
             <template #body="{ data }">
               <Button
                 icon="pi pi-eye"
@@ -366,9 +363,11 @@
             <div class="col-12">
               <label style="font-size: 0.75em" class="text-600">Breakdown</label>
               <p style="font-size: 0.85em" class="mt-1">
-                Purchased: {{ currentBatch.quantity - (currentBatch.free_quantity || 0) }} | Free:
-                {{ currentBatch.free_quantity || 0 }} |
-                <span class="font-semibold">Total: {{ currentBatch.quantity }}</span>
+                Purchased:
+                {{ currentBatch.quantity_received }} | Free: {{ currentBatch.free_quantity || 0 }} |
+                <span class="font-semibold">
+                  Total: {{ currentBatch.quantity_received + (currentBatch.free_quantity || 0) }}
+                </span>
               </p>
             </div>
             <div class="col-6">

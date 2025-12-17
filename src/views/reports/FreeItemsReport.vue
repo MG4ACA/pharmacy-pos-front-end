@@ -176,28 +176,28 @@
             </template>
           </Column>
 
-          <Column field="freeReceived" header="Received (Free)" sortable style="width: 150px">
+          <Column field="freeReceived" header="Received " sortable style="width: 150px">
             <template #body="{ data }">
-              <Tag :value="data.freeReceived" severity="info" icon="pi pi-inbox" />
+              <Tag :value="data.freeReceived" severity="info" icon="pi pi-inbox mr-2" />
             </template>
           </Column>
 
-          <Column field="freeSold" header="Sold (Free)" sortable style="width: 150px">
+          <Column field="freeSold" header="Sold " sortable style="width: 150px">
             <template #body="{ data }">
               <Tag
-                :value="data.freeSold"
+                :value="data.freeSold === 0 ? '0' : data.freeSold"
                 :severity="data.freeSold > 0 ? 'success' : 'secondary'"
-                icon="pi pi-shopping-cart"
+                icon="pi pi-shopping-cart mr-2"
               />
             </template>
           </Column>
 
-          <Column field="freeRemaining" header="Remaining (Free)" sortable style="width: 150px">
+          <Column field="freeRemaining" header="Remaining " sortable style="width: 150px">
             <template #body="{ data }">
               <Tag
-                :value="data.freeRemaining"
+                :value="data.freeRemaining === 0 ? '0' : data.freeRemaining"
                 :severity="data.freeRemaining > 0 ? 'warning' : 'secondary'"
-                icon="pi pi-box"
+                icon="pi pi-box mr-2"
               />
             </template>
           </Column>

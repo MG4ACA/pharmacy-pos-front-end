@@ -26,7 +26,7 @@
       <!-- Receipt Header -->
       <Card class="mb-4">
         <template #title>
-          <div class="flex justify-content-between align-items-center">
+          <div class="flex justify-content-between align-items-center mb-3">
             <span>Receipt Information</span>
             <Tag :value="receipt.status" :severity="getStatusSeverity(receipt.status)" />
           </div>
@@ -39,7 +39,7 @@
                 <p class="font-bold text-xl m-0">{{ receipt.receipt_number }}</p>
               </div>
             </div>
-            <div class="col-12 md:col-3">
+            <div class="col-12 md:col-2">
               <div class="field">
                 <label class="block text-500 mb-2">Receipt Date</label>
                 <p class="font-semibold m-0">{{ formatDate(receipt.receipt_date) }}</p>
@@ -51,7 +51,7 @@
                 <p class="font-semibold text-lg m-0">{{ totalPurchasedQty }}</p>
               </div>
             </div>
-            <div class="col-12 md:col-2">
+            <div class="col-12 md:col-1">
               <div class="field">
                 <label class="block text-500 mb-2">Free Qty</label>
                 <p class="font-semibold text-lg text-green-600 m-0">
@@ -66,7 +66,7 @@
                 <p class="font-bold text-lg m-0">{{ totalPurchasedQty + totalFreeQty }}</p>
               </div>
             </div>
-            <div class="col-12 md:col-3">
+            <div class="col-12 md:col-2">
               <div class="field">
                 <label class="block text-500 mb-2">Total Amount</label>
                 <p class="font-bold text-xl text-primary m-0">
@@ -79,19 +79,19 @@
 
           <Divider />
 
-          <div class="grid">
+          <div class="grid mt-3">
             <div class="col-12 md:col-6">
               <div class="field">
                 <label class="block text-500 mb-2">Supplier</label>
                 <p class="font-semibold m-0">{{ receipt.supplier?.name || 'N/A' }}</p>
-                <p v-if="receipt.supplier?.contact_person" class="text-sm text-500 m-0">
+                <p v-if="receipt.supplier?.contact_person" class="text-sm text-500 mb-1">
                   Contact: {{ receipt.supplier.contact_person }}
                 </p>
-                <p v-if="receipt.supplier?.phone" class="text-sm text-500 m-0">
+                <p v-if="receipt.supplier?.phone" class="text-sm text-500 mb-1">
                   <i class="pi pi-phone mr-1"></i>
                   {{ receipt.supplier.phone }}
                 </p>
-                <p v-if="receipt.supplier?.email" class="text-sm text-500 m-0">
+                <p v-if="receipt.supplier?.email" class="text-sm text-500 mb-1">
                   <i class="pi pi-envelope mr-1"></i>
                   {{ receipt.supplier.email }}
                 </p>
@@ -103,24 +103,24 @@
                 <p class="font-semibold m-0">
                   {{ receipt.supplier_invoice_number || 'Not specified' }}
                 </p>
-                <p v-if="receipt.supplier_invoice_date" class="text-sm text-500 m-0">
+                <p v-if="receipt.supplier_invoice_date" class="text-sm text-500 mb-1">
                   Date: {{ formatDate(receipt.supplier_invoice_date) }}
                 </p>
               </div>
             </div>
-            <div class="col-12" v-if="receipt.notes">
-              <div class="field">
-                <label class="block text-500 mb-2">Notes</label>
-                <p class="m-0">{{ receipt.notes }}</p>
-              </div>
-            </div>
-            <div class="col-12">
+            <div class="col-12 md:col-6">
               <div class="field">
                 <label class="block text-500 mb-2">Created By</label>
                 <p class="m-0">
                   {{ receipt.creator?.full_name || 'Unknown' }} •
                   {{ formatDateTime(receipt.created_at) }}
                 </p>
+              </div>
+            </div>
+            <div class="col-12 md:col-6" v-if="receipt.notes">
+              <div class="field">
+                <label class="block text-500 mb-2">Notes</label>
+                <p class="m-0">{{ receipt.notes }}</p>
               </div>
             </div>
           </div>
@@ -132,81 +132,74 @@
         <template #title>Product Lines ({{ receipt.entries?.length || 0 }})</template>
         <template #content>
           <DataTable :value="receipt.entries" data-key="id" responsive-layout="scroll" striped-rows>
-            <Column header="Product" style="min-width: 200px">
+            <Column header="Product & Batch" style="width: 25%">
               <template #body="{ data }">
                 <div>
                   <div class="font-semibold">{{ data.product?.name || 'Unknown' }}</div>
                   <div class="text-sm text-500">{{ data.product?.barcode }}</div>
+                  <div class="text-xs text-600 mt-1">Batch: {{ data.batch_number }}</div>
                 </div>
               </template>
             </Column>
 
-            <Column field="batch_number" header="Batch #" style="width: 150px"></Column>
-
-            <Column header="Purchased" style="width: 110px">
+            <Column header="Purchased" style="width: 8%">
               <template #body="{ data }">
-                <div class="font-semibold">{{ data.quantity }}</div>
+                <div class="font-semibold">{{ data.quantity_received }}</div>
               </template>
             </Column>
 
-            <Column header="Free Qty" style="width: 110px">
+            <Column header="Free Qty" style="width: 8%">
               <template #body="{ data }">
                 <div class="flex align-items-center gap-2">
-                  <span>{{ data.free_quantity || 0 }}</span>
+                  <span v-if="!data.free_quantity > 0">NAN</span>
                   <Tag
                     v-if="data.free_quantity > 0"
-                    value="FREE"
+                    :value="data.free_quantity + ' FREE'"
                     severity="success"
-                    icon="pi pi-gift"
+                    icon="pi pi-gift mr-1"
                     class="text-xs"
                   />
                 </div>
               </template>
             </Column>
 
-            <Column header="Total" style="width: 100px">
+            <Column header="Total" style="width: 8%">
               <template #body="{ data }">
-                <div class="font-semibold">{{ data.quantity_received }}</div>
+                <div class="font-semibold">{{ data.quantity_received + data.free_quantity }}</div>
               </template>
             </Column>
 
-            <Column header="Remaining" style="width: 110px">
+            <Column header="Remaining" style="width: 8%">
               <template #body="{ data }">
                 <div class="text-sm text-500">{{ data.quantity_remaining }}</div>
               </template>
             </Column>
 
-            <Column field="cost_price" header="Cost Price" style="width: 120px">
+            <Column field="cost_price" header="Cost Price" style="width: 9%">
               <template #body="{ data }">
                 {{ formatCurrency(data.cost_price) }}
               </template>
             </Column>
 
-            <Column field="selling_price" header="Selling Price" style="width: 120px">
+            <Column field="selling_price" header="Selling Price" style="width: 10%">
               <template #body="{ data }">
                 {{ formatCurrency(data.selling_price) }}
               </template>
             </Column>
 
-            <Column header="Line Total" style="width: 120px">
+            <Column header="Line Total" style="width: 10%">
               <template #body="{ data }">
                 <span class="font-semibold">
-                  {{ formatCurrency(data.cost_price * data.quantity) }}
+                  {{ formatCurrency(data.cost_price * data.quantity_received) }}
                 </span>
               </template>
             </Column>
 
-            <Column field="expiry_date" header="Expiry Date" style="width: 120px">
+            <Column field="expiry_date" header="Expiry Date" style="width: 10%">
               <template #body="{ data }">
                 <span :class="getExpiryClass(data.expiry_date)">
                   {{ data.expiry_date ? formatDate(data.expiry_date) : '-' }}
                 </span>
-              </template>
-            </Column>
-
-            <Column field="notes" header="Notes" style="width: 150px">
-              <template #body="{ data }">
-                {{ data.notes || '-' }}
               </template>
             </Column>
 
@@ -239,10 +232,15 @@ const stockReceiptStore = useStockReceiptStore();
 const receipt = ref(null);
 const loading = ref(false);
 
+// Lifecycle
+onMounted(async () => {
+  await loadReceipt();
+});
+
 // Computed
 const totalPurchasedQty = computed(() => {
   if (!receipt.value?.entries) return 0;
-  return receipt.value.entries.reduce((sum, entry) => sum + (entry.quantity || 0), 0);
+  return receipt.value.entries.reduce((sum, entry) => sum + (entry.quantity_received || 0), 0);
 });
 
 const totalFreeQty = computed(() => {
@@ -323,18 +321,9 @@ const formatCurrency = (amount) => {
     minimumFractionDigits: 2,
   }).format(amount || 0);
 };
-
-// Lifecycle
-onMounted(async () => {
-  await loadReceipt();
-});
 </script>
 
 <style scoped>
-.view-stock-receipt {
-  padding: 1rem;
-}
-
 .page-title {
   font-size: 2rem;
   font-weight: 600;

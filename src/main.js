@@ -28,6 +28,8 @@ import ProgressSpinner from 'primevue/progressspinner';
 import ScrollPanel from 'primevue/scrollpanel';
 import Tag from 'primevue/tag';
 import Textarea from 'primevue/textarea';
+import Checkbox from 'primevue/checkbox';
+
 
 import { createApp } from 'vue';
 import App from './App.vue';
@@ -75,6 +77,7 @@ app.component('ScrollPanel', ScrollPanel);
 app.component('Tag', Tag);
 app.component('Textarea', Textarea);
 app.component('ProgressBar', ProgressBar);
+app.component('Checkbox', Checkbox);
 
 app.directive('tooltip', Tooltip);
 

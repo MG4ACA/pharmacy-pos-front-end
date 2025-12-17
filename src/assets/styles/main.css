@@ -72,6 +72,7 @@
 .p-dropdown-clear-icon {
   position: unset;
   top: 0;
+  margin: 0.75rem 0 0.75rem 0.75rem;
 }
 .p-autocomplete-input {
   width: 100% !important;
@@ -93,16 +94,20 @@
   margin-right: 1rem;
 }
 
-.p-dropdown-clear-icon {
-  top: 1rem;
-}
-
 .quantity-input .p-inputtext {
   width: 4rem !important;
 }
 
 .unit-price-input .p-inputtext {
   width: 10rem !important;
+}
+
+.p-datatable-tbody > tr > td {
+  padding: 0.7rem 0.5rem !important;
+}
+
+.p-datatable-thead > tr > th {
+  padding: 0.7rem 0.5rem !important;
 }
 
 /* Animation */

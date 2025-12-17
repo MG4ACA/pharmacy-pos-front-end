@@ -109,19 +109,19 @@
           :sort-order="-1"
           @sort="onSort"
         >
-          <Column field="receipt_number" header="Receipt #" style="width: 150px">
+          <Column field="receipt_number" header="Receipt #" style="width: 15%">
             <template #body="{ data }">
               <span class="font-semibold">{{ data.receipt_number }}</span>
             </template>
           </Column>
 
-          <Column field="receipt_date" header="Date" sortable style="width: 120px">
+          <Column field="receipt_date" header="Date" sortable style="width: 10%">
             <template #body="{ data }">
               {{ formatDate(data.receipt_date) }}
             </template>
           </Column>
 
-          <Column field="supplier.name" header="Supplier" sortable>
+          <Column field="supplier.name" header="Supplier" sortable style="width: 22%">
             <template #body="{ data }">
               <div>
                 <div class="font-semibold">{{ data.supplier?.name || 'N/A' }}</div>
@@ -132,41 +132,31 @@
             </template>
           </Column>
 
-          <Column field="total_items" header="Items" sortable style="width: 100px">
+          <Column field="total_items" header="Items" sortable style="width: 5%">
             <template #body="{ data }">
               <span class="font-semibold">{{ data.total_items }}</span>
             </template>
           </Column>
 
-          <Column header="Free Items" style="width: 110px">
-            <template #body="{ data }">
-              <div v-if="data.total_free_quantity > 0" class="flex align-items-center gap-2">
-                <span class="font-semibold text-green-600">{{ data.total_free_quantity }}</span>
-                <Tag value="FREE" severity="success" icon="pi pi-gift" class="text-xs" />
-              </div>
-              <span v-else class="text-500">-</span>
-            </template>
-          </Column>
-
-          <Column field="total_amount" header="Total Amount" sortable style="width: 150px">
+          <Column field="total_amount" header="Total Amount" sortable style="width: 12%">
             <template #body="{ data }">
               {{ formatCurrency(data.total_amount) }}
             </template>
           </Column>
 
-          <Column field="status" header="Status" style="width: 120px">
+          <Column field="status" header="Status" style="width: 10%">
             <template #body="{ data }">
               <Tag :value="data.status" :severity="getStatusSeverity(data.status)" />
             </template>
           </Column>
 
-          <Column header="Created By" style="width: 150px">
+          <Column header="Created By" style="width: 10%">
             <template #body="{ data }">
-              {{ data.creator?.full_name || 'N/A' }}
+              {{ data.creator?.username || 'N/A' }}
             </template>
           </Column>
 
-          <Column header="Actions" style="width: 150px">
+          <Column header="Actions" style="width: 10%">
             <template #body="{ data }">
               <div class="flex gap-1">
                 <Button

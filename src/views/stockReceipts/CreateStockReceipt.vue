@@ -135,57 +135,58 @@
           </div>
 
           <DataTable :value="entries" data-key="tempId" responsive-layout="scroll" striped-rows>
-            <Column header="Product" style="min-width: 200px">
+            <Column header="Product & Batch" style="width: 30%">
               <template #body="{ data }">
                 <div>
                   <div class="font-semibold">{{ data.productName }}</div>
-                  <div class="text-sm text-500">{{ data.barcode }}</div>
+                  <div class="text-xs text-600 mt-1">Batch: {{ data.batchNumber }}</div>
                 </div>
               </template>
             </Column>
 
-            <Column field="batchNumber" header="Batch #" style="width: 150px"></Column>
-
-            <Column field="quantity" header="Purchased Qty" style="width: 120px">
+            <Column header="Quantity" style="width: 20%">
               <template #body="{ data }">
-                <span class="font-semibold">{{ data.quantity }}</span>
-              </template>
-            </Column>
+                <div class="flex flex-column">
+                  <div class="flex align-items-center justify-content-start">
+                    <span class="text-xs font-semibold mr-1">Total:</span>
+                    <span class="text-sm font-bold text-primary">
+                      {{ data.quantity + (data.freeQuantity || 0) }}
+                    </span>
+                  </div>
+                  <div class="flex align-items-center justify-content-between">
+                    <span class="text-xs text-600 mr-1">Purchased:</span>
+                    <span class="text-sm font-semibold">{{ data.quantity }}</span>
 
-            <Column field="freeQuantity" header="Free Qty" style="width: 110px">
-              <template #body="{ data }">
-                <div class="flex align-items-center gap-2">
-                  <span>{{ data.freeQuantity || 0 }}</span>
-                  <Tag
-                    v-if="data.freeQuantity > 0"
-                    value="FREE"
-                    severity="success"
-                    icon="pi pi-gift"
-                    class="text-xs"
-                  />
+                    <span class="text-xs text-600 ml-2 mr-1">| Free:</span>
+                    <span class="text-xs" v-if="!data.freeQuantity > 0">NAN</span>
+
+                    <div class="flex align-items-center gap-1">
+                      <Tag
+                        v-if="data.freeQuantity > 0"
+                        :value="data.freeQuantity || 0"
+                        severity="success"
+                        icon="pi pi-gift pr-2"
+                        class="text-xs"
+                      />
+                    </div>
+                  </div>
                 </div>
               </template>
             </Column>
 
-            <Column header="Total Qty" style="width: 100px">
-              <template #body="{ data }">
-                <span class="font-semibold">{{ data.quantity + (data.freeQuantity || 0) }}</span>
-              </template>
-            </Column>
-
-            <Column field="costPrice" header="Cost Price" style="width: 120px">
+            <Column field="costPrice" header="Cost Price" style="width: 11%">
               <template #body="{ data }">
                 {{ formatCurrency(data.costPrice) }}
               </template>
             </Column>
 
-            <Column field="sellingPrice" header="Selling Price" style="width: 120px">
+            <Column field="sellingPrice" header="Selling Price" style="width: 11%">
               <template #body="{ data }">
                 {{ formatCurrency(data.sellingPrice) }}
               </template>
             </Column>
 
-            <Column header="Line Total" style="width: 120px">
+            <Column header="Line Total" style="width: 12%">
               <template #body="{ data }">
                 <span class="font-semibold">
                   {{ formatCurrency(data.costPrice * data.quantity) }}
@@ -193,13 +194,13 @@
               </template>
             </Column>
 
-            <Column field="expiryDate" header="Expiry" style="width: 120px">
+            <Column field="expiryDate" header="Expiry" style="width: 11%">
               <template #body="{ data }">
                 {{ data.expiryDate ? formatDate(data.expiryDate) : '-' }}
               </template>
             </Column>
 
-            <Column header="Actions" style="width: 100px">
+            <Column header="Actions" style="width: 5%">
               <template #body="{ data, index }">
                 <div class="flex gap-1">
                   <Button
@@ -231,8 +232,6 @@
           </small>
         </div>
 
-        <Divider />
-
         <!-- Summary -->
         <div class="grid mb-4">
           <div class="col-12 md:col-6 md:col-offset-6">
@@ -240,24 +239,20 @@
               <div class="col-6 text-right font-semibold">Total Items (Lines):</div>
               <div class="col-6 text-right">{{ entries.length }}</div>
 
-              <div class="col-6 text-right font-semibold">Purchased Qty:</div>
-              <div class="col-6 text-right">{{ totalPurchasedQty }}</div>
-
-              <div class="col-6 text-right font-semibold">Free Qty:</div>
-              <div class="col-6 text-right text-green-600">
-                {{ totalFreeQty }}
-                <Tag
-                  v-if="totalFreeQty > 0"
-                  value="FREE"
-                  severity="success"
-                  icon="pi pi-gift"
-                  class="ml-2 text-xs"
-                />
-              </div>
-
               <div class="col-6 text-right font-semibold">Grand Total Qty:</div>
               <div class="col-6 text-right font-semibold">
                 {{ totalPurchasedQty + totalFreeQty }}
+                <span v-if="totalFreeQty > 0">
+                  ({{ totalPurchasedQty }} +
+                  <Tag
+                    v-if="totalFreeQty > 0"
+                    :value="totalFreeQty + ' FREE'"
+                    severity="success"
+                    icon="pi pi-gift pr-1"
+                    class="ml-2 text-xs"
+                  />
+                  )
+                </span>
               </div>
 
               <Divider class="my-2" />
@@ -350,7 +345,7 @@
           </div>
         </div>
 
-        <div class="col-12 md:col-4">
+        <div class="col-12 md:col-6">
           <div class="field">
             <label for="quantity" class="block mb-2">Purchased Qty *</label>
             <InputNumber
@@ -367,7 +362,7 @@
           </div>
         </div>
 
-        <div class="col-12 md:col-4">
+        <div class="col-12 md:col-6">
           <div class="field">
             <label for="freeQuantity" class="block mb-2">Free Qty</label>
             <InputNumber
@@ -382,7 +377,7 @@
           </div>
         </div>
 
-        <div class="col-12 md:col-4">
+        <div class="col-12 md:col-6">
           <div class="field">
             <label for="totalQty" class="block mb-2">Total Qty</label>
             <InputNumber

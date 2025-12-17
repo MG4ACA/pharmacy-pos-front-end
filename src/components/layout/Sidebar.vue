@@ -118,6 +118,7 @@ const reportItems = [
     icon: 'pi pi-exclamation-triangle',
   },
   { path: '/reports/top-selling', label: 'Top Selling', icon: 'pi pi-chart-line' },
+  { path: '/reports/free-items', label: 'Free Items', icon: 'pi pi-gift' },
 ];
 </script>
 
