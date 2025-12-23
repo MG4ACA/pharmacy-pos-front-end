@@ -5,12 +5,36 @@
 </template>
 
 <script setup>
+import { useAuthStore } from '@/stores/auth';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Toast from 'primevue/toast';
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+const router = useRouter();
+const route = useRoute();
+const authStore = useAuthStore();
+
+const handleResize = () => {
+  if (!authStore.isAuthenticated || route.path === '/login') return;
+
+  const isMobile = window.innerWidth <= 768;
+  const isMobilePath = route.path.startsWith('/mobile');
+
+  if (isMobile && !isMobilePath) {
+    router.push('/mobile/dashboard');
+  } else if (!isMobile && isMobilePath) {
+    router.push('/dashboard');
+  }
+};
 
 onMounted(() => {
   console.log('Pharmacy POS Application Started');
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 

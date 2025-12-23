@@ -10,6 +10,8 @@ import Badge from 'primevue/badge';
 import Button from 'primevue/button';
 import Calendar from 'primevue/calendar';
 import Card from 'primevue/card';
+import Chart from 'primevue/chart';
+import Checkbox from 'primevue/checkbox';
 import Column from 'primevue/column';
 import ConfirmDialog from 'primevue/confirmdialog';
 import DataTable from 'primevue/datatable';
@@ -26,10 +28,11 @@ import Password from 'primevue/password';
 import ProgressBar from 'primevue/progressbar';
 import ProgressSpinner from 'primevue/progressspinner';
 import ScrollPanel from 'primevue/scrollpanel';
+import Skeleton from 'primevue/skeleton';
+import TabPanel from 'primevue/tabpanel';
+import TabView from 'primevue/tabview';
 import Tag from 'primevue/tag';
 import Textarea from 'primevue/textarea';
-import Checkbox from 'primevue/checkbox';
-
 
 import { createApp } from 'vue';
 import App from './App.vue';
@@ -59,6 +62,7 @@ app.component('Badge', Badge);
 app.component('Button', Button);
 app.component('Calendar', Calendar);
 app.component('Card', Card);
+app.component('Chart', Chart);
 app.component('Column', Column);
 app.component('ConfirmDialog', ConfirmDialog);
 app.component('DataTable', DataTable);
@@ -74,10 +78,13 @@ app.component('Panel', Panel);
 app.component('Password', Password);
 app.component('ProgressSpinner', ProgressSpinner);
 app.component('ScrollPanel', ScrollPanel);
+app.component('TabPanel', TabPanel);
+app.component('TabView', TabView);
 app.component('Tag', Tag);
 app.component('Textarea', Textarea);
 app.component('ProgressBar', ProgressBar);
 app.component('Checkbox', Checkbox);
+app.component('Skeleton', Skeleton);
 
 app.directive('tooltip', Tooltip);
 

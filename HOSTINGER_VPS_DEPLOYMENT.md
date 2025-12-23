@@ -75,6 +75,7 @@ sudo npm install -g pm2
 sudo apt install nginx -y
 
 # Install MySQL client (if needed)
+sudo apt install mysql-server -y
 sudo apt install mysql-client -y
 sudo systemctl status mysql
 sudo systemctl start mysql
@@ -149,16 +150,7 @@ cd /var/www/pharmacy-pos
 
 ```bash
 # If your code is on GitHub
-sudo git clone https://github.com/your-username/pharmacy-pos-backend.git
-
-git fetch --all
-git branch
-git checkout 'your_branch'
-git pull origin dev
-
-if errors occur try below
-git reset --hard
-
+sudo git clone https://github.com/MG4ACA/pharmacy-pos-backend.git
 
 
 # Or upload your code using SCP from your local machine:
@@ -176,6 +168,16 @@ sudo chmod -R 755 /var/www/pharmacy-pos
 ```
 
 ---
+
+cd pharmacy-pos-backend
+
+git fetch --all
+git branch
+git checkout 'your_branch'
+git pull origin dev
+
+if errors occur try below
+git reset --hard
 
 ## 🔨 Step 5: Set Up Backend
 
@@ -290,13 +292,25 @@ pm2 monit
 
 ### 6.1 Navigate to Frontend Directory
 
+## clone frotend repo then
+
 ```bash
-cd /var/www/pharmacy-pos
+cd /var/www/pharmacy-pos/pharmacy-pos-frontend
 ```
 
 ### 6.2 Configure API Endpoint
 
-Update the frontend to point to your backend API:
+create environment file:
+
+```bash
+nano .env.production
+```
+
+```env
+VITE_API_BASE_URL=http://your_vps_ip/api
+```
+
+or Update the frontend to point to your backend API:
 
 ```bash
 nano src/api/client.js
@@ -306,16 +320,6 @@ Update the base URL:
 
 ```javascript
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://your_vps_ip/api';
-```
-
-Or create environment file:
-
-```bash
-nano .env.production
-```
-
-```env
-VITE_API_BASE_URL=http://your_vps_ip/api
 ```
 
 ### 6.3 Install Dependencies and Build
@@ -365,7 +369,7 @@ upstream pharmacy_backend {
 
 server {
     listen 80;
- server_name lumicore.trustyou-go.com www.lumicore.trustyou-go.com;
+ server_name demo-po.pharmacy.lumicore-labs.com www.demo-po.pharmacy.lumicore-labs.com;
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
@@ -453,7 +457,7 @@ sudo apt install certbot python3-certbot-nginx -y
 
 ```bash
 # Replace with your domain
-sudo certbot --nginx -d lumicore.trustyou-go.com -d www.lumicore.trustyou-go.com
+sudo certbot --nginx -d demo-po.pharmacy.lumicore-labs.com -d www.demo-po.pharmacy.lumicore-labs.com
 ```
 
 Certbot will:

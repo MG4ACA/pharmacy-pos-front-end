@@ -115,6 +115,47 @@ const routes = [
     ],
   },
   {
+    path: '/mobile',
+    component: () => import('@/components/layout/MobileLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: '/mobile/dashboard',
+      },
+      {
+        path: 'dashboard',
+        name: 'MobileDashboard',
+        component: () => import('@/views/mobile/MobileDashboard.vue'),
+      },
+      {
+        path: 'sales',
+        name: 'MobileSales',
+        component: () => import('@/views/mobile/MobileSales.vue'),
+      },
+      {
+        path: 'inventory',
+        name: 'MobileInventory',
+        component: () => import('@/views/mobile/MobileInventory.vue'),
+      },
+      {
+        path: 'alerts',
+        name: 'MobileAlerts',
+        component: () => import('@/views/mobile/MobileAlerts.vue'),
+      },
+      {
+        path: 'more',
+        name: 'MobileMore',
+        component: () => import('@/views/mobile/MobileMore.vue'),
+      },
+      {
+        path: 'stock-receipts',
+        name: 'MobileStockReceipts',
+        component: () => import('@/views/mobile/MobileStockReceipts.vue'),
+      },
+    ],
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),
@@ -130,11 +171,31 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  const isMobile = window.innerWidth <= 768;
 
   if (requiresAuth && !authStore.isAuthenticated) {
     next('/login');
   } else if (to.path === '/login' && authStore.isAuthenticated) {
-    next('/dashboard');
+    next(isMobile ? '/mobile/dashboard' : '/dashboard');
+  } else if (authStore.isAuthenticated) {
+    // Auto-redirect based on device type
+    if (isMobile && !to.path.startsWith('/mobile')) {
+      // Map desktop routes to mobile routes
+      if (to.path === '/dashboard') return next('/mobile/dashboard');
+      if (to.path === '/sales/history') return next('/mobile/sales');
+      if (to.path.startsWith('/inventory')) return next('/mobile/inventory');
+      if (to.path === '/') return next('/mobile/dashboard');
+      next();
+    } else if (!isMobile && to.path.startsWith('/mobile')) {
+      // Map mobile routes to desktop routes
+      if (to.path === '/mobile/dashboard') return next('/dashboard');
+      if (to.path === '/mobile/sales') return next('/sales/history');
+      if (to.path === '/mobile/inventory') return next('/inventory/products');
+      if (to.path === '/mobile') return next('/dashboard');
+      next();
+    } else {
+      next();
+    }
   } else {
     next();
   }

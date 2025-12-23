@@ -259,6 +259,14 @@
                 class="w-full"
                 @click="$router.push('/reports/daily-sales')"
               />
+              <Button
+                label="Switch to Mobile View"
+                icon="pi pi-mobile"
+                severity="info"
+                outlined
+                class="w-full"
+                @click="$router.push('/mobile')"
+              />
             </div>
           </template>
         </Card>
