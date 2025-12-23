@@ -69,7 +69,7 @@
             <template #content>
               <div class="flex justify-content-between align-items-center">
                 <div class="flex flex-column">
-                  <span class="font-bold">{{ item.product_name }}</span>
+                  <span class="font-bold">{{ item.product?.name }}</span>
                   <span class="text-500 text-xs">Batch: {{ item.batch_number }}</span>
                   <span class="text-orange-600 font-semibold text-xs mt-1">
                     Expires: {{ formatDate(item.expiry_date) }}
@@ -95,7 +95,8 @@
 </template>
 
 <script setup>
-import { NotificationService } from '@/services/NotificationService';
+import { ProductService } from '@/services/ProductService';
+import StockService from '@/services/StockService';
 import { onMounted, ref } from 'vue';
 
 import Badge from 'primevue/badge';
@@ -109,11 +110,15 @@ const expiringItems = ref([]);
 async function fetchAlerts() {
   isLoading.value = true;
   try {
-    const result = await NotificationService.getNotifications();
-    if (result.success) {
-      lowStockItems.value = result.data.lowStockItems || [];
-      expiringItems.value = result.data.expiringItems || [];
+    // Fetch low stock items (using products API with a large limit to get all)
+    const productRes = await ProductService.getAllProducts({ limit: 1000, status: 'active' });
+    if (productRes.success) {
+      lowStockItems.value = productRes.data.filter((p) => p.is_low_stock);
     }
+
+    // Fetch expiring items (using stock API, default 90 days)
+    const expiringData = await StockService.getExpiringStock(90);
+    expiringItems.value = expiringData || [];
   } catch (error) {
     console.error('Error fetching mobile alerts:', error);
   } finally {
