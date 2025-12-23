@@ -76,19 +76,21 @@ onMounted(() => {
 .mobile-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   background-color: var(--surface-ground);
+  overflow: hidden;
 }
 
 .mobile-header {
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 1000;
 }
 
 .mobile-content {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-nav {

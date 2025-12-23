@@ -272,7 +272,6 @@ onMounted(fetchData);
 <style scoped>
 .mobile-more {
   background-color: #f8fafc;
-  min-height: 100vh;
 }
 .pb-8 {
   padding-bottom: 5rem;
