@@ -297,11 +297,12 @@
       :header="editingIndex !== null ? 'Edit Product Line' : 'Add Product Line'"
       :modal="true"
       :style="{ width: '600px' }"
+      class="product-dialog"
     >
       <div class="grid">
         <div class="col-12">
           <div class="field">
-            <label for="product" class="block mb-2">Product *</label>
+            <label for="product" class="block mb-1">Product *</label>
             <AutoComplete
               id="product"
               v-model="currentEntry.productSearch"
@@ -331,7 +332,7 @@
 
         <div class="col-12 md:col-6">
           <div class="field">
-            <label for="batchNumber" class="block mb-2">Batch Number *</label>
+            <label for="batchNumber" class="block mb-1">Batch Number *</label>
             <InputText
               id="batchNumber"
               v-model="currentEntry.batchNumber"
@@ -347,24 +348,125 @@
 
         <div class="col-12 md:col-6">
           <div class="field">
-            <label for="quantity" class="block mb-2">Purchased Qty *</label>
-            <InputNumber
-              id="quantity"
-              v-model="currentEntry.quantity"
-              placeholder="Enter quantity"
+            <label for="expiryDate" class="block mb-1">Expiry Date</label>
+            <Calendar
+              id="expiryDate"
+              v-model="currentEntry.expiryDate"
+              date-format="yy-mm-dd"
               class="w-full"
-              :min="1"
-              :class="{ 'p-invalid': productSubmitted && !currentEntry.quantity }"
+              show-button-bar
+              placeholder="Optional"
             />
-            <small v-if="productSubmitted && !currentEntry.quantity" class="p-error">
-              Quantity is required
-            </small>
           </div>
         </div>
 
+        <div class="col-12 md:col-8 flex align-items-center">
+          <div class="field">
+            <div class="flex align-items-center">
+              <Checkbox
+                ref="packageModeCheckbox"
+                id="packageMode"
+                v-model="currentEntry.isPackageMode"
+                :binary="true"
+                @keydown.space.prevent="currentEntry.isPackageMode = !currentEntry.isPackageMode"
+                @keydown.enter.prevent="currentEntry.isPackageMode = !currentEntry.isPackageMode"
+              />
+              <label for="packageMode" class="ml-2">Has Packaging Hierarchy?</label>
+            </div>
+            <small class="text-500">Check if product comes in packages/cards/units</small>
+          </div>
+        </div>
+
+        <!-- Single Product Mode - Quantity -->
+        <template v-if="!currentEntry.isPackageMode">
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label for="quantity" class="block mb-1">Purchased Qty *</label>
+              <InputNumber
+                id="quantity"
+                v-model="currentEntry.quantity"
+                placeholder="Enter quantity"
+                class="w-full"
+                :min="1"
+                :class="{ 'p-invalid': productSubmitted && !currentEntry.quantity }"
+              />
+              <small v-if="productSubmitted && !currentEntry.quantity" class="p-error">
+                Quantity is required
+              </small>
+            </div>
+          </div>
+        </template>
+
+        <!-- Package Mode - Quantity -->
+        <template v-if="currentEntry.isPackageMode">
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label for="packageQty" class="block mb-1">Packages *</label>
+              <InputNumber
+                id="packageQty"
+                v-model="currentEntry.packageQuantity"
+                placeholder="0"
+                class="w-full"
+                :min="1"
+                :class="{ 'p-invalid': productSubmitted && !currentEntry.packageQuantity }"
+              />
+              <small v-if="productSubmitted && !currentEntry.packageQuantity" class="p-error">
+                Required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label for="itemsPerPkg" class="block mb-1">Items per Package *</label>
+              <InputNumber
+                id="itemsPerPkg"
+                v-model="currentEntry.itemsPerPackage"
+                placeholder="0"
+                class="w-full"
+                :min="1"
+                :class="{ 'p-invalid': productSubmitted && !currentEntry.itemsPerPackage }"
+              />
+              <small v-if="productSubmitted && !currentEntry.itemsPerPackage" class="p-error">
+                Required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label for="unitsPerItem" class="block mb-1">Units per Item *</label>
+              <InputNumber
+                id="unitsPerItem"
+                v-model="currentEntry.unitsPerItem"
+                placeholder="0"
+                class="w-full"
+                :min="1"
+                :class="{ 'p-invalid': productSubmitted && !currentEntry.unitsPerItem }"
+              />
+              <small v-if="productSubmitted && !currentEntry.unitsPerItem" class="p-error">
+                Required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label for="totalQtyCalc" class="block mb-1">Total Qty</label>
+              <InputNumber
+                id="totalQtyCalc"
+                :model-value="calculatedTotalQty"
+                disabled
+                class="w-full p-inputtext-filled"
+              />
+            </div>
+          </div>
+        </template>
+
+        <!-- Free Qty & Total Display (Both Modes) -->
         <div class="col-12 md:col-6">
           <div class="field">
-            <label for="freeQuantity" class="block mb-2">Free Qty</label>
+            <label for="freeQuantity" class="block mb-1">Free Qty</label>
             <InputNumber
               id="freeQuantity"
               v-model="currentEntry.freeQuantity"
@@ -379,76 +481,126 @@
 
         <div class="col-12 md:col-6">
           <div class="field">
-            <label for="totalQty" class="block mb-2">Total Qty</label>
+            <label for="totalQtyDisplay" class="block mb-1">Total Qty</label>
             <InputNumber
-              id="totalQty"
-              :model-value="currentEntry.quantity + (currentEntry.freeQuantity || 0)"
+              id="totalQtyDisplay"
+              :model-value="displayTotalQty"
               disabled
               class="w-full p-inputtext-filled"
             />
-            <small class="text-500">Purchased + Free</small>
+            <small class="text-500">Purchased/Calculated + Free</small>
           </div>
         </div>
 
-        <div class="col-12 md:col-6">
-          <div class="field">
-            <label for="sellingPrice" class="block mb-2">Selling Price *</label>
-            <InputNumber
-              id="sellingPrice"
-              v-model="currentEntry.sellingPrice"
-              placeholder="0.00"
-              class="w-full"
-              mode="currency"
-              currency="LKR"
-              locale="en-LK"
-              :min="0"
-              :min-fraction-digits="2"
-              :class="{ 'p-invalid': productSubmitted && !currentEntry.sellingPrice }"
-            />
-            <small v-if="productSubmitted && !currentEntry.sellingPrice" class="p-error">
-              Selling price is required
-            </small>
+        <!-- Single Product Mode - Prices -->
+        <template v-if="!currentEntry.isPackageMode">
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="costPrice" class="block mb-1">Cost Price *</label>
+              <InputNumber
+                id="costPrice"
+                v-model="currentEntry.costPrice"
+                placeholder="0.00"
+                class="w-full"
+                mode="currency"
+                currency="LKR"
+                locale="en-LK"
+                :min="0"
+                :min-fraction-digits="2"
+                :class="{ 'p-invalid': productSubmitted && !currentEntry.costPrice }"
+              />
+              <small v-if="productSubmitted && !currentEntry.costPrice" class="p-error">
+                Cost price is required
+              </small>
+            </div>
           </div>
-        </div>
 
-        <div class="col-12 md:col-6">
-          <div class="field">
-            <label for="costPrice" class="block mb-2">Cost Price *</label>
-            <InputNumber
-              id="costPrice"
-              v-model="currentEntry.costPrice"
-              placeholder="0.00"
-              class="w-full"
-              mode="currency"
-              currency="LKR"
-              locale="en-LK"
-              :min="0"
-              :min-fraction-digits="2"
-              :class="{ 'p-invalid': productSubmitted && !currentEntry.costPrice }"
-            />
-            <small v-if="productSubmitted && !currentEntry.costPrice" class="p-error">
-              Cost price is required
-            </small>
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="sellingPrice" class="block mb-1">Selling Price *</label>
+              <InputNumber
+                id="sellingPrice"
+                v-model="currentEntry.sellingPrice"
+                placeholder="0.00"
+                class="w-full"
+                mode="currency"
+                currency="LKR"
+                locale="en-LK"
+                :min="0"
+                :min-fraction-digits="2"
+                :class="{ 'p-invalid': productSubmitted && !currentEntry.sellingPrice }"
+              />
+              <small v-if="productSubmitted && !currentEntry.sellingPrice" class="p-error">
+                Selling price is required
+              </small>
+            </div>
           </div>
-        </div>
+        </template>
 
-        <div class="col-12 md:col-6">
-          <div class="field">
-            <label for="expiryDate" class="block mb-2">Expiry Date</label>
-            <Calendar
-              id="expiryDate"
-              v-model="currentEntry.expiryDate"
-              date-format="yy-mm-dd"
-              class="w-full"
-              show-button-bar
-              placeholder="Optional"
-            />
+        <!-- Package Mode - Prices -->
+        <template v-if="currentEntry.isPackageMode">
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label for="packagePrice" class="block mb-1">Package Price (Total) *</label>
+              <InputNumber
+                id="packagePrice"
+                v-model="currentEntry.packagePrice"
+                placeholder="0.00"
+                class="w-full"
+                mode="currency"
+                currency="LKR"
+                locale="en-LK"
+                :min="0"
+                :min-fraction-digits="2"
+                :class="{ 'p-invalid': productSubmitted && !currentEntry.packagePrice }"
+              />
+              <small v-if="productSubmitted && !currentEntry.packagePrice" class="p-error">
+                Package price is required
+              </small>
+            </div>
           </div>
-        </div>
 
-        <div class="col-12 md:col-6">
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label for="unitCostCalc" class="block mb-1">Unit Cost (Per item)</label>
+              <InputNumber
+                id="unitCostCalc"
+                :model-value="calculatedUnitCost"
+                disabled
+                class="w-full p-inputtext-filled"
+                mode="currency"
+                currency="LKR"
+                locale="en-LK"
+              />
+              <small class="text-500">Auto-calculated</small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label for="sellingPricePackage" class="block mb-1">Selling Price *</label>
+              <InputNumber
+                id="sellingPricePackage"
+                v-model="currentEntry.sellingPrice"
+                placeholder="0.00"
+                class="w-full"
+                mode="currency"
+                currency="LKR"
+                locale="en-LK"
+                :min="0"
+                :min-fraction-digits="2"
+                :class="{ 'p-invalid': productSubmitted && !currentEntry.sellingPrice }"
+              />
+              <small v-if="productSubmitted && !currentEntry.sellingPrice" class="p-error">
+                Selling price is required
+              </small>
+            </div>
+          </div>
+        </template>
+
+        <div class="col-12">
           <div class="field">
-            <label for="lineNotes" class="block mb-2">Notes</label>
+            <label for="lineNotes" class="1">Notes</label>
             <InputText
               id="lineNotes"
               v-model="currentEntry.notes"
@@ -479,7 +631,7 @@ import { useStockStore } from '@/stores/stock';
 import { useStockReceiptStore } from '@/stores/stockReceipt';
 import { useSupplierStore } from '@/stores/supplier';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -524,6 +676,12 @@ const currentEntry = ref({
   expiryDate: null,
   notes: '',
   tempId: Date.now(),
+  // Packaging hierarchy fields
+  isPackageMode: false,
+  packageQuantity: 1,
+  itemsPerPackage: 1,
+  unitsPerItem: 1,
+  packagePrice: 0,
 });
 
 // Suggestions for product autocomplete
@@ -552,23 +710,30 @@ const totalFreeQty = computed(() => {
   return entries.value.reduce((sum, entry) => sum + (entry.freeQuantity || 0), 0);
 });
 
-// Watch for selling price changes and auto-calculate cost price and expiry date
-watch(
-  () => currentEntry.value.sellingPrice,
-  (newSellingPrice) => {
-    if (newSellingPrice && newSellingPrice > 0) {
-      // Calculate cost price as 87% of selling price
-      currentEntry.value.costPrice = parseFloat((newSellingPrice * 0.87).toFixed(2));
-
-      // Set expiry date to 2026-12-13 if not already set
-      if (!currentEntry.value.expiryDate) {
-        currentEntry.value.expiryDate = new Date('2026-12-13');
-      }
-    }
+// Computed for packaging mode
+const calculatedTotalQty = computed(() => {
+  if (!currentEntry.value.isPackageMode) {
+    return currentEntry.value.quantity || 0;
   }
-);
+  return (
+    (currentEntry.value.packageQuantity || 0) *
+    (currentEntry.value.itemsPerPackage || 0) *
+    (currentEntry.value.unitsPerItem || 0)
+  );
+});
 
-// Methods
+const calculatedUnitCost = computed(() => {
+  if (!currentEntry.value.isPackageMode) {
+    return currentEntry.value.costPrice || 0;
+  }
+  const totalQty = calculatedTotalQty.value;
+  if (totalQty <= 0) return 0;
+  return parseFloat((currentEntry.value.packagePrice / totalQty).toFixed(2));
+});
+
+const displayTotalQty = computed(() => {
+  return calculatedTotalQty.value + (currentEntry.value.freeQuantity || 0);
+}); // Methods
 const generateReceiptNumber = async () => {
   try {
     const number = await stockReceiptStore.generateReceiptNumber();
@@ -601,24 +766,49 @@ const editProductLine = (index) => {
 const saveProductLine = () => {
   productSubmitted.value = true;
 
-  // Validate
+  // Validate basic fields
   if (
     !currentEntry.value.productId ||
     !currentEntry.value.batchNumber ||
-    !currentEntry.value.quantity ||
-    !currentEntry.value.costPrice ||
     !currentEntry.value.sellingPrice
   ) {
     return;
   }
 
+  // Validate based on mode
+  if (currentEntry.value.isPackageMode) {
+    // Package mode validation
+    if (
+      !currentEntry.value.packageQuantity ||
+      !currentEntry.value.itemsPerPackage ||
+      !currentEntry.value.unitsPerItem ||
+      !currentEntry.value.packagePrice
+    ) {
+      return;
+    }
+  } else {
+    // Single product mode validation
+    if (!currentEntry.value.quantity || !currentEntry.value.costPrice) {
+      return;
+    }
+  }
+
+  // Prepare entry for saving
+  const entryToSave = { ...currentEntry.value };
+
+  // If package mode, calculate and set the quantity and costPrice for API
+  if (currentEntry.value.isPackageMode) {
+    entryToSave.quantity = calculatedTotalQty.value;
+    entryToSave.costPrice = calculatedUnitCost.value;
+  }
+
   if (editingIndex.value !== null) {
     // Update existing
-    entries.value[editingIndex.value] = { ...currentEntry.value };
+    entries.value[editingIndex.value] = entryToSave;
   } else {
     // Add new
-    currentEntry.value.tempId = Date.now();
-    entries.value.push({ ...currentEntry.value });
+    entryToSave.tempId = Date.now();
+    entries.value.push(entryToSave);
   }
 
   closeProductDialog();
@@ -652,6 +842,11 @@ const resetCurrentEntry = () => {
     expiryDate: defaultExpiryDate,
     notes: '',
     tempId: Date.now(),
+    isPackageMode: false,
+    packageQuantity: 1,
+    itemsPerPackage: 1,
+    unitsPerItem: 1,
+    packagePrice: 0,
   };
 };
 
@@ -1007,7 +1202,7 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
+<style lang="scss">
 .create-stock-receipt {
   padding: 1rem;
 }
@@ -1020,5 +1215,14 @@ onMounted(async () => {
 
 .field {
   margin-bottom: 0;
+}
+
+/* Product dialog styling */
+.product-dialog label {
+  font-size: 0.875rem;
+}
+
+.product-dialog small {
+  font-size: 0.75rem;
 }
 </style>

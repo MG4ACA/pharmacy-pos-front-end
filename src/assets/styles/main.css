@@ -61,6 +61,10 @@
   height: 2.4rem;
 }
 
+.p-inputtext {
+  width: 100%;
+}
+
 .p-card .p-card-content {
   padding: 0;
 }
