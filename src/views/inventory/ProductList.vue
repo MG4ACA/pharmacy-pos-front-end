@@ -71,7 +71,6 @@
           :rowsPerPageOptions="[10, 20, 50]"
           paginator
           striped-rows
-          show-gridlines
           responsive-layout="scroll"
           :lazy="true"
           :totalRecords="pagination.total"
@@ -91,7 +90,7 @@
             </div>
           </template>
 
-          <Column field="name" header="Product Name" :sortable="true">
+          <Column field="name" header="Product Name" :sortable="true" style="width: 25%">
             <template #body="{ data }">
               <div>
                 <div class="font-semibold">{{ data.name }}</div>
@@ -100,11 +99,11 @@
             </template>
           </Column>
 
-          <Column field="productType.name" header="Type"></Column>
+          <Column field="productType.name" header="Type" style="width: 12%"></Column>
 
-          <Column field="category.name" header="Category"></Column>
+          <Column field="category.name" header="Category" style="width: 12%"></Column>
 
-          <Column field="total_stock" header="Stock" :sortable="true">
+          <Column field="total_stock" header="Stock" :sortable="true" style="width: 12%">
             <template #body="{ data }">
               <div>
                 <Tag
@@ -127,9 +126,14 @@
             </template>
           </Column>
 
-          <Column field="reorder_level" header="Reorder Level" :sortable="true"></Column>
+          <Column
+            field="reorder_level"
+            header="Reorder Level"
+            :sortable="true"
+            style="width: 12%"
+          ></Column>
 
-          <Column field="status" header="Status">
+          <Column field="status" header="Status" style="width: 10%">
             <template #body="{ data }">
               <Tag :severity="data.status === 'active' ? 'success' : 'danger'">
                 {{ data.status }}
@@ -137,7 +141,7 @@
             </template>
           </Column>
 
-          <Column header="Actions" :exportable="false">
+          <Column header="Actions" :exportable="false" style="width: 17%">
             <template #body="{ data }">
               <div class="flex gap-2">
                 <Button

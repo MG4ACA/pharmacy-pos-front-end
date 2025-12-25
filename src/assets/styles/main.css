@@ -31,12 +31,35 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--primary-color);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--primary-dark);
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) #f3f4f6;
+}
+
+.p-datatable-wrapper {
+  .p-button-rounded {
+    border: none !important;
+    border-radius: 15%;
+  }
+
+  .p-button-outlined {
+    border: none !important;
+  }
+}
+
+.p-inputnumber-button-group {
+  .p-button {
+    height: auto !important;
+  }
 }
 
 /* Utility Classes */

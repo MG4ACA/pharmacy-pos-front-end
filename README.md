@@ -6,6 +6,22 @@
 
 ---
 
+## 🎉 Recent Updates (December 25, 2025)
+
+### ✨ New Features & Improvements
+
+- ** Added mobile view data monitoring.
+
+- **📊 Percentage-Based Discounts** - Discounts now work as percentages (0-100%) instead of fixed amounts. Display shows both percentage and calculated Rs. value (e.g., "10.5% (Rs. 105.00)"). Fully backward compatible with existing sales.
+
+- **👤 Cashier Tracking** - Sales history now displays which cashier processed each sale for better accountability.
+
+- **🎨 Enhanced UI/UX** - Redesigned sales history with professional blue theme, grid-based edit forms, responsive table columns, and mandatory audit notes for edits.
+
+- **🔧 Complete Backend** - Implemented missing sale editing functionality with full transaction management and stock adjustments.
+
+---
+
 ## 💡 Why Choose Our Pharmacy POS System?
 
 ### The Problem We Solve

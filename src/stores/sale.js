@@ -33,7 +33,8 @@ export const useSaleStore = defineStore('sale', () => {
 
   const cartTotal = computed(() => {
     const subtotal = cartSubtotal.value;
-    const discountAmount = parseFloat(discount.value) || 0;
+    const discountPercent = parseFloat(discount.value) || 0;
+    const discountAmount = (subtotal * discountPercent) / 100;
     const taxAmount = parseFloat(tax.value) || 0;
     return subtotal - discountAmount + taxAmount;
   });
@@ -163,7 +164,7 @@ export const useSaleStore = defineStore('sale', () => {
           product_id: item.product_id,
           quantity: item.quantity,
         })),
-        discount: discount.value,
+        discount_percentage: discount.value,
         tax: tax.value,
         payment_method: paymentMethod.value,
         notes: notes.value,

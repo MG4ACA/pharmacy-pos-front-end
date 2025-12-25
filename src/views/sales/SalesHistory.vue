@@ -23,70 +23,57 @@
     <Card class="filter-card mb-3">
       <template #content>
         <div class="flex justify-content-between">
-          <div>
-            <label for="dateRange" class="block mb-2" style="font-size: 0.85em">Date Range</label>
-            <Calendar
-              id="dateRange"
-              v-model="filters.dateRange"
-              selection-mode="range"
-              date-format="yy-mm-dd"
-              placeholder="Select date range"
-              @date-select="applyFilters"
-              show-button-bar
-              :manual-input="false"
-              class="w-full"
-            />
-          </div>
+          <div class="flex align-items-end justify-content-end gap-2">
+            <div>
+              <label for="dateRange" class="block mb-2" style="font-size: 0.85em">Date Range</label>
+              <Calendar
+                id="dateRange"
+                v-model="filters.dateRange"
+                selection-mode="range"
+                date-format="yy-mm-dd"
+                placeholder="Select date range"
+                @date-select="applyFilters"
+                show-button-bar
+                :manual-input="false"
+                class="w-full"
+              />
+            </div>
 
-          <div>
-            <label for="paymentMethod" class="block mb-2" style="font-size: 0.85em">
-              Payment Method
-            </label>
-            <Dropdown
-              id="paymentMethod"
-              v-model="filters.payment_method"
-              :options="paymentMethods"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="All Methods"
-              class="w-full"
-              showClear
-              @change="applyFilters"
-            />
-          </div>
-
-          <div>
-            <label for="paymentStatus" class="block mb-2" style="font-size: 0.85em">Status</label>
-            <Dropdown
-              id="paymentStatus"
-              v-model="filters.payment_status"
-              :options="paymentStatuses"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="All Statuses"
-              class="w-full"
-              showClear
-              @change="applyFilters"
-            />
-          </div>
-
-          <div class="flex align-items-end">
-            <div class="field-checkbox mb-0">
-              <Checkbox
-                id="hasFreeItems"
-                v-model="filters.hasFreeItems"
-                :binary="true"
+            <div>
+              <label for="paymentMethod" class="block mb-2" style="font-size: 0.85em">
+                Payment Method
+              </label>
+              <Dropdown
+                id="paymentMethod"
+                v-model="filters.payment_method"
+                :options="paymentMethods"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="All Methods"
+                class="w-full"
+                showClear
                 @change="applyFilters"
               />
-              <label for="hasFreeItems" class="ml-2" style="font-size: 0.85em">
-                <i class="pi pi-gift text-green-600 mr-1"></i>
-                Has free items
-              </label>
             </div>
+
+            <div>
+              <label for="paymentStatus" class="block mb-2" style="font-size: 0.85em">Status</label>
+              <Dropdown
+                id="paymentStatus"
+                v-model="filters.payment_status"
+                :options="paymentStatuses"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="All Statuses"
+                class="w-full"
+                showClear
+                @change="applyFilters"
+              />
+            </div>
+            <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
           </div>
 
           <div class="flex align-items-end justify-content-end gap-2">
-            <Button label="Clear" icon="pi pi-filter-slash" outlined @click="clearFilters" />
             <Button icon="pi pi-refresh" outlined @click="fetchSales" />
           </div>
         </div>
@@ -110,32 +97,46 @@
           :empty-message="'No sales found'"
           class="p-datatable-sm"
         >
-          <Column field="id" header="Sale ID" style="width: 100px" sortable>
+          <Column field="id" header="Sale ID" style="width: 7%" sortable>
             <template #body="{ data }">
               <span class="font-semibold">#{{ data.id }}</span>
             </template>
           </Column>
 
-          <Column field="sale_date" header="Date & Time" style="min-width: 180px" sortable>
+          <Column field="sale_date" header="Date & Time" style="width: 13%" sortable>
             <template #body="{ data }">
               {{ formatDate(data.sale_date) }}
             </template>
           </Column>
 
-          <Column field="subtotal" header="Subtotal" style="min-width: 120px" sortable>
+          <Column header="Cashier" style="width: 8%">
+            <template #body="{ data }">
+              <span class="text-sm">
+                {{ data.user?.username || data.user?.full_name || '-' }}
+              </span>
+            </template>
+          </Column>
+
+          <Column field="subtotal" header="Subtotal" style="width: 11%" sortable>
             <template #body="{ data }">Rs. {{ parseFloat(data.subtotal).toFixed(2) }}</template>
           </Column>
 
-          <Column field="discount" header="Discount" style="min-width: 120px" sortable>
+          <Column field="discount" header="Discount" style="width: 9%" sortable>
             <template #body="{ data }">
               <span v-if="data.discount > 0" class="text-red-500">
-                - Rs. {{ parseFloat(data.discount).toFixed(2) }}
+                <span v-if="data.discount_percentage">
+                  {{ parseFloat(data.discount_percentage).toFixed(2) }}%<br />
+                  <small>(Rs. {{ parseFloat(data.discount).toFixed(2) }})</small>
+                </span>
+                <span v-else>
+                  Rs. {{ parseFloat(data.discount).toFixed(2) }}
+                </span>
               </span>
               <span v-else>-</span>
             </template>
           </Column>
 
-          <Column field="total_amount" header="Total" style="min-width: 130px" sortable>
+          <Column field="total_amount" header="Total" style="width: 11%" sortable>
             <template #body="{ data }">
               <span class="font-bold text-primary">
                 Rs. {{ parseFloat(data.total_amount).toFixed(2) }}
@@ -143,22 +144,7 @@
             </template>
           </Column>
 
-          <Column header="Free Items" style="min-width: 110px">
-            <template #body="{ data }">
-              <div
-                v-if="data.profitMetrics?.freeItemsSold > 0"
-                class="flex align-items-center gap-1"
-              >
-                <i class="pi pi-gift text-green-600"></i>
-                <span class="text-sm font-semibold text-green-600">
-                  {{ data.profitMetrics.freeItemsSold }}
-                </span>
-              </div>
-              <span v-else class="text-500 text-sm">-</span>
-            </template>
-          </Column>
-
-          <Column header="Profit" style="min-width: 150px">
+          <Column header="Profit" style="width: 11%">
             <template #body="{ data }">
               <div v-if="data.profitMetrics">
                 <div class="font-semibold">
@@ -172,7 +158,7 @@
             </template>
           </Column>
 
-          <Column field="payment_method" header="Payment" style="min-width: 120px" sortable>
+          <Column field="payment_method" header="Payment" style="width: 9%" sortable>
             <template #body="{ data }">
               <Tag
                 :value="data.payment_method"
@@ -182,7 +168,7 @@
             </template>
           </Column>
 
-          <Column field="payment_status" header="Status" style="min-width: 120px" sortable>
+          <Column field="payment_status" header="Status" style="width: 9%" sortable>
             <template #body="{ data }">
               <Tag
                 :value="data.payment_status"
@@ -192,7 +178,7 @@
             </template>
           </Column>
 
-          <Column header="Actions" style="width: 150px">
+          <Column header="Actions" style="width: 10%">
             <template #body="{ data }">
               <Button
                 icon="pi pi-eye"
@@ -290,7 +276,12 @@
           <div class="flex justify-content-between mb-2" v-if="selectedSale.discount > 0">
             <span class="text-600">Discount:</span>
             <span class="font-semibold text-red-500">
-              - Rs. {{ parseFloat(selectedSale.discount).toFixed(2) }}
+              <span v-if="selectedSale.discount_percentage">
+                {{ parseFloat(selectedSale.discount_percentage).toFixed(2) }}% (Rs. {{ parseFloat(selectedSale.discount).toFixed(2) }})
+              </span>
+              <span v-else>
+                Rs. {{ parseFloat(selectedSale.discount).toFixed(2) }}
+              </span>
             </span>
           </div>
           <div class="flex justify-content-between mb-2" v-if="selectedSale.tax > 0">
@@ -341,16 +332,10 @@
                   :min="1"
                   :max="data.available_stock + data.original_quantity"
                   showButtons
-                  buttonLayout="horizontal"
+                  inputId="minmax-buttons"
                   @input="updateItemSubtotal(index)"
                   class="w-full"
                 >
-                  <template #incrementbuttonicon>
-                    <span class="pi pi-plus" />
-                  </template>
-                  <template #decrementbuttonicon>
-                    <span class="pi pi-minus" />
-                  </template>
                 </InputNumber>
               </template>
             </Column>
@@ -385,20 +370,26 @@
           </DataTable>
         </div>
 
-        <div class="col-12">
-          <label for="editDiscount" class="block mb-2 font-semibold">Discount (Rs.)</label>
+        <div class="col-6">
+          <label for="editDiscount" class="block mb-2 font-semibold">Discount (%)</label>
           <InputNumber
             id="editDiscount"
-            v-model="editForm.discount"
+            v-model="editForm.discount_percentage"
             mode="decimal"
-            :minFractionDigits="2"
+            :minFractionDigits="0"
             :maxFractionDigits="2"
             :min="0"
+            :max="100"
+            suffix="%"
             class="w-full"
+            placeholder="Enter discount percentage"
           />
+          <small class="text-500">
+            Rs. {{ calculateEditDiscountAmount().toFixed(2) }} discount
+          </small>
         </div>
 
-        <div class="col-12">
+        <div class="col-6">
           <label for="editTax" class="block mb-2 font-semibold">Tax (Rs.)</label>
           <InputNumber
             id="editTax"
@@ -411,7 +402,7 @@
           />
         </div>
 
-        <div class="col-12">
+        <div class="col-6">
           <label for="editPaymentMethod" class="block mb-2 font-semibold">Payment Method</label>
           <Dropdown
             id="editPaymentMethod"
@@ -424,7 +415,7 @@
           />
         </div>
 
-        <div class="col-12">
+        <div class="col-6">
           <label for="editPaymentStatus" class="block mb-2 font-semibold">Payment Status</label>
           <Dropdown
             id="editPaymentStatus"
@@ -438,38 +429,72 @@
         </div>
 
         <div class="col-12">
-          <label for="editNotes" class="block mb-2 font-semibold">Notes</label>
+          <label for="editNotes" class="block mb-2 font-semibold">
+            Notes
+            <span class="text-red-500">*</span>
+          </label>
           <Textarea
             id="editNotes"
             v-model="editForm.notes"
             rows="3"
             class="w-full"
-            placeholder="Add notes..."
+            placeholder="Add reason for updating this sale..."
+            :class="{ 'p-invalid': !editForm.notes?.trim() }"
           />
+          <small v-if="!editForm.notes?.trim()" class="text-red-500">
+            Reason for update is required
+          </small>
         </div>
 
         <div class="col-12">
-          <div class="surface-100 border-round p-3">
-            <div class="flex justify-content-between mb-2">
-              <span class="text-600">Subtotal:</span>
-              <span class="font-semibold">Rs. {{ parseFloat(editForm.subtotal).toFixed(2) }}</span>
-            </div>
-            <div class="flex justify-content-between mb-2">
-              <span class="text-600">Discount:</span>
-              <span class="font-semibold text-red-500">
-                - Rs. {{ parseFloat(editForm.discount || 0).toFixed(2) }}
-              </span>
-            </div>
-            <div class="flex justify-content-between mb-2">
-              <span class="text-600">Tax:</span>
-              <span class="font-semibold text-green-600">
-                + Rs. {{ parseFloat(editForm.tax || 0).toFixed(2) }}
-              </span>
-            </div>
-            <Divider />
-            <div class="flex justify-content-between">
-              <span class="font-bold text-lg">New Total:</span>
-              <span class="font-bold text-lg text-primary">Rs. {{ calculateNewTotal() }}</span>
+          <div class="bg-blue-50 border-1 border-blue-200 border-round p-4">
+            <h5 class="text-blue-800 mb-3 mt-0 flex align-items-center">
+              <i class="pi pi-calculator text-blue-600 mr-2"></i>
+              Sale Summary
+            </h5>
+
+            <div class="grid">
+              <div class="col-12 md:col-6">
+                <div class="flex justify-content-between align-items-center py-2">
+                  <span class="text-700 font-medium">Subtotal:</span>
+                  <span class="font-semibold text-900">Rs. {{ parseFloat(editForm.subtotal).toFixed(2) }}</span>
+                </div>
+                <div class="flex justify-content-between align-items-center py-2">
+                  <span class="text-700 font-medium flex align-items-center">
+                    <i class="pi pi-minus-circle text-red-500 mr-1" style="font-size: 0.8rem"></i>
+                    Discount:
+                  </span>
+                  <span class="font-semibold text-red-600">
+                    <span v-if="editForm.discount_percentage">
+                      {{ parseFloat(editForm.discount_percentage || 0).toFixed(2) }}%
+                    </span>
+                    (Rs. {{ calculateEditDiscountAmount().toFixed(2) }})
+                  </span>
+                </div>
+                <div class="flex justify-content-between align-items-center py-2">
+                  <span class="text-700 font-medium flex align-items-center">
+                    <i class="pi pi-plus-circle text-green-500 mr-1" style="font-size: 0.8rem"></i>
+                    Tax:
+                  </span>
+                  <span class="font-semibold text-green-600">
+                    + Rs. {{ parseFloat(editForm.tax || 0).toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="col-12 md:col-6">
+                <div class="bg-white border-round p-3 shadow-2">
+                  <div class="text-center">
+                    <div class="text-sm text-600 mb-1">New Total</div>
+                    <div class="text-2xl font-bold text-primary">
+                      Rs. {{ calculateNewTotal() }}
+                    </div>
+                    <div class="text-xs text-500 mt-1">
+                      After adjustments
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -491,6 +516,7 @@
 
 <script setup>
 import ExportService from '@/services/ExportService';
+import StockService from '@/services/StockService';
 import { useSaleStore } from '@/stores/sale';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -505,7 +531,6 @@ const filters = ref({
   dateRange: null,
   payment_method: null,
   payment_status: null,
-  hasFreeItems: false,
   sortField: null,
   sortOrder: null,
 });
@@ -624,7 +649,6 @@ function clearFilters() {
     dateRange: null,
     payment_method: null,
     payment_status: null,
-    hasFreeItems: false,
     sortField: null,
     sortOrder: null,
   };
@@ -691,23 +715,40 @@ async function editSale(sale) {
   const result = await saleStore.fetchSaleById(sale.id);
 
   if (result.success) {
-    // Prepare items with editable fields
-    const items = result.data.saleItems.map((item) => ({
-      id: item.id,
-      product_id: item.product_id,
-      product: item.product,
-      stock_entry_id: item.stock_entry_id,
-      quantity: item.quantity,
-      original_quantity: item.quantity, // Store original for stock validation
-      unit_price: parseFloat(item.unit_price),
-      subtotal: parseFloat(item.subtotal),
-      available_stock: 0, // Will be fetched from stock
-    }));
+    // Prepare items with editable fields and fetch available stock
+    const items = await Promise.all(
+      result.data.saleItems.map(async (item) => {
+        let availableStock = 0;
+
+        // Fetch the current stock entry to get available quantity
+        if (item.stock_entry_id) {
+          try {
+            const stockData = await StockService.getBatchDetails(item.stock_entry_id);
+            availableStock = stockData.quantity_remaining || 0;
+          } catch (error) {
+            console.error('Error fetching stock for item:', error);
+          }
+        }
+
+        return {
+          id: item.id,
+          product_id: item.product_id,
+          product: item.product,
+          stock_entry_id: item.stock_entry_id,
+          quantity: item.quantity,
+          original_quantity: item.quantity, // Store original for stock validation
+          unit_price: parseFloat(item.unit_price),
+          subtotal: parseFloat(item.subtotal),
+          available_stock: availableStock,
+        };
+      })
+    );
 
     editForm.value = {
       id: result.data.id,
       items: items,
       subtotal: result.data.subtotal,
+      discount_percentage: result.data.discount_percentage || 0,
       discount: parseFloat(result.data.discount),
       tax: parseFloat(result.data.tax),
       payment_method: result.data.payment_method,
@@ -729,9 +770,17 @@ function calculateNewTotal() {
   if (!editForm.value) return '0.00';
   // Calculate subtotal from items
   const subtotal = editForm.value.items.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
-  const discount = parseFloat(editForm.value.discount) || 0;
+  const discountPercent = parseFloat(editForm.value.discount_percentage) || 0;
+  const discountAmount = (subtotal * discountPercent) / 100;
   const tax = parseFloat(editForm.value.tax) || 0;
-  return (subtotal - discount + tax).toFixed(2);
+  return (subtotal - discountAmount + tax).toFixed(2);
+}
+
+function calculateEditDiscountAmount() {
+  if (!editForm.value) return 0;
+  const subtotal = editForm.value.items.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
+  const discountPercent = parseFloat(editForm.value.discount_percentage) || 0;
+  return (subtotal * discountPercent) / 100;
 }
 
 function updateItemSubtotal(index) {
@@ -753,6 +802,17 @@ function removeItem(index) {
 }
 
 async function saveSaleChanges() {
+  // Validate required notes
+  if (!editForm.value.notes || !editForm.value.notes.trim()) {
+    toast.add({
+      severity: 'error',
+      summary: 'Validation Error',
+      detail: 'Please provide a reason for updating this sale in the notes field.',
+      life: 3000,
+    });
+    return;
+  }
+
   // Prepare items for update
   const items = editForm.value.items.map((item) => ({
     id: item.id,
@@ -764,7 +824,7 @@ async function saveSaleChanges() {
 
   const result = await saleStore.updateSale(editForm.value.id, {
     items: items,
-    discount: editForm.value.discount,
+    discount_percentage: editForm.value.discount_percentage,
     tax: editForm.value.tax,
     payment_method: editForm.value.payment_method,
     payment_status: editForm.value.payment_status,

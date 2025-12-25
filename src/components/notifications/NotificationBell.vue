@@ -173,17 +173,18 @@ const unreadCount = computed(() => notificationStore.unreadCount);
 
 // Methods
 onMounted(() => {
-  loadNotifications();
+  // Notification feature disabled for now
+  // loadNotifications();
   // Refresh notifications every 30 seconds
-  refreshInterval = setInterval(() => {
-    notificationStore.loadUnreadCount();
-  }, 30000);
+  // refreshInterval = setInterval(() => {
+  //   notificationStore.loadUnreadCount();
+  // }, 30000);
 });
 
 onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
-  }
+  // if (refreshInterval) {
+  //   clearInterval(refreshInterval);
+  // }
 });
 
 async function loadNotifications() {

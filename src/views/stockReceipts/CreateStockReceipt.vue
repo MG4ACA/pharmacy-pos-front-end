@@ -134,7 +134,12 @@
             <Button label="Add Product" icon="pi pi-plus mr-2" @click="showAddProductDialog" />
           </div>
 
-          <DataTable :value="entries" data-key="tempId" responsive-layout="scroll" striped-rows>
+          <DataTable
+            :value="displayEntries"
+            data-key="tempId"
+            responsive-layout="scroll"
+            striped-rows
+          >
             <Column header="Product & Batch" style="width: 30%">
               <template #body="{ data }">
                 <div>
@@ -612,13 +617,13 @@
       </div>
 
       <template #footer>
+        <Button label="Save" icon="pi pi-check mr-2" @click="saveProductLine" />
         <Button
           label="Cancel"
           icon="pi pi-times mr-2"
           class="p-button-secondary"
           @click="closeProductDialog"
         />
-        <Button label="Save" icon="pi pi-check mr-2" @click="saveProductLine" />
       </template>
     </Dialog>
   </div>
@@ -733,6 +738,11 @@ const calculatedUnitCost = computed(() => {
 
 const displayTotalQty = computed(() => {
   return calculatedTotalQty.value + (currentEntry.value.freeQuantity || 0);
+});
+
+// Newest products appear first in the table
+const displayEntries = computed(() => {
+  return [...entries.value].reverse();
 }); // Methods
 const generateReceiptNumber = async () => {
   try {

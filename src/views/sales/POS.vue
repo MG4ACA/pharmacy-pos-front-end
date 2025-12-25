@@ -190,17 +190,22 @@
 
             <!-- Discount -->
             <div class="field mb-3">
-              <label for="discount" class="block mb-2 text-600">Discount (Rs.)</label>
+              <label for="discount" class="block mb-2 text-600">Discount (%)</label>
               <InputNumber
                 id="discount"
                 v-model="discount"
-                mode="currency"
-                currency="LKR"
-                locale="en-LK"
+                mode="decimal"
+                :minFractionDigits="0"
+                :maxFractionDigits="2"
                 :min="0"
-                :max="cartSubtotal"
+                :max="100"
+                suffix="%"
                 class="w-full"
+                placeholder="Enter discount percentage"
               />
+              <small class="text-500">
+                Rs. {{ calculateDiscountAmount().toFixed(2) }} discount
+              </small>
             </div>
 
             <!-- Tax -->
@@ -295,7 +300,13 @@
           </div>
           <div class="flex justify-content-between mb-2" v-if="currentSale?.discount > 0">
             <span>Discount:</span>
-            <span class="font-semibold text-red-500">- Rs. {{ currentSale?.discount }}</span>
+            <span class="font-semibold text-red-500">
+              <span v-if="currentSale?.discount_percentage">
+                {{ parseFloat(currentSale.discount_percentage).toFixed(2) }}% (Rs.
+                {{ parseFloat(currentSale.discount).toFixed(2) }})
+              </span>
+              <span v-else>- Rs. {{ parseFloat(currentSale.discount).toFixed(2) }}</span>
+            </span>
           </div>
           <div class="flex justify-content-between mb-2" v-if="currentSale?.tax > 0">
             <span>Tax:</span>
@@ -513,6 +524,11 @@ function startNewSale() {
 
   // Set focus to AutoComplete for new product search
   focusAutoComplete();
+}
+
+function calculateDiscountAmount() {
+  const discountPercent = discount.value || 0;
+  return (cartSubtotal.value * discountPercent) / 100;
 }
 
 function viewSaleDetails() {
