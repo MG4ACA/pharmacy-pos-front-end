@@ -478,7 +478,6 @@
               placeholder="0"
               class="w-full"
               :min="0"
-              :max="currentEntry.quantity"
             />
             <small class="text-500">Optional - from supplier promotions</small>
           </div>

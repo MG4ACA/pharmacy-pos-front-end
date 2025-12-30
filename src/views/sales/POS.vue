@@ -263,21 +263,19 @@
               <label for="printBill" class="text-600 cursor-pointer">
                 Print Receipt after completing sale
               </label>
+              <small class="text-500 mt-2 flex">
+                <InputNumber
+                  v-model="printCopies"
+                  :min="1"
+                  :max="10"
+                  showButtons
+                  decrementButtonClass="p-button-danger p-button-sm"
+                  incrementButtonClass="p-button-success p-button-sm"
+                  class="ml-2"
+                  style="flex"
+                />
+              </small>
             </div>
-            <small class="text-500 block mt-2">
-              Print multiple copies:
-              <InputNumber
-                v-model="printCopies"
-                :min="1"
-                :max="10"
-                showButtons
-                buttonLayout="horizontal"
-                decrementButtonClass="p-button-danger p-button-sm"
-                incrementButtonClass="p-button-success p-button-sm"
-                class="ml-2"
-                style="width: 80px; display: inline-block"
-              />
-            </small>
           </div>
 
           <!-- Action Buttons -->

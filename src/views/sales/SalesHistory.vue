@@ -125,12 +125,11 @@
             <template #body="{ data }">
               <span v-if="data.discount > 0" class="text-red-500">
                 <span v-if="data.discount_percentage">
-                  {{ parseFloat(data.discount_percentage).toFixed(2) }}%<br />
+                  {{ parseFloat(data.discount_percentage).toFixed(2) }}%
+                  <br />
                   <small>(Rs. {{ parseFloat(data.discount).toFixed(2) }})</small>
                 </span>
-                <span v-else>
-                  Rs. {{ parseFloat(data.discount).toFixed(2) }}
-                </span>
+                <span v-else>Rs. {{ parseFloat(data.discount).toFixed(2) }}</span>
               </span>
               <span v-else>-</span>
             </template>
@@ -277,11 +276,10 @@
             <span class="text-600">Discount:</span>
             <span class="font-semibold text-red-500">
               <span v-if="selectedSale.discount_percentage">
-                {{ parseFloat(selectedSale.discount_percentage).toFixed(2) }}% (Rs. {{ parseFloat(selectedSale.discount).toFixed(2) }})
+                {{ parseFloat(selectedSale.discount_percentage).toFixed(2) }}% (Rs.
+                {{ parseFloat(selectedSale.discount).toFixed(2) }})
               </span>
-              <span v-else>
-                Rs. {{ parseFloat(selectedSale.discount).toFixed(2) }}
-              </span>
+              <span v-else>Rs. {{ parseFloat(selectedSale.discount).toFixed(2) }}</span>
             </span>
           </div>
           <div class="flex justify-content-between mb-2" v-if="selectedSale.tax > 0">
@@ -335,8 +333,7 @@
                   inputId="minmax-buttons"
                   @input="updateItemSubtotal(index)"
                   class="w-full"
-                >
-                </InputNumber>
+                ></InputNumber>
               </template>
             </Column>
             <Column field="unit_price" header="Unit Price" style="width: 150px">
@@ -457,7 +454,9 @@
               <div class="col-12 md:col-6">
                 <div class="flex justify-content-between align-items-center py-2">
                   <span class="text-700 font-medium">Subtotal:</span>
-                  <span class="font-semibold text-900">Rs. {{ parseFloat(editForm.subtotal).toFixed(2) }}</span>
+                  <span class="font-semibold text-900">
+                    Rs. {{ parseFloat(editForm.subtotal).toFixed(2) }}
+                  </span>
                 </div>
                 <div class="flex justify-content-between align-items-center py-2">
                   <span class="text-700 font-medium flex align-items-center">
@@ -486,12 +485,8 @@
                 <div class="bg-white border-round p-3 shadow-2">
                   <div class="text-center">
                     <div class="text-sm text-600 mb-1">New Total</div>
-                    <div class="text-2xl font-bold text-primary">
-                      Rs. {{ calculateNewTotal() }}
-                    </div>
-                    <div class="text-xs text-500 mt-1">
-                      After adjustments
-                    </div>
+                    <div class="text-2xl font-bold text-primary">Rs. {{ calculateNewTotal() }}</div>
+                    <div class="text-xs text-500 mt-1">After adjustments</div>
                   </div>
                 </div>
               </div>
@@ -516,7 +511,6 @@
 
 <script setup>
 import ExportService from '@/services/ExportService';
-import StockService from '@/services/StockService';
 import { useSaleStore } from '@/stores/sale';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -720,14 +714,12 @@ async function editSale(sale) {
       result.data.saleItems.map(async (item) => {
         let availableStock = 0;
 
-        // Fetch the current stock entry to get available quantity
-        if (item.stock_entry_id) {
-          try {
-            const stockData = await StockService.getBatchDetails(item.stock_entry_id);
-            availableStock = stockData.quantity_remaining || 0;
-          } catch (error) {
-            console.error('Error fetching stock for item:', error);
-          }
+        // Fetch total available stock for the product (across all batches)
+        try {
+          const productDetails = await productStore.getProductById(item.product_id);
+          availableStock = productDetails?.total_stock || 0;
+        } catch (error) {
+          console.error('Error fetching product stock:', error);
         }
 
         return {
