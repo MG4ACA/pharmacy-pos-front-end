@@ -194,6 +194,83 @@
       </div>
     </div>
 
+    <!-- Receipt/Pharmacy Configuration Section -->
+    <div class="mt-4">
+      <Card>
+        <template #title>
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-file-pdf text-primary"></i>
+            <span>Receipt Configuration</span>
+          </div>
+        </template>
+        <template #content>
+          <p class="text-600 mb-4">
+            Configure pharmacy information that appears on printed receipts
+          </p>
+          <div class="grid">
+            <div class="col-12 md:col-6 mb-4">
+              <label for="pharmacyName" class="block mb-2 font-medium">Pharmacy Name *</label>
+              <InputText
+                id="pharmacyName"
+                v-model="pharmacyInfo.name"
+                placeholder="Enter pharmacy name"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12 md:col-6 mb-4">
+              <label for="registrationNumber" class="block mb-2 font-medium">
+                Registration Number
+              </label>
+              <InputText
+                id="registrationNumber"
+                v-model="pharmacyInfo.registrationNumber"
+                placeholder="Enter registration number"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12 mb-4">
+              <label for="address" class="block mb-2 font-medium">Address</label>
+              <Textarea
+                id="address"
+                v-model="pharmacyInfo.address"
+                placeholder="Enter pharmacy address"
+                rows="3"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12 md:col-6 mb-4">
+              <label for="phone" class="block mb-2 font-medium">Phone Number</label>
+              <InputText
+                id="phone"
+                v-model="pharmacyInfo.phone"
+                placeholder="Enter phone number"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12 flex gap-2">
+              <Button
+                label="Save Configuration"
+                icon="pi pi-check"
+                @click="savePharmacyInfo"
+                :loading="isSavingPharmacyInfo"
+              />
+              <Button
+                label="Test Print"
+                icon="pi pi-printer"
+                severity="secondary"
+                outlined
+                @click="testPrintReceipt"
+              />
+            </div>
+          </div>
+        </template>
+      </Card>
+    </div>
+
     <!-- Database Backup Section -->
     <div class="mt-4">
       <Card>
@@ -334,6 +411,7 @@
 import NotificationPreferencesModal from '@/components/notifications/NotificationPreferencesModal.vue';
 import { AuthService } from '@/services/AuthService';
 import BackupService from '@/services/BackupService';
+import PrintService from '@/services/PrintService';
 import { useAuthStore } from '@/stores/auth';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
@@ -350,6 +428,14 @@ const backups = ref([]);
 const isLoadingBackups = ref(false);
 const isCreatingBackup = ref(false);
 const showNotificationSettings = ref(false);
+const isSavingPharmacyInfo = ref(false);
+
+const pharmacyInfo = ref({
+  name: 'Your Pharmacy Name',
+  address: 'Your Address Here',
+  phone: '(+94) XXX XXX XXXX',
+  registrationNumber: 'REG-001',
+});
 
 const passwordForm = ref({
   currentPassword: '',
@@ -367,6 +453,7 @@ const passwordErrors = ref({
 onMounted(async () => {
   await loadCurrentUser();
   await loadBackups();
+  await loadPharmacyInfo();
 });
 
 async function loadCurrentUser() {
@@ -626,6 +713,109 @@ function handleNotificationsSaved() {
     detail: 'Notification preferences saved successfully',
     life: 3000,
   });
+}
+
+async function loadPharmacyInfo() {
+  try {
+    const savedInfo = PrintService.getPharmacyInfo();
+    if (savedInfo) {
+      pharmacyInfo.value = savedInfo;
+    }
+  } catch (error) {
+    console.error('Error loading pharmacy info:', error);
+  }
+}
+
+async function savePharmacyInfo() {
+  if (!pharmacyInfo.value.name.trim()) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Validation Error',
+      detail: 'Pharmacy name is required',
+      life: 3000,
+    });
+    return;
+  }
+
+  isSavingPharmacyInfo.value = true;
+
+  try {
+    PrintService.savePharmacyInfo(pharmacyInfo.value);
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Receipt configuration saved successfully',
+      life: 3000,
+    });
+  } catch (error) {
+    console.error('Error saving pharmacy info:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to save receipt configuration',
+      life: 3000,
+    });
+  } finally {
+    isSavingPharmacyInfo.value = false;
+  }
+}
+
+function testPrintReceipt() {
+  try {
+    // Create a sample sale object for testing
+    const testSale = {
+      id: 'TEST-001',
+      sale_date: new Date(),
+      subtotal: 5000,
+      discount: 500,
+      tax: 750,
+      total_amount: 5250,
+      payment_method: 'cash',
+      payment_status: 'completed',
+      user: {
+        id: 1,
+        full_name: authStore.user?.full_name || 'Admin User',
+      },
+      saleItems: [
+        {
+          product: {
+            name: 'Test Product 1',
+          },
+          quantity: 2,
+          unit_price: 1500,
+          subtotal: 3000,
+          is_free_item: false,
+          free_item_quantity: 0,
+        },
+        {
+          product: {
+            name: 'Test Product 2',
+          },
+          quantity: 1,
+          unit_price: 2500,
+          subtotal: 2500,
+          is_free_item: false,
+          free_item_quantity: 0,
+        },
+      ],
+    };
+
+    PrintService.printReceipt(testSale, 1);
+    toast.add({
+      severity: 'info',
+      summary: 'Test Print',
+      detail: 'Test receipt sent to printer',
+      life: 3000,
+    });
+  } catch (error) {
+    console.error('Error printing test receipt:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to print test receipt',
+      life: 3000,
+    });
+  }
 }
 </script>
 

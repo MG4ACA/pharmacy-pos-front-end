@@ -256,6 +256,30 @@
             />
           </div>
 
+          <!-- Print Receipt Checkbox -->
+          <div class="field mb-4">
+            <div class="flex align-items-center">
+              <Checkbox v-model="printBill" :binary="true" inputId="printBill" class="mr-2" />
+              <label for="printBill" class="text-600 cursor-pointer">
+                Print Receipt after completing sale
+              </label>
+            </div>
+            <small class="text-500 block mt-2">
+              Print multiple copies:
+              <InputNumber
+                v-model="printCopies"
+                :min="1"
+                :max="10"
+                showButtons
+                buttonLayout="horizontal"
+                decrementButtonClass="p-button-danger p-button-sm"
+                incrementButtonClass="p-button-success p-button-sm"
+                class="ml-2"
+                style="width: 80px; display: inline-block"
+              />
+            </small>
+          </div>
+
           <!-- Action Buttons -->
           <Button
             label="Complete Sale"
@@ -335,6 +359,7 @@
 </template>
 
 <script setup>
+import PrintService from '@/services/PrintService';
 import { useAuthStore } from '@/stores/auth';
 import { useProductStore } from '@/stores/product';
 import { useSaleStore } from '@/stores/sale';
@@ -355,6 +380,8 @@ const selectedProduct = ref(null);
 const filteredProducts = ref([]);
 const showSuccessDialog = ref(false);
 const productSearchInput = ref(null);
+const printBill = ref(true);
+const printCopies = ref(1);
 
 // Computed
 const cart = computed(() => saleStore.cart);
@@ -501,6 +528,36 @@ async function completeSale() {
   const result = await saleStore.completeSale(authStore.user.id);
 
   if (result.success) {
+    // Print receipt if enabled
+    if (printBill.value && result.data) {
+      try {
+        const printSuccess = await PrintService.printReceipt(result.data, printCopies.value);
+        if (printSuccess) {
+          toast.add({
+            severity: 'info',
+            summary: 'Printing',
+            detail: 'Receipt sent to printer',
+            life: 2000,
+          });
+        } else {
+          toast.add({
+            severity: 'warn',
+            summary: 'Print Warning',
+            detail: 'Could not open print dialog. Please print manually.',
+            life: 3000,
+          });
+        }
+      } catch (error) {
+        console.error('Print error:', error);
+        toast.add({
+          severity: 'warn',
+          summary: 'Print Error',
+          detail: 'Failed to print receipt',
+          life: 3000,
+        });
+      }
+    }
+
     showSuccessDialog.value = true;
     toast.add({
       severity: 'success',
@@ -521,6 +578,8 @@ async function completeSale() {
 function startNewSale() {
   showSuccessDialog.value = false;
   saleStore.clearCart();
+  printBill.value = true; // Reset print checkbox for next sale
+  printCopies.value = 1; // Reset copies to 1
 
   // Set focus to AutoComplete for new product search
   focusAutoComplete();
