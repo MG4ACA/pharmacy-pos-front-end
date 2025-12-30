@@ -765,9 +765,11 @@ const showAddProductDialog = () => {
 };
 
 const editProductLine = (index) => {
-  const entry = entries.value[index];
+  // Convert reversed display index to original array index
+  const originalIndex = entries.value.length - 1 - index;
+  const entry = entries.value[originalIndex];
   currentEntry.value = { ...entry, productSearch: entry.productName };
-  editingIndex.value = index;
+  editingIndex.value = originalIndex;
   productSubmitted.value = false;
   productDialogVisible.value = true;
 };
@@ -824,7 +826,9 @@ const saveProductLine = () => {
 };
 
 const removeProductLine = (index) => {
-  entries.value.splice(index, 1);
+  // Convert reversed display index to original array index
+  const originalIndex = entries.value.length - 1 - index;
+  entries.value.splice(originalIndex, 1);
 };
 
 const closeProductDialog = () => {
@@ -1001,8 +1005,8 @@ const saveReceipt = async (status) => {
     saving.value = true;
     header.value.status = status;
 
-    // Generate receipt number if completing and number is not set
-    if (status === 'completed' && !header.value.receiptNumber) {
+    // Generate receipt number if not set (for both draft and completed)
+    if (!header.value.receiptNumber) {
       try {
         const generatedNumber = await stockReceiptStore.generateReceiptNumber();
         header.value.receiptNumber = generatedNumber;
@@ -1102,6 +1106,7 @@ const loadReceipt = async (id) => {
       barcode: entry.product?.barcode || '',
       batchNumber: entry.batch_number,
       quantity: entry.quantity_received,
+      freeQuantity: entry.free_quantity || 0,
       costPrice: parseFloat(entry.cost_price),
       sellingPrice: parseFloat(entry.selling_price),
       expiryDate: entry.expiry_date ? new Date(entry.expiry_date) : null,

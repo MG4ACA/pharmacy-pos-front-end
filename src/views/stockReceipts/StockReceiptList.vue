@@ -166,7 +166,7 @@
                   @click="viewReceipt(data.id)"
                 />
                 <Button
-                  v-if="data.status === 'draft'"
+                  v-if="data.status === 'draft' || data.status === 'completed'"
                   icon="pi pi-pencil"
                   class="p-button-sm p-button-text"
                   v-tooltip.top="'Edit'"
