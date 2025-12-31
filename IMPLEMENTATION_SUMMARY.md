@@ -3,8 +3,42 @@
 ## ✅ Status: COMPLETE
 
 **Implementation Date**: December 17-18, 2025  
+**Last Updated**: December 31, 2025  
 **Feature**: Comprehensive Free Items Tracking System  
 **Database Method**: Sequelize Sync (not migrations)
+
+---
+
+## 🔧 Recent Bug Fixes (December 31, 2025)
+
+### Stock Receipt Editing Improvements
+
+1. **Completed Receipt Editing Enabled**
+
+   - **Issue**: Only draft receipts could be edited
+   - **Fix**: Backend now allows editing both draft and completed receipts
+   - **Files Modified**: `StockReceiptController.js`, `StockReceiptList.vue`
+   - **Restriction**: Only cancelled receipts are locked from editing
+
+2. **Free Quantity Loading in Edit Mode**
+
+   - **Issue**: Free quantities weren't loaded when editing existing receipts
+   - **Fix**: Added `free_quantity` mapping in `loadReceipt()` function
+   - **File Modified**: `CreateStockReceipt.vue`
+   - **Impact**: Free items now properly populate when editing receipts
+
+3. **Auto Receipt Number for Drafts**
+
+   - **Issue**: Draft receipts failed validation due to missing receipt numbers
+   - **Fix**: Receipt numbers now auto-generate for both draft and completed statuses
+   - **File Modified**: `CreateStockReceipt.vue`
+   - **Impact**: Eliminated "Validation error: Validation notEmpty on receipt_number failed"
+
+4. **Product Line Edit/Delete Index Bug**
+   - **Issue**: Editing/deleting wrong products due to reversed display order
+   - **Fix**: Convert reversed display index to original array index
+   - **File Modified**: `CreateStockReceipt.vue` (`editProductLine`, `removeProductLine`)
+   - **Impact**: Correctly targets selected product regardless of display order
 
 ---
 

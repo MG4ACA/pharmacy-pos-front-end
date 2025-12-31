@@ -239,6 +239,34 @@ Net Profit: $6 ($14 - $8)
 
 ---
 
+## 🆕 Recent Updates (December 31, 2025)
+
+### Editing Stock Receipts with Free Items
+
+**New Capability**: You can now edit completed stock receipts (not just drafts)!
+
+**What Changed**:
+
+- Edit button now appears for both **draft** and **completed** receipts
+- Free quantities are properly loaded when editing existing receipts
+- Only **cancelled** receipts cannot be edited
+
+**How to Edit a Receipt**:
+
+1. Go to: Stock Receipts → List
+2. Find the receipt (draft or completed)
+3. Click the **Edit** (pencil) icon
+4. Make your changes to quantities, including free items
+5. Save as Draft or Complete Receipt
+
+**Bug Fixes**:
+
+- ✅ Free quantities now load correctly in edit mode
+- ✅ Receipt numbers auto-generate for drafts (no more validation errors)
+- ✅ Product line editing targets correct product (index mapping fixed)
+
+---
+
 ## 🛠️ Troubleshooting
 
 ### Issue: "free_quantity column doesn't exist"
@@ -325,5 +353,5 @@ After setup:
 ---
 
 **Feature Version**: 1.0  
-**Last Updated**: December 18, 2025  
-**Status**: ✅ Production Ready (after database sync)
+**Last Updated**: December 31, 2025  
+**Status**: ✅ Production Ready (with editing enhancements)

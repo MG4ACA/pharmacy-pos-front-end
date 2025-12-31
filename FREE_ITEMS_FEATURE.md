@@ -7,7 +7,24 @@ This document outlines the complete implementation plan for adding **Free Items*
 **Feature Status**: ✅ Complete  
 **Start Date**: December 17, 2025  
 **Completion Date**: December 18, 2025  
+**Last Updated**: December 31, 2025 (Bug fixes and enhancements)  
 **Developer**: Follow all standards in `DEVELOPMENT_STANDARDS.md`
+
+---
+
+## 🔄 Recent Updates (December 31, 2025)
+
+### Editing Functionality Enhanced
+
+- **Stock Receipt Editing**: Now supports editing both draft AND completed receipts (previously only drafts)
+- **Free Items in Edit Mode**: Fixed bug where free quantities weren't loaded when editing existing receipts
+- **Backend Validation**: Updated `StockReceiptController` to allow editing completed receipts
+- **Index Mapping Fix**: Corrected product line edit/delete operations when displayed in reversed order
+
+### Validation Improvements
+
+- **Auto Receipt Numbers**: Both draft and completed receipts now auto-generate receipt numbers
+- **Error Prevention**: Eliminated "notEmpty on receipt_number" validation errors for drafts
 
 ---
 

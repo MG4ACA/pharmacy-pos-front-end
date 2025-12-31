@@ -6,11 +6,19 @@
 
 ---
 
-## 🎉 Recent Updates (December 25, 2025)
+## 🎉 Recent Updates (December 31, 2025)
 
 ### ✨ New Features & Improvements
 
-- ** Added mobile view data monitoring.
+- **📝 Stock Receipt Editing Enhanced** - Stock receipts can now be edited even after completion (not just drafts). Edit both draft and completed receipts with full free items support. Only cancelled receipts are locked from editing.
+
+- **✅ Free Items in Edit Mode** - Fixed bug where free quantities weren't loaded when editing existing stock receipts. Free items now properly populate in edit mode.
+
+- **🔢 Auto Receipt Number Generation** - Receipt numbers are now automatically generated for both draft and completed receipts, eliminating validation errors.
+
+- **🎯 Product Line Edit/Delete Fixed** - Fixed index mapping issue when editing or deleting products in reversed display order. Now correctly targets the selected product.
+
+- **📱 Mobile View Monitoring** - Added mobile view data monitoring for on-the-go access.
 
 - **📊 Percentage-Based Discounts** - Discounts now work as percentages (0-100%) instead of fixed amounts. Display shows both percentage and calculated Rs. value (e.g., "10.5% (Rs. 105.00)"). Fully backward compatible with existing sales.
 

@@ -381,8 +381,55 @@ Coming in future update:
 ---
 
 **Version:** 1.0.0  
-**Last Updated:** November 19, 2025  
+**Last Updated:** December 31, 2025  
 **Support:** Contact your system administrator
+
+---
+
+## 🆕 Recent Feature Updates
+
+### Stock Receipt Management (December 2025)
+
+**Editing Stock Receipts:**
+
+- You can now edit **both draft and completed** stock receipts
+- Only **cancelled** receipts cannot be edited
+- Free items are fully supported in edit mode
+- Receipt numbers are automatically generated for drafts
+
+**How to Edit:**
+
+1. Go to **Inventory → Stock Receipts**
+2. Find the receipt you want to edit
+3. Click the **Edit** (pencil) icon
+4. Make your changes
+5. Click **Save as Draft** or **Complete Receipt**
+
+**Free Items Tracking:**
+
+- Add free quantities when receiving stock from suppliers
+- System tracks purchased vs free items separately
+- View free items with 🎁 badge throughout the system
+- Dedicated **Free Items Report** in Reports section
+
+**Important Notes:**
+
+- Editing a completed receipt will update inventory immediately
+- Product line edits target the correct item (fixed reversed order bug)
+- All changes are tracked with timestamps
+
+### Sales Management
+
+**Percentage-Based Discounts:**
+
+- Discounts now use percentages (0-100%)
+- Display shows both percentage and Rs. value
+- Example: "10.5% (Rs. 105.00)"
+
+**Cashier Tracking:**
+
+- Every sale records which cashier processed it
+- Visible in Sales History for accountability
 
 ---
 

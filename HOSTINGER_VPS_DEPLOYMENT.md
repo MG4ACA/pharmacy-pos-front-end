@@ -714,7 +714,281 @@ cat backend-project/.env
 
 ---
 
-## 📊 Monitoring Setup (Optional)
+## � Updating Backend Changes on Server
+
+When you make changes to the backend code and need to deploy them to the server, follow these steps:
+
+### Method 1: Using Git (Recommended)
+
+```bash
+# 1. SSH into your server
+ssh root@your_vps_ip
+
+# 2. Navigate to backend directory
+cd /var/www/pharmacy-pos/backend-project
+
+# 3. Pull latest changes from repository
+git pull origin main  # or your branch name (dev, master, etc.)
+
+# 4. Install any new dependencies (if package.json changed)
+npm install
+
+# 5. Restart the backend application with PM2
+pm2 restart pharmacy-pos-backend
+
+# 6. Check if restart was successful
+pm2 status
+
+# 7. Monitor logs for any errors
+pm2 logs pharmacy-pos-backend --lines 50
+```
+
+### Method 2: Manual File Upload (Alternative)
+
+If you made changes locally and want to upload directly:
+
+```bash
+# From your local machine, upload changed files
+scp -r backend-project/src/controllers/YourController.js root@your_vps_ip:/var/www/pharmacy-pos/backend-project/src/controllers/
+
+# Then SSH into server and restart
+ssh root@your_vps_ip
+pm2 restart pharmacy-pos-backend
+```
+
+### Common Scenarios
+
+#### Scenario A: Controller/Route Changes Only
+
+```bash
+# Just restart the application
+pm2 restart pharmacy-pos-backend
+
+# Verify it's running
+pm2 status
+```
+
+#### Scenario B: Database Model Changes
+
+```bash
+# 1. Pull changes
+git pull origin main
+
+# 2. Run database sync (if using Sequelize sync)
+cd /var/www/pharmacy-pos/backend-project
+node -e "require('./src/database/models/index.js')"
+
+# Or if you have a sync script
+npm run db:sync
+
+# 3. Restart backend
+pm2 restart pharmacy-pos-backend
+```
+
+#### Scenario C: New Dependencies Added
+
+```bash
+# 1. Pull changes
+git pull origin main
+
+# 2. Install dependencies
+npm install
+
+# 3. Restart backend
+pm2 restart pharmacy-pos-backend
+```
+
+#### Scenario D: Environment Variables Changed
+
+```bash
+# 1. Edit .env file
+nano /var/www/pharmacy-pos/backend-project/.env
+
+# 2. Make your changes and save (Ctrl+X, Y, Enter)
+
+# 3. Restart backend (required for env changes to take effect)
+pm2 restart pharmacy-pos-backend
+```
+
+### Quick Update Commands (Copy-Paste Ready)
+
+```bash
+# Full update sequence
+cd /var/www/pharmacy-pos/backend-project && \
+git pull origin main && \
+npm install && \
+pm2 restart pharmacy-pos-backend && \
+pm2 logs pharmacy-pos-backend --lines 20
+```
+
+### Verification Steps
+
+After updating, always verify:
+
+```bash
+# 1. Check PM2 status
+pm2 status
+
+# 2. Check recent logs
+pm2 logs pharmacy-pos-backend --lines 50
+
+# 3. Test API endpoint
+curl http://localhost:3000/api/health  # or your health check endpoint
+
+# 4. Monitor for errors
+pm2 monit
+```
+
+### Troubleshooting Update Issues
+
+**Problem: Changes not reflecting**
+
+```bash
+# Hard restart PM2
+pm2 delete pharmacy-pos-backend
+pm2 start src/index.js --name pharmacy-pos-backend
+pm2 save
+```
+
+**Problem: Application won't start after update**
+
+```bash
+# Check error logs
+pm2 logs pharmacy-pos-backend --err
+
+# Check if dependencies installed
+npm list --depth=0
+
+# Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Problem: Database errors after model changes**
+
+```bash
+# Check if database is running
+sudo systemctl status mysql
+
+# Verify database connection
+mysql -u pharmacy_user -p pharmacy_pos
+
+# Re-run migrations if needed
+npm run db:migrate  # if using migrations
+```
+
+### PM2 Useful Commands Reference
+
+```bash
+# View all processes
+pm2 list
+
+# View logs (last 100 lines)
+pm2 logs pharmacy-pos-backend --lines 100
+
+# Follow logs in real-time
+pm2 logs pharmacy-pos-backend
+
+# Restart application
+pm2 restart pharmacy-pos-backend
+
+# Stop application
+pm2 stop pharmacy-pos-backend
+
+# Delete from PM2
+pm2 delete pharmacy-pos-backend
+
+# Reload application (0-downtime)
+pm2 reload pharmacy-pos-backend
+
+# View resource usage
+pm2 monit
+
+# Save current PM2 processes
+pm2 save
+
+# View detailed info
+pm2 show pharmacy-pos-backend
+```
+
+### Automated Deployment Script (Optional)
+
+Create a deployment script for easier updates:
+
+```bash
+# Create deploy script
+nano /var/www/pharmacy-pos/deploy-backend.sh
+```
+
+Add this content:
+
+```bash
+#!/bin/bash
+
+echo "🚀 Starting backend deployment..."
+
+# Navigate to backend directory
+cd /var/www/pharmacy-pos/backend-project
+
+# Pull latest changes
+echo "📥 Pulling latest changes from Git..."
+git pull origin main
+
+# Install dependencies
+echo "📦 Installing dependencies..."
+npm install
+
+# Restart application
+echo "🔄 Restarting backend..."
+pm2 restart pharmacy-pos-backend
+
+# Show status
+echo "✅ Deployment complete!"
+pm2 status
+
+# Show recent logs
+echo "📊 Recent logs:"
+pm2 logs pharmacy-pos-backend --lines 20 --nostream
+```
+
+Make it executable:
+
+```bash
+chmod +x /var/www/pharmacy-pos/deploy-backend.sh
+```
+
+Run deployment:
+
+```bash
+/var/www/pharmacy-pos/deploy-backend.sh
+```
+
+### Best Practices
+
+1. **Always backup before updating:**
+
+   ```bash
+   mysqldump -u pharmacy_user -p pharmacy_pos > backup_$(date +%Y%m%d_%H%M%S).sql
+   ```
+
+2. **Test changes locally first** before deploying to production
+
+3. **Use Git branches** (dev → staging → main) for safer deployments
+
+4. **Monitor logs** after every update for at least 5 minutes
+
+5. **Keep PM2 updated:**
+
+   ```bash
+   npm install -g pm2@latest
+   pm2 update
+   ```
+
+6. **Document changes** in your commit messages for easier rollback
+
+---
+
+## �📊 Monitoring Setup (Optional)
 
 ### Install Monitoring Tools
 
@@ -819,5 +1093,5 @@ Your Pharmacy POS System is now live on Hostinger VPS!
 
 ---
 
-**Last Updated:** December 2024  
-**Version:** 1.0.0
+**Last Updated:** December 31, 2025  
+**Version:** 1.1.0
