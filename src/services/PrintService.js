@@ -19,9 +19,9 @@ class PrintService {
 
     // Default pharmacy info
     return {
-      name: 'Your Pharmacy Name',
-      address: 'Your Address Here',
-      phone: '(+94) XXX XXX XXXX',
+      name: 'New Yasara Pharmacy',
+      address: '102A Hirimbura Cross Rd, Galle 80000',
+      phone: '+94 77 272 6992',
       registrationNumber: 'REG-001',
     };
   }
@@ -43,11 +43,11 @@ class PrintService {
       // Header
       receipt += this.centerText(pharmacyInfo.name, charPerLine);
       receipt += '\n';
-      receipt += this.centerText('=' * charPerLine.toString(), charPerLine);
+      receipt += this.centerText('='.repeat(charPerLine), charPerLine);
       receipt += '\n';
       receipt += this.centerText('SALES RECEIPT', charPerLine);
       receipt += '\n';
-      receipt += this.centerText('=' * charPerLine.toString(), charPerLine);
+      receipt += this.centerText('='.repeat(charPerLine), charPerLine);
       receipt += '\n\n';
 
       // Receipt number and date/time
@@ -120,7 +120,7 @@ class PrintService {
       receipt += '\n';
       receipt += this.centerText('Please visit again', charPerLine);
       receipt += '\n';
-      receipt += this.centerText('=' * charPerLine.toString(), charPerLine);
+      receipt += this.centerText('='.repeat(charPerLine), charPerLine);
       receipt += '\n';
       receipt += this.centerText(new Date().toLocaleString(), charPerLine);
       receipt += '\n';
@@ -185,10 +185,7 @@ class PrintService {
 
     let line = itemName.padEnd(itemCol) + qty + price + subtotal + '\n';
 
-    // Add free item indicator if applicable
-    if (item.is_free_item && item.free_item_quantity > 0) {
-      line += `  (${item.free_item_quantity} FREE items included)\n`;
-    }
+    // Free items are tracked internally but not shown on customer receipt
 
     return line;
   }
@@ -274,7 +271,7 @@ class PrintService {
               margin: 0;
               padding: 10px;
               font-family: 'Courier New', monospace;
-              font-size: 11px;
+              font-size: 13px;
               width: 80mm;
               line-height: 1.4;
             }

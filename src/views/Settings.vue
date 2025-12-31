@@ -434,7 +434,7 @@ const pharmacyInfo = ref({
   name: 'Your Pharmacy Name',
   address: 'Your Address Here',
   phone: '(+94) XXX XXX XXXX',
-  registrationNumber: 'REG-001',
+  registrationNumber: 'REG-002',
 });
 
 const passwordForm = ref({

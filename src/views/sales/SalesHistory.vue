@@ -177,7 +177,7 @@
             </template>
           </Column>
 
-          <Column header="Actions" style="width: 10%">
+          <Column header="Actions" style="width: 13%">
             <template #body="{ data }">
               <Button
                 icon="pi pi-eye"
@@ -194,6 +194,14 @@
                 rounded
                 @click="editSale(data)"
                 v-tooltip.top="'Edit Sale'"
+              />
+              <Button
+                icon="pi pi-print"
+                severity="success"
+                text
+                rounded
+                @click="printReceipt(data)"
+                v-tooltip.top="'Print Receipt'"
               />
             </template>
           </Column>
@@ -305,6 +313,12 @@
       </div>
 
       <template #footer>
+        <Button
+          label="Print Receipt"
+          icon="pi pi-print"
+          severity="success"
+          @click="printReceipt(selectedSale)"
+        />
         <Button label="Close" icon="pi pi-times" @click="showDetailsDialog = false" />
       </template>
     </Dialog>
@@ -511,6 +525,7 @@
 
 <script setup>
 import ExportService from '@/services/ExportService';
+import PrintService from '@/services/PrintService';
 import { useSaleStore } from '@/stores/sale';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -791,6 +806,26 @@ function removeItem(index) {
     return;
   }
   editForm.value.items.splice(index, 1);
+}
+
+function printReceipt(sale) {
+  try {
+    PrintService.printReceipt(sale);
+    toast.add({
+      severity: 'success',
+      summary: 'Print Initiated',
+      detail: 'Receipt sent to printer',
+      life: 3000,
+    });
+  } catch (error) {
+    console.error('Error printing receipt:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Print Failed',
+      detail: error.message || 'Failed to print receipt',
+      life: 3000,
+    });
+  }
 }
 
 async function saveSaleChanges() {
