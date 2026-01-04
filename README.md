@@ -1,8 +1,8 @@
 # 🏥 Smart Pharmacy POS System
 
-### _Your Complete Business Solution in One Powerful Desktop Application_
+### _Your Complete Business Solution in One Powerful Cloud-Based Application_
 
-> **Transform your pharmacy operations from chaos to clarity. No internet required. No monthly fees. Complete control.**
+> **Transform your pharmacy operations from chaos to clarity. Access from anywhere. No monthly fees. Complete control.**
 
 ---
 
