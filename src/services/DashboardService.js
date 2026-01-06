@@ -6,12 +6,16 @@ import apiClient from '@/api/client';
  */
 class DashboardService {
   /**
-   * Get dashboard summary statistics
-   * @returns {Promise<Object>} Result with dashboard data
+   * Get dashboard summary statistics with chart data
+   * @param {Object} params - Query parameters
+   * @param {number} params.days - Number of days for trend (7 or 30)
+   * @returns {Promise<Object>} Result with dashboard data and charts
    */
-  static async getDashboardSummary() {
+  static async getDashboardSummary(params = {}) {
     try {
-      const result = await apiClient.get('/dashboard/summary');
+      const queryString = new URLSearchParams(params).toString();
+      const url = `/dashboard/summary${queryString ? '?' + queryString : ''}`;
+      const result = await apiClient.get(url);
       return result;
     } catch (error) {
       console.error('DashboardService.getDashboardSummary error:', error);
@@ -25,7 +29,9 @@ class DashboardService {
           expiringSoon: 0,
           monthSales: 0,
           totalSalesCount: 0,
-          recentSales: [],
+          salesTrend: { labels: [], data: [] },
+          topProducts: { labels: [], data: [] },
+          revenueVsProfit: { labels: [], revenue: [], profit: [] },
         },
       };
     }

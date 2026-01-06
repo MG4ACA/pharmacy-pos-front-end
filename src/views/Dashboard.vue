@@ -100,119 +100,86 @@
         </Card>
       </div>
 
-      <!-- Recent Sales -->
-      <div class="col-12 lg:col-8">
+      <!-- Daily Sales Trend Chart -->
+      <div class="col-12">
         <Card>
           <template #title>
             <div class="flex align-items-center justify-content-between">
               <div class="flex align-items-center">
-                <i class="pi pi-list mr-2"></i>
-                Recent Sales
+                <i class="pi pi-chart-line mr-2"></i>
+                Daily Sales Trend
               </div>
-              <Button
-                label="View All"
-                icon="pi pi-arrow-right"
-                text
-                size="small"
-                @click="$router.push('/sales/history')"
-              />
+              <div class="flex gap-2">
+                <Button
+                  label="7 Days"
+                  severity="info"
+                  text
+                  size="small"
+                  :outlined="salesTorendDays !== 7"
+                  @click="
+                    salesTorendDays = 7;
+                    fetchDashboardData();
+                  "
+                />
+                <Button
+                  label="30 Days"
+                  severity="info"
+                  text
+                  size="small"
+                  :outlined="salesTorendDays !== 30"
+                  @click="
+                    salesTorendDays = 30;
+                    fetchDashboardData();
+                  "
+                />
+              </div>
             </div>
           </template>
           <template #content>
-            <DataTable
-              v-if="!isLoading && dashboardData.recentSales.length > 0"
-              :value="dashboardData.recentSales"
-              class="p-datatable-sm"
-              responsiveLayout="scroll"
-            >
-              <Column field="id" header="Sale ID" style="width: 100px">
-                <template #body="{ data }">
-                  <span class="font-semibold">#{{ data.id }}</span>
-                </template>
-              </Column>
-              <Column field="sale_date" header="Date & Time" style="min-width: 180px">
-                <template #body="{ data }">
-                  {{ formatDate(data.sale_date) }}
-                </template>
-              </Column>
-              <Column field="total_amount" header="Total" style="min-width: 120px">
-                <template #body="{ data }">
-                  <span class="font-bold text-primary">
-                    LKR {{ formatCurrency(data.total_amount) }}
-                  </span>
-                </template>
-              </Column>
-              <Column field="payment_method" header="Payment" style="min-width: 100px">
-                <template #body="{ data }">
-                  <Tag
-                    :value="data.payment_method"
-                    :severity="getPaymentMethodSeverity(data.payment_method)"
-                    style="text-transform: uppercase"
-                  />
-                </template>
-              </Column>
-            </DataTable>
-            <div v-else-if="!isLoading" class="text-center py-4 text-600">
-              <i class="pi pi-inbox text-4xl mb-3 block"></i>
-              <p>No sales recorded yet. Start selling from POS!</p>
-            </div>
-            <div v-else class="flex flex-column gap-2">
-              <Skeleton height="3rem" v-for="i in 5" :key="i" />
-            </div>
+            <Chart v-if="!isLoading" type="line" :data="salesTrendData" :options="chartOptions" />
+            <Skeleton v-else height="400px" />
           </template>
         </Card>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="col-12 lg:col-4">
+      <!-- Top Selling Products Chart -->
+      <div class="col-12 lg:col-6">
         <Card>
           <template #title>
             <div class="flex align-items-center">
-              <i class="pi pi-bolt mr-2"></i>
-              Quick Actions
+              <i class="pi pi-list mr-2"></i>
+              Top Selling Products
             </div>
           </template>
           <template #content>
-            <div class="flex flex-column gap-2">
-              <Button
-                label="Open POS"
-                icon="pi pi-calculator"
-                severity="success"
-                class="w-full"
-                @click="$router.push('/sales/pos')"
-              />
-              <Button
-                label="Add Stock Entry"
-                icon="pi pi-plus-circle"
-                severity="info"
-                class="w-full"
-                @click="$router.push('/inventory/stock-entry')"
-              />
-              <Button
-                label="Add New Product"
-                icon="pi pi-plus"
-                severity="help"
-                class="w-full"
-                @click="$router.push('/inventory/products/add')"
-              />
-              <Divider />
-              <Button
-                label="View Reports"
-                icon="pi pi-chart-line"
-                severity="secondary"
-                outlined
-                class="w-full"
-                @click="$router.push('/reports/daily-sales')"
-              />
-              <Button
-                label="Switch to Mobile View"
-                icon="pi pi-mobile"
-                severity="info"
-                outlined
-                class="w-full"
-                @click="$router.push('/mobile')"
-              />
+            <Chart
+              v-if="!isLoading"
+              type="bar"
+              :data="topProductsData"
+              :options="barChartOptions"
+            />
+            <Skeleton v-else height="350px" />
+          </template>
+        </Card>
+      </div>
+
+      <!-- Revenue vs Profit Chart -->
+      <div class="col-12 lg:col-6">
+        <Card>
+          <template #title>
+            <div class="flex align-items-center">
+              <i class="pi pi-chart-bar mr-2"></i>
+              Revenue vs Profit Trend
             </div>
+          </template>
+          <template #content>
+            <Chart
+              v-if="!isLoading"
+              type="bar"
+              :data="revenueVsProfitData"
+              :options="columnChartOptions"
+            />
+            <Skeleton v-else height="350px" />
           </template>
         </Card>
       </div>
@@ -228,17 +195,15 @@ import { useRouter } from 'vue-router';
 
 import Button from 'primevue/button';
 import Card from 'primevue/card';
-import Column from 'primevue/column';
-import DataTable from 'primevue/datatable';
-import Divider from 'primevue/divider';
+import Chart from 'primevue/chart';
 import Skeleton from 'primevue/skeleton';
-import Tag from 'primevue/tag';
 
 const router = useRouter();
 const toast = useToast();
 
 // State
 const isLoading = ref(true);
+const salesTorendDays = ref(7);
 const dashboardData = ref({
   todaySales: 0,
   totalProducts: 0,
@@ -246,7 +211,75 @@ const dashboardData = ref({
   expiringSoon: 0,
   monthSales: 0,
   totalSalesCount: 0,
-  recentSales: [],
+});
+
+const salesTrendData = ref({});
+const topProductsData = ref({});
+const revenueVsProfitData = ref({});
+
+// Chart Options
+const chartOptions = ref({
+  maintainAspectRatio: false,
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'bottom',
+    },
+    title: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        callback: function (value) {
+          return 'Rs.' + value.toLocaleString();
+        },
+      },
+    },
+  },
+});
+
+const barChartOptions = ref({
+  indexAxis: 'y',
+  maintainAspectRatio: false,
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      ticks: {
+        callback: function (value) {
+          return value.toLocaleString();
+        },
+      },
+    },
+  },
+});
+
+const columnChartOptions = ref({
+  maintainAspectRatio: false,
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'bottom',
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        callback: function (value) {
+          return 'Rs.' + value.toLocaleString();
+        },
+      },
+    },
+  },
 });
 
 // Methods
@@ -254,10 +287,73 @@ async function fetchDashboardData() {
   isLoading.value = true;
 
   try {
-    const result = await DashboardService.getDashboardSummary();
+    const result = await DashboardService.getDashboardSummary({
+      days: salesTorendDays.value,
+    });
 
     if (result.success) {
       dashboardData.value = result.data;
+
+      // Initialize Sales Trend Chart
+      if (result.data.salesTrend) {
+        salesTrendData.value = {
+          labels: result.data.salesTrend.labels,
+          datasets: [
+            {
+              label: 'Daily Sales (Rs.)',
+              data: result.data.salesTrend.data,
+              fill: true,
+              borderColor: '#3B82F6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#3B82F6',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+            },
+          ],
+        };
+      }
+
+      // Initialize Top Products Chart
+      if (result.data.topProducts) {
+        topProductsData.value = {
+          labels: result.data.topProducts.labels,
+          datasets: [
+            {
+              label: 'Quantity Sold',
+              data: result.data.topProducts.data,
+              backgroundColor: ['#8B5CF6', '#6366F1', '#3B82F6', '#06B6D4', '#10B981'],
+              borderColor: '#fff',
+              borderWidth: 1,
+            },
+          ],
+        };
+      }
+
+      // Initialize Revenue vs Profit Chart
+      if (result.data.revenueVsProfit) {
+        revenueVsProfitData.value = {
+          labels: result.data.revenueVsProfit.labels,
+          datasets: [
+            {
+              label: 'Revenue (Rs.)',
+              data: result.data.revenueVsProfit.revenue,
+              backgroundColor: '#3B82F6',
+              borderColor: '#1E40AF',
+              borderWidth: 1,
+            },
+            {
+              label: 'Profit (Rs.)',
+              data: result.data.revenueVsProfit.profit,
+              backgroundColor: '#10B981',
+              borderColor: '#047857',
+              borderWidth: 1,
+            },
+          ],
+        };
+      }
     } else {
       toast.add({
         severity: 'error',
@@ -281,26 +377,6 @@ async function fetchDashboardData() {
 
 function formatCurrency(value) {
   return parseFloat(value || 0).toFixed(2);
-}
-
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function getPaymentMethodSeverity(method) {
-  const severities = {
-    cash: 'success',
-    card: 'info',
-    other: 'warning',
-  };
-  return severities[method] || 'info';
 }
 
 onMounted(() => {
